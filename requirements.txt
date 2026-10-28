@@ -1,0 +1,10 @@
+# Dependencias principais (runtime)
+flet>=0.85.0
+fpdf2>=2.7.0
+svglib>=2.0.0
+reportlab>=4.0.0
+rlPyCairo>=0.4.0
+ezdxf>=1.1.0
+
+# Dependencias opcionais (somente para regenerar as equacoes do README)
+# matplotlib>=3.5

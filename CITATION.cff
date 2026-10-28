@@ -1,0 +1,44 @@
+cff-version: 1.2.0
+message: "Se você usa este software, cite-o assim:"
+title: "Portica App"
+abstract: >-
+  Calculadora estrutural de vigas de concreto armado conforme a ABNT NBR
+  6118:2023, com flexao, cisalhamento, armadura dupla, armadura de pele,
+  verificacao de ELS e detalhamento. Aceita entrada manual ou importacao de
+  esforcos exportados do FTOOL. Ferramenta de apoio: os resultados devem ser
+  verificados por engenheiro civil habilitado, com ART/RRT.
+type: software
+authors:
+  - family-names: "Santos"
+    given-names: "Samuel"
+    alias: "samuel-c-santos"
+    website: "https://github.com/samuel-c-santos"
+version: "1.0.0"
+date-released: "2026-10-21"
+license: Apache-2.0
+repository-code: "https://github.com/samuel-c-santos/portica-app"
+keywords:
+  - "engenharia estrutural"
+  - "concreto armado"
+  - "vigas"
+  - "dimensionamento"
+  - "NBR 6118"
+  - "flexao"
+  - "cisalhamento"
+  - "ELS"
+  - "detalhamento de armaduras"
+  - "engenharia civil"
+  - "software livre"
+  - "open source"
+preferred-citation:
+  type: software
+  title: "Portica App: calculadora estrutural de vigas de concreto armado (NBR 6118:2023)"
+  authors:
+    - family-names: "Santos"
+      given-names: "Samuel"
+      alias: "samuel-c-santos"
+  version: "1.0.0"
+  date-released: "2026-10-21"
+  license: Apache-2.0
+  repository-code: "https://github.com/samuel-c-santos/portica-app"
+  doi: "10.5281/zenodo.XXXXXXX"

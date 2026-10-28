@@ -1,0 +1,116 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Pórtica App – Calculadora Estrutural (NBR 6118:2023)
+# Autor: Samuel Santos (https://github.com/samuel-c-santos)
+# Licença: vide LICENSE
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── Python ──────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/*
+!build/build_portica.py
+!build/launcher.py
+!build/flet_bootstrap.py
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ── Virtual environments ────────────────────────────────────────────────────
+.venv/
+venv/
+env/
+ENV/
+.env
+.env.local
+.env.*.local
+
+# ── IDEs / Editores ────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+*.iml
+.project
+.pydevproject
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# ── Flet / Build artifacts ─────────────────────────────────────────────────
+.flet/
+build/flet/
+*.fletapp
+flet_build/
+.flutter/
+
+# ── Testes / Artefatos de debug ─────────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+.tox/
+.nox/
+*.egg-info/
+.mypy_cache/
+.ruff_cache/
+.mypy.ini
+.pytest.ini
+.cache/
+
+# ── Logs e temporários ─────────────────────────────────────────────────────
+*.log
+*.tmp
+*.bak
+*.swp
+*.orig
+*.rej
+~$*
+
+# ── PDFs e DXFs (documentos e gerados) ────────────────────────────────────
+*.pdf
+*.dxf
+
+# ── Artefatos gerados (executáveis e notebooks de protótipo) ─────────────
+*.exe
+samples/*.ipynb
+
+# ── Projetos .ptc de teste ────────────────────────────────────────────────
+samples/Projeto_*.ptc
+
+# ── Documentos auxiliares (mantidos no repo) ───────────────────────────────
+# PDFs de exemplo gerados pelo app nao sao ignorados (ficam no repo se existirem)
+
+# ── Builds do PyInstaller (se viermos a usar) ──────────────────────────────
+*build.spec
+*installer.spec
+*.app
+
+assets\assets.af
+
+# ── Documentos arquivados (não versionar) ──────────────────────────────────
+docs/archived/
+samples/archived/
+
+# ── Documentos internos de trabalho (não versionar) ───────────────────────
+docs/internal/
+
+# ── Estratégia de negócio (confidencial) ──────────────────────────────────
+docs/business-model/
