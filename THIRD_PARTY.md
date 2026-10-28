@@ -100,3 +100,20 @@ O app apenas **lê** arquivos `.txt` exportados pelo FTOOL. Não há código,
 biblioteca ou recurso do FTOOL distribuído neste repositório, nem qualquer
 vínculo, endosso ou representação oficial do produto. Ver a decisão D7 do
 planejamento interno.
+
+## Design (página pública, `site/`)
+
+A página pública (`site/index.html`) é construída com o design system
+**Aipim** e usa seus arquivos **vendored localmente** (sem CDN) em
+`site/vendor/aipim/`. Os cabeçalhos de copyright/licença dos arquivos foram
+mantidos, e a atribuição aparece no rodapé da página.
+
+| Item | Licença | Origem / uso |
+|---|---|---|
+| **Aipim** (design system) | Código **MIT**; design e documentação **CC BY 4.0** | <https://github.com/talis-galhardi/aipim> — tokens, componentes e script em `site/vendor/aipim/`. Crédito: "Aipim design system by Talis Galhardi". |
+| **Antonio** e **Karla** (fontes) | **SIL Open Font License 1.1** | Fontes variáveis locais em `site/vendor/fonts/` (arquivos `OFL.txt` incluídos). |
+| **Hugeicons Free** (ícones) | **MIT** | `site/vendor/aipim/sprite.svg` (Hugeicons Free v4.3.5, Copyright (c) 2025 Hugeicons). |
+
+O tema do Pórtica (`site/theme.css`) sobrescreve apenas os tokens semânticos
+de cor primária (`--aipim-action-primary-*`) do Aipim; o CSS do Aipim não é
+modificado.
