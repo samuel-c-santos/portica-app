@@ -72,8 +72,8 @@ gráfico do Flet: na versão **leve** ele é baixado uma única vez no primeiro 
 
 | Asset | Descrição | Tamanho | SHA-256 |
 |---|---|---|---|
-| `portica-v1.0.0-windows-x64.exe` | Executável **leve** (cliente Flet baixado no 1º uso, ~30 MB) | ≈ 58 MB | `3b3a46613334fbde6a56c478d6e90dfb9938532592ad3cadb8f925918827c0cb` |
-| `portica-v1.0.0-windows-x64.zip` | Pacote **offline** (cliente Flet embutido — roda sem internet desde a 1ª execução) | ≈ 96 MB | `13f40d828a87bbe89f5fd560b62ac6e34395ddcac4afd4bf1efb35c71e0ee21b` |
+| `portica-v1.0.0-windows-x64.exe` | Executável **leve** (cliente Flet baixado no 1º uso, ~30 MB) | ≈ 58 MB | `db47ad79145d4de173ac998c52749f5e215ca3d62110893f004d3a1ac531b49c` |
+| `portica-v1.0.0-windows-x64.zip` | Pacote **offline** (cliente Flet embutido — roda sem internet desde a 1ª execução) | ≈ 96 MB | `d48a1a0823a9634fd30d273aa0da163696f215eb50e52ac7d8dc3a01c02ad38b` |
 
 O `.zip` contém `portica.exe` (com o cliente embutido) e um `SHA256SUMS.txt` próprio.
 
