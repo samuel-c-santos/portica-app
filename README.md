@@ -7,9 +7,9 @@ Calculadora estrutural de vigas de concreto armado conforme a **ABNT NBR 6118:20
 [![Testes](https://img.shields.io/badge/testes-pytest-green.svg)](tests/)
 [![Site](https://img.shields.io/badge/site-P%C3%B3rtica_App-1565C0.svg)](https://samuel-c-santos.github.io/portica-app/)
 [![Doar](https://img.shields.io/badge/doar-Ko--fi-FF5E5B.svg)](https://ko-fi.com/samuelsantosportica)
-<!-- Badge do DOI (Zenodo) — habilitar na fase F6, quando o DOI existir:
-[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.-XXXXXXX-blue.svg)](https://doi.org/10.5281/zenodo.XXXXXXX)
--->
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.XXXXXXX-blue.svg)](https://doi.org/10.5281/zenodo.XXXXXXX)
+<!-- TAL (a preencher): substituir "XXXXXXX" no badge acima pelo DOI real do
+     Zenodo após arquivar a release — ver docs/DOI.md. -->
 
 ## Screenshots
 
@@ -187,18 +187,20 @@ tela **Sobre** do app e no rodapé de cada página do relatório PDF.
 
 ## Como citar
 
-O software é citável por DOI. O DOI definitivo e o arquivo `CITATION.cff` entram
-na fase de publicação (F6); até lá, use a referência do repositório:
+O software é citável por DOI (Zenodo). Cite o **concept DOI** — ele permanece
+válido entre versões:
 
-> Pórtica App — Calculadora estrutural de vigas de concreto armado (NBR 6118:2023).
-> Versão 1.0.0. Disponível em: <https://github.com/samuel-c-santos/portica-app>.
+> Santos, S. C. (2026). *Pórtica App: calculadora estrutural de vigas de concreto
+> armado (NBR 6118:2023)* (versão 1.0.0) [software]. Zenodo.
+> https://doi.org/10.5281/zenodo.XXXXXXX
 
-Depois de publicado no Zenodo, a citação passa a ser:
-
-> Autor (ano). *Pórtica App: calculadora estrutural de vigas de concreto armado (NBR 6118:2023)* (versão 1.0.0) [software]. Zenodo. https://doi.org/10.5281/zenodo.XXXXXXX
+<!-- TAL (a preencher): substituir "XXXXXXX" pelo DOI real (concept DOI do
+     Zenodo) após arquivar a release — ver docs/DOI.md. -->
 
 O arquivo [`CITATION.cff`](CITATION.cff) do repositório é a referência
 máquina-legível para ferramentas de citação (GitHub, Zotero, Overleaf).
+Instruções para preencher o Lattes e o ORCID estão em [`docs/LATTES.md`](docs/LATTES.md),
+e o passo a passo do Zenodo em [`docs/DOI.md`](docs/DOI.md).
 
 ## Documentação / Site
 
@@ -231,4 +233,5 @@ O histórico de versões está em [`docs/CHANGELOG.md`](docs/CHANGELOG.md).
 - Perfil do autor e contato: <https://github.com/samuel-c-santos>
 - Doação (opcional, sem paywall e sem feature bloqueada): veja a seção **Doar** da [página pública](https://samuel-c-santos.github.io/portica-app/) — Pix ou Ko-fi.
 
-<!-- Aviso: o badge do DOI acima entra na fase F6, quando o DOI existir. A página pública (F5) e os links de doação já estão ativos. -->
+<!-- O badge e a citação acima usam o placeholder 10.5281/zenodo.XXXXXXX até o
+     autor arquivar a release no Zenodo e colar o DOI real (ver docs/DOI.md). -->

@@ -1,7 +1,8 @@
 # Texto de divulgação — Pórtica App
 
 Duas versões prontas para publicar. Ajuste o link e a URL da página antes de
-postar (o DOI entra na fase F6; enquanto isso, use o link do repositório).
+postar. O DOI (Zenodo) está com placeholder abaixo — substitua `XXXXXXX` pelo
+DOI real antes de publicar (ver `docs/DOI.md`).
 
 ---
 
@@ -16,6 +17,7 @@ postar (o DOI entra na fase F6; enquanto isso, use o link do repositório).
 >
 > 📄 Página: https://samuel-c-santos.github.io/portica-app/
 > 🧮 Código: https://github.com/samuel-c-santos/portica-app
+> 🔗 DOI: https://doi.org/10.5281/zenodo.XXXXXXX
 >
 > #engenhariacivil #estruturas #concretoarmado #opensource #NBR6118
 
@@ -46,6 +48,7 @@ postar (o DOI entra na fase F6; enquanto isso, use o link do repositório).
 >
 > 📄 Página: https://samuel-c-santos.github.io/portica-app/
 > 🧮 Código: https://github.com/samuel-c-santos/portica-app
+> 🔗 DOI: https://doi.org/10.5281/zenodo.XXXXXXX
 >
 > #engenhariacivil #estruturas #concretoarmado #opensource #NBR6118
 
@@ -58,6 +61,6 @@ postar (o DOI entra na fase F6; enquanto isso, use o link do repositório).
   "substitui o FTOOL" nem "dimensiona sozinho".
 - **FTOOL** é citado apenas como compatibilidade de formato de arquivo
   (decisão D7). Sem logo, sem "oficial".
-- Após a fase F6, troque o link do repositório pelo **DOI** (Zenodo) na chamada.
+- Substitua o placeholder `XXXXXXX` do **DOI** (Zenodo) pelo DOI real antes de publicar.
 - Publique a versão curta no seu perfil; use a longa em grupos de cálculo
   estrutural e concreto armado.
