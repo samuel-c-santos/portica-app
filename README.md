@@ -89,8 +89,10 @@ conteúdo da página com os documentos internos e obrigaria a renomear a pasta
 
 ## O que falta o autor preencher
 
-- **QR Pix**: `img/qr-pix.png` é um placeholder. Substituir pelo QR estático do autor.
-- **Ko-fi**: os links apontam para `https://ko-fi.com/samuelcsantos` (placeholder). Ajustar para o usuário real (também em `.github/FUNDING.yml`).
+- **QR Pix**: extraído do PDF do banco (chave e-mail `samuelsantosambiental@gmail.com`,
+  Belém/PA). Já está em `img/qr-pix.png`.
+- **Ko-fi**: configurado — `https://ko-fi.com/samuelsantosportica` (também em
+  `.github/FUNDING.yml`).
 - **DOI**: `10.5281/zenodo.XXXXXXX` é placeholder (entra na fase F6).
 - **Screenshots**: as capturas de tela do app ainda não existem. Os marcadores
   `<!-- SCREENSHOT: ... -->` em `index.html` indicam onde inseri-las.
