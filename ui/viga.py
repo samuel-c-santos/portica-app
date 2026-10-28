@@ -1918,25 +1918,31 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
             ajustes_data = saved_ftool.get("ajustes_els")
             state["ftool_ajustes_els"] = _desserializar_ajustes_els(ajustes_data)
             
-            update_ftool_preview()
-            
-            # Sincroniza os rótulos de UI correspondentes
-            for lbl, key in [
-                (lbl_ftool_momento, "ftool_momento_path"),
-                (lbl_ftool_cortante, "ftool_cortante_path"),
-                (lbl_ftool_deformacao, "ftool_deformacao_path")
-            ]:
-                path_val = state.get(key)
-                if path_val:
-                    lbl.value = os.path.basename(path_val)
-                    lbl.color = Palette.TEXT_PRIMARY
-                else:
-                    lbl.value = "Nenhum"
-                    lbl.color = Palette.TEXT_DISABLED
-                lbl.update()
+            # Reconstroi o painel conforme a entrada do projeto ANTES de tocar
+            # nos controles do painel FTOOL (eles so existem na pagina quando a
+            # fonte de entrada e FTOOL; caso contrario, update() falharia).
+            _refresh_entrada_ui()
 
-            _atualizar_viewer()
-            _check_ftool_pronto()
+            if ftool_visivel(state["entrada"]):
+                update_ftool_preview()
+
+                # Sincroniza os rótulos de UI correspondentes
+                for lbl, key in [
+                    (lbl_ftool_momento, "ftool_momento_path"),
+                    (lbl_ftool_cortante, "ftool_cortante_path"),
+                    (lbl_ftool_deformacao, "ftool_deformacao_path")
+                ]:
+                    path_val = state.get(key)
+                    if path_val:
+                        lbl.value = os.path.basename(path_val)
+                        lbl.color = Palette.TEXT_PRIMARY
+                    else:
+                        lbl.value = "Nenhum"
+                        lbl.color = Palette.TEXT_DISABLED
+                    lbl.update()
+
+                _atualizar_viewer()
+                _check_ftool_pronto()
 
             # Reset resultados e desabilita PDF
             state["resultados_flex"] = None
@@ -1945,7 +1951,6 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
             btn_exportar_dxf.disabled = True
 
             add_recent(file_path, modo=saved_modo)
-            _refresh_entrada_ui()
             page.update()
             if msg_aviso:
                 show_msg(msg_aviso, Palette.WARNING)
@@ -3369,25 +3374,30 @@ nome_engenheiro=nome_eng,
                     state["ftool_secoes_criticas"] = [SecaoCritica(**s) for s in raw_secoes]
                 else:
                     state["ftool_secoes_criticas"] = None
-                update_ftool_preview()
-                
-                # Sincroniza os rótulos de UI correspondentes
-                for lbl, key in [
-                    (lbl_ftool_momento, "ftool_momento_path"),
-                    (lbl_ftool_cortante, "ftool_cortante_path"),
-                    (lbl_ftool_deformacao, "ftool_deformacao_path")
-                ]:
-                    path_val = state.get(key)
-                    if path_val:
-                        lbl.value = os.path.basename(path_val)
-                        lbl.color = Palette.TEXT_PRIMARY
-                    else:
-                        lbl.value = "Nenhum"
-                        lbl.color = Palette.TEXT_DISABLED
-                    lbl.update()
+                # Reconstroi o painel conforme a entrada do projeto ANTES de
+                # tocar nos controles do painel FTOOL.
+                _refresh_entrada_ui()
 
-                _atualizar_viewer()
-                _check_ftool_pronto()
+                if ftool_visivel(state["entrada"]):
+                    update_ftool_preview()
+
+                    # Sincroniza os rótulos de UI correspondentes
+                    for lbl, key in [
+                        (lbl_ftool_momento, "ftool_momento_path"),
+                        (lbl_ftool_cortante, "ftool_cortante_path"),
+                        (lbl_ftool_deformacao, "ftool_deformacao_path")
+                    ]:
+                        path_val = state.get(key)
+                        if path_val:
+                            lbl.value = os.path.basename(path_val)
+                            lbl.color = Palette.TEXT_PRIMARY
+                        else:
+                            lbl.value = "Nenhum"
+                            lbl.color = Palette.TEXT_DISABLED
+                        lbl.update()
+
+                    _atualizar_viewer()
+                    _check_ftool_pronto()
 
                 state["resultados_flex"] = None
                 state["resultados_cis"] = None
@@ -3395,7 +3405,6 @@ nome_engenheiro=nome_eng,
                 btn_exportar_dxf.disabled = True
 
                 add_recent(initial_file, modo=modo)
-                _refresh_entrada_ui()
                 page.update()
                 if msg_aviso:
                     show_msg(msg_aviso, Palette.WARNING)

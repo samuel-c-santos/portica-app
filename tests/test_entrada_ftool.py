@@ -334,3 +334,31 @@ def test_edicao_standard_e_premium_sao_ambos_aceitos(ui, tmp_path, edicao):
         assert any("Standard" in m for m in page.messages)
     else:
         assert any("importado com sucesso" in m for m in page.messages)
+
+
+def test_carregar_ptc_manual_nao_toca_painel_ftool_recolhido(ui, monkeypatch):
+    """Regressao (bug de producao): carregar um .ptc manual com o painel FTOOL
+    recolhido nao pode chamar update() em controles fora da pagina.
+
+    No Flet real, ``Control.update()`` em um controle que ainda nao foi
+    adicionado a pagina levanta "Control must be added to the page first".
+    O mock do fixture ``ui`` neutraliza o update(), escondendo esse erro; aqui
+    o update() vira um guardiao que reproduz o erro para controles que nao
+    estao na arvore montada (caso dos rotulos do painel FTOOL recolhido).
+    """
+    from flet.controls import base_control
+
+    page, screen, fp_load, _ = _build_screen(ui, load_path=AMOSTRA_STANDARD)
+    montados = {id(c) for c in _iter_controls(screen)}
+
+    def guard_update(self, *args, **kwargs):
+        if id(self) not in montados:
+            raise AssertionError(f"{self} Control must be added to the page first")
+        return None
+
+    monkeypatch.setattr(base_control.BaseControl, "update", guard_update, raising=False)
+
+    asyncio.run(_find_button(screen, "Carregar Projeto").on_click(None))
+
+    assert not [m for m in page.messages if m.startswith("Erro ao carregar projeto")]
+    assert page.messages
