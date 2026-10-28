@@ -6,7 +6,7 @@ Calculadora estrutural de vigas de concreto armado conforme a **ABNT NBR 6118:20
 [![Python](https://img.shields.io/badge/python-3.10%2B-3776AB.svg)](https://www.python.org/)
 [![Testes](https://img.shields.io/badge/testes-pytest-green.svg)](tests/)
 [![Site](https://img.shields.io/badge/site-P%C3%B3rtica_App-1565C0.svg)](https://samuel-c-santos.github.io/portica-app/)
-[![Doar](https://img.shields.io/badge/doar-Ko--fi-FF5E5B.svg)](https://ko-fi.com/samuelcsantos)
+[![Doar](https://img.shields.io/badge/doar-Ko--fi-FF5E5B.svg)](https://ko-fi.com/samuelsantosportica)
 <!-- Badge do DOI (Zenodo) — habilitar na fase F6, quando o DOI existir:
 [![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.-XXXXXXX-blue.svg)](https://doi.org/10.5281/zenodo.XXXXXXX)
 -->

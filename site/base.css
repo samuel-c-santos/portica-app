@@ -134,14 +134,6 @@ ul, ol { line-height: var(--aipim-text-body-line); }
 .checklist li { display: flex; gap: var(--aipim-space-12); align-items: flex-start; }
 .steps { margin: var(--aipim-space-12) 0 0; padding-inline-start: var(--aipim-space-24); display: grid; gap: var(--aipim-space-8); }
 
-/* Mídia dentro de cards (figuras técnicas) */
-.aipim-card__media img {
-  inline-size: 100%;
-  block-size: 100%;
-  object-fit: contain;
-  padding: var(--aipim-space-12);
-}
-
 /* Figuras (galeria, todas do mesmo tamanho) */
 .figure-grid { display: grid; gap: var(--aipim-space-16); grid-template-columns: 1fr 1fr; }
 @media (max-width: 719px) { .figure-grid { grid-template-columns: 1fr; } }
@@ -183,7 +175,7 @@ pre code { color: var(--aipim-text-secondary); }
 @media (min-width: 800px) { .donate-grid { grid-template-columns: 1.2fr 0.8fr; align-items: start; } }
 .qr {
   inline-size: 100%;
-  max-inline-size: 240px;
+  max-inline-size: 280px;
   height: auto;
   border: var(--aipim-border-thin) solid var(--aipim-border-subtle);
   border-radius: var(--aipim-radius-md);
