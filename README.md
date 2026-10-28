@@ -94,8 +94,8 @@ conteúdo da página com os documentos internos e obrigaria a renomear a pasta
 - **Ko-fi**: configurado — `https://ko-fi.com/samuelsantosportica` (também em
   `.github/FUNDING.yml`).
 - **DOI**: `10.5281/zenodo.23733497` (Zenodo) — já preenchido.
-- **Screenshots**: as capturas de tela do app ainda não existem. Os marcadores
-  `<!-- SCREENSHOT: ... -->` em `index.html` indicam onde inseri-las.
+- **Screenshots**: 7 capturas já adicionadas em `img/` (`01-tela-inicial.png` …
+  `07-desenho_dxf.png`) e referenciadas em `index.html` e no README principal.
 - **URL final**: confirmar `https://samuel-c-santos.github.io/portica-app/` e
   atualizar o README principal com o link/badge definitivo.
 
