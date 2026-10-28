@@ -93,7 +93,7 @@ conteúdo da página com os documentos internos e obrigaria a renomear a pasta
   Belém/PA). Já está em `img/qr-pix.png`.
 - **Ko-fi**: configurado — `https://ko-fi.com/samuelsantosportica` (também em
   `.github/FUNDING.yml`).
-- **DOI**: `10.5281/zenodo.XXXXXXX` é placeholder (entra na fase F6).
+- **DOI**: `10.5281/zenodo.23733497` (Zenodo) — já preenchido.
 - **Screenshots**: as capturas de tela do app ainda não existem. Os marcadores
   `<!-- SCREENSHOT: ... -->` em `index.html` indicam onde inseri-las.
 - **URL final**: confirmar `https://samuel-c-santos.github.io/portica-app/` e
