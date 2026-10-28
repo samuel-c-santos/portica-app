@@ -1,7 +1,7 @@
 """
 CALCULOS ESTRUTURAIS - Flexao e Cisalhamento
 Norma: NBR 6118:2023
-Autor: Samuel Santos (https://github.com/samuel-c-santos)
+Autor: Samuel da Costa dos Santos (https://github.com/samuel-c-santos)
 Licenca: vide LICENSE
 """
 

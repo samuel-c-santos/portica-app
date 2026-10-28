@@ -9,7 +9,7 @@ retornar um SectionLayoutData com todas as coordenadas e metadados calculados.
 
 NÃO contém lógica de desenho, lógica de UI Flet, nem acesso a fpdf2.
 
-Autor: Samuel Santos (https://github.com/samuel-c-santos)
+Autor: Samuel da Costa dos Santos (https://github.com/samuel-c-santos)
 Licença: vide LICENSE
 """
 

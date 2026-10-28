@@ -188,7 +188,7 @@ tela **Sobre** do app e no rodapé de cada página do relatório PDF.
 O software é citável por DOI (Zenodo). Cite o **concept DOI** — ele permanece
 válido entre versões:
 
-> Santos, S. C. (2026). *Pórtica App: calculadora estrutural de vigas de concreto
+> dos Santos, S. C. (2026). *Pórtica App: calculadora estrutural de vigas de concreto
 > armado (NBR 6118:2023)* (versão 1.0.1) [software]. Zenodo.
 > https://doi.org/10.5281/zenodo.23733498
 

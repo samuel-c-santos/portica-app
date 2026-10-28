@@ -20,7 +20,7 @@ Estrutura em 3 peças:
 NÃO contém lógica normativa (NBR). O "Painter" é burro — apenas desenha
 os dados que a camada de domínio (BeamDetailer) já preparou.
 
-Autor: Samuel Santos (https://github.com/samuel-c-santos)
+Autor: Samuel da Costa dos Santos (https://github.com/samuel-c-santos)
 Licença: vide LICENSE
 """
 

@@ -33,8 +33,8 @@ Tela do Lattes: **Produção técnica → Software** (aba "Outra produção téc
 
 ## 3. Versão curta para o currículo Lattes
 
-> SANTOS, S. C. **Pórtica App: calculadora estrutural de vigas de concreto armado
-> (NBR 6118:2023)**. Versão 1.0.0 [software]. Zenodo, 2026.
+> SANTOS, Samuel da Costa dos. **Pórtica App: calculadora estrutural de vigas de
+> concreto armado (NBR 6118:2023)**. Versão 1.0.1 [software]. Zenodo, 2026.
 > DOI: `10.5281/zenodo.23733498`.
 
 Use esta linha na listagem resumida de produções do currículo.

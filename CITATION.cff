@@ -9,8 +9,8 @@ abstract: >-
   verificados por engenheiro civil habilitado, com ART/RRT.
 type: software
 authors:
-  - family-names: "Santos"
-    given-names: "Samuel"
+  - family-names: "dos Santos"
+    given-names: "Samuel da Costa"
     alias: "samuel-c-santos"
     website: "https://github.com/samuel-c-santos"
 version: "1.0.1"
@@ -35,8 +35,8 @@ preferred-citation:
   type: software
   title: "Portica App: calculadora estrutural de vigas de concreto armado (NBR 6118:2023)"
   authors:
-    - family-names: "Santos"
-      given-names: "Samuel"
+    - family-names: "dos Santos"
+      given-names: "Samuel da Costa"
       alias: "samuel-c-santos"
   version: "1.0.1"
   date-released: "2026-10-28"
