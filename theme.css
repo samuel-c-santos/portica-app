@@ -1,0 +1,38 @@
+/* Pórtica App — tema da página pública.
+ *
+ * Sobrepõe APENAS os tokens semânticos `--aipim-*` da cor primária/action,
+ * trocando o "urucum" padrão do Aipim pelo azul da marca do Pórtica
+ * (#1565C0, o PRIMARY do app em ui/theme.py). Nenhum outro token é alterado
+ * e o CSS do Aipim NÃO é editado.
+ *
+ * Regras do Aipim respeitadas:
+ *   - só tokens semânticos (`--aipim-action-primary-*`), nenhum hex em
+ *     componente e nenhum `!important`;
+ *   - os pares de cor escolhidos passam em contraste (AA 4.5:1 para texto,
+ *     3:1 para não-texto) em claro e escuro.
+ *
+ * Carregar DEPOIS de `vendor/aipim/aipim.css`.
+ */
+
+:root {
+  /* Ação primária (claro): azul Pórtica #1565C0, hover #0D47A1. */
+  --aipim-action-primary-bg: #1565c0;
+  --aipim-action-primary-hover: #0d47a1;
+  --aipim-action-primary-text: #ffffff;
+}
+
+/* Tema escuro explícito: <html data-theme="dark"> */
+:root[data-theme="dark"] {
+  --aipim-action-primary-bg: #82b1ff;
+  --aipim-action-primary-hover: #448aff;
+  --aipim-action-primary-text: #000000;
+}
+
+/* Tema escuro automático (segue o sistema). */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --aipim-action-primary-bg: #82b1ff;
+    --aipim-action-primary-hover: #448aff;
+    --aipim-action-primary-text: #000000;
+  }
+}

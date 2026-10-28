@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Pórtica App — Calculadora de vigas de concreto armado (NBR 6118:2023)</title>
+  <meta name="description" content="Ferramenta open source de apoio ao dimensionamento de vigas de concreto armado conforme a ABNT NBR 6118:2023. Baixe o executável para Windows, importe esforços do FTOOL e gere relatório PDF.">
+  <link rel="icon" href="img/logo.png" type="image/png">
+
+  <!-- Aipim (design system) — vendored, sem CDN. -->
+  <link rel="stylesheet" href="vendor/aipim/aipim.css">
+  <link rel="stylesheet" href="vendor/aipim/aipim-components.css">
+  <!-- Tema do Pórtica (sobrescreve só os tokens de cor primária/action). -->
+  <link rel="stylesheet" href="theme.css">
+
+  <style>
+    /* ── Fontes locais (Antonio e Karla, SIL OFL 1.1) — sem Google Fonts. ── */
+    @font-face {
+      font-family: "Antonio";
+      font-style: normal;
+      font-weight: 100 700;
+      font-display: swap;
+      src: url("vendor/fonts/antonio.ttf") format("truetype");
+    }
+    @font-face {
+      font-family: "Karla";
+      font-style: normal;
+      font-weight: 200 800;
+      font-display: swap;
+      src: url("vendor/fonts/karla.ttf") format("truetype");
+    }
+
+    /* ── Base (tokens do Aipim) ─────────────────────────────────────────── */
+    body {
+      margin: 0;
+      background: var(--aipim-bg-canvas);
+      color: var(--aipim-text-primary);
+      font-family: var(--aipim-font-body);
+      font-size: var(--aipim-text-body-size);
+      line-height: var(--aipim-text-body-line);
+    }
+
+    h1, h2, h3, h4 {
+      margin: 0;
+      font-family: var(--aipim-font-heading);
+      text-transform: var(--aipim-text-h2-transform); /* Antonio em caixa alta */
+    }
+    h1 { font-size: var(--aipim-text-h1-size); line-height: var(--aipim-text-h1-line); font-weight: var(--aipim-text-h1-weight); letter-spacing: var(--aipim-text-h1-tracking); }
+    h2 { font-size: var(--aipim-text-h2-size); line-height: var(--aipim-text-h2-line); font-weight: var(--aipim-text-h2-weight); letter-spacing: var(--aipim-text-h2-tracking); }
+    h3 { font-size: var(--aipim-text-h3-size); line-height: var(--aipim-text-h3-line); font-weight: var(--aipim-text-h3-weight); letter-spacing: var(--aipim-text-h3-tracking); }
+    h4 { font-size: var(--aipim-text-h4-size); line-height: var(--aipim-text-h4-line); font-weight: var(--aipim-text-h4-weight); letter-spacing: var(--aipim-text-h4-tracking); }
+
+    /* ── Layout da página ───────────────────────────────────────────────── */
+    .page {
+      max-width: 72rem;
+      margin-inline: auto;
+      padding-inline: var(--aipim-space-16);
+    }
+    @media (min-width: 720px) {
+      .page { padding-inline: var(--aipim-space-24); }
+    }
+
+    .skip-link {
+      position: absolute;
+      inset-block-start: 0;
+      inset-inline-start: 0;
+      transform: translateY(-120%);
+      z-index: 50;
+    }
+    .skip-link:focus {
+      transform: translateY(0);
+    }
+
+    /* Barra superior */
+    .topbar { border-bottom: var(--aipim-border-thin) solid var(--aipim-border-subtle); }
+    .topbar__inner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--aipim-space-12);
+      padding-block: var(--aipim-space-12);
+    }
+    .brand {
+      font-family: var(--aipim-font-heading);
+      font-size: var(--aipim-text-h4-size);
+      line-height: 1.1;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      color: var(--aipim-text-primary);
+      text-decoration: none;
+    }
+    .topbar nav { display: flex; flex-wrap: wrap; gap: var(--aipim-space-16); }
+
+    /* Seções */
+    .section { padding-block: var(--aipim-space-48); }
+    .section--alt { background: var(--aipim-bg-sunken); }
+    .section-head { margin-block-end: var(--aipim-space-32); }
+    .overline {
+      margin: 0 0 var(--aipim-space-8);
+      font-family: var(--aipim-font-body);
+      font-size: var(--aipim-text-overline-size);
+      line-height: var(--aipim-text-overline-line);
+      font-weight: var(--aipim-text-overline-weight);
+      letter-spacing: var(--aipim-text-overline-tracking);
+      text-transform: uppercase;
+      color: var(--aipim-text-muted);
+    }
+    .lede {
+      margin: var(--aipim-space-12) 0 0;
+      font-size: var(--aipim-text-body-lg-size);
+      line-height: var(--aipim-text-body-lg-line);
+      color: var(--aipim-text-secondary);
+      max-width: 68ch;
+    }
+
+    /* Hero */
+    .hero { padding-block: var(--aipim-space-64); }
+    .hero__inner {
+      display: grid;
+      gap: var(--aipim-space-32);
+      align-items: center;
+    }
+    @media (min-width: 800px) {
+      .hero__inner { grid-template-columns: 1.1fr 0.9fr; }
+    }
+    .hero__cta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--aipim-space-12);
+      margin-block-start: var(--aipim-space-24);
+    }
+    .hero__logo { max-inline-size: 220px; height: auto; }
+
+    /* Grades e listas */
+    .grid { display: grid; gap: var(--aipim-space-16); grid-template-columns: 1fr; }
+    @media (min-width: 720px) {
+      .grid--2 { grid-template-columns: repeat(2, 1fr); }
+      .grid--3 { grid-template-columns: repeat(3, 1fr); }
+    }
+    .tag-row { display: flex; flex-wrap: wrap; gap: var(--aipim-space-8); margin-block-start: var(--aipim-space-16); }
+    ul, ol { line-height: var(--aipim-text-body-line); }
+    .checklist { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--aipim-space-12); }
+    .checklist li { display: flex; gap: var(--aipim-space-12); align-items: flex-start; }
+    .steps { margin: var(--aipim-space-12) 0 0; padding-inline-start: var(--aipim-space-24); display: grid; gap: var(--aipim-space-8); }
+
+    /* Figuras / screenshots */
+    .figure-grid { display: grid; gap: var(--aipim-space-16); grid-template-columns: 1fr; }
+    @media (min-width: 720px) { .figure-grid { grid-template-columns: repeat(2, 1fr); } }
+    figure { margin: 0; }
+    figure img { inline-size: 100%; height: auto; border-radius: var(--aipim-radius-lg); }
+    figcaption { margin-block-start: var(--aipim-space-8); font-size: var(--aipim-text-body-sm-size); color: var(--aipim-text-muted); }
+
+    /* Download */
+    .download-note { margin-block: var(--aipim-space-24); }
+    .sha-row { display: grid; gap: var(--aipim-space-16); }
+    .sha { margin: 0; }
+    .sha code { word-break: break-all; }
+
+    /* Código / terminal */
+    pre {
+      margin: var(--aipim-space-16) 0 0;
+      padding: var(--aipim-space-16);
+      background: var(--aipim-bg-sunken);
+      border: var(--aipim-border-thin) solid var(--aipim-border-subtle);
+      border-radius: var(--aipim-radius-md);
+      overflow-x: auto;
+    }
+    code, pre code {
+      font-family: ui-monospace, "Cascadia Mono", Consolas, "Courier New", monospace;
+    }
+    pre code { color: var(--aipim-text-secondary); }
+
+    /* Doação */
+    .donate-grid { display: grid; gap: var(--aipim-space-24); grid-template-columns: 1fr; }
+    @media (min-width: 800px) { .donate-grid { grid-template-columns: 1.2fr 0.8fr; align-items: start; } }
+    .qr {
+      inline-size: 100%;
+      max-inline-size: 240px;
+      height: auto;
+      border: var(--aipim-border-thin) solid var(--aipim-border-subtle);
+      border-radius: var(--aipim-radius-md);
+    }
+
+    /* Rodapé */
+    .site-footer { border-top: var(--aipim-border-thin) solid var(--aipim-border-subtle); padding-block: var(--aipim-space-32); }
+    .site-footer p { margin: var(--aipim-space-8) 0 0; color: var(--aipim-text-secondary); font-size: var(--aipim-text-body-sm-size); }
+  </style>
+</head>
+<body id="top">
+  <a class="skip-link aipim-link" href="#conteudo">Pular para o conteúdo</a>
+
+  <header class="topbar">
+    <div class="page topbar__inner">
+      <a class="brand" href="#top">Pórtica App</a>
+      <nav aria-label="Seções da página">
+        <a class="aipim-link" href="#funcionalidades">Funcionalidades</a>
+        <a class="aipim-link" href="#download">Download</a>
+        <a class="aipim-link" href="#como-usar">Como usar</a>
+        <a class="aipim-link" href="#faq">FAQ</a>
+        <a class="aipim-link" href="#doar">Doar</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="page hero__inner">
+      <div>
+        <p class="overline">Software livre · NBR 6118:2023</p>
+        <h1>Pórtica App</h1>
+        <p class="lede">
+          Calculadora estrutural de vigas de concreto armado — flexão,
+          cisalhamento, armadura dupla, armadura de pele, ELS e detalhamento,
+          com entrada manual ou importação de esforços exportados do FTOOL.
+        </p>
+        <div class="hero__cta">
+          <a class="aipim-button" href="#download">
+            <svg class="aipim-icon aipim-button__icon-leading" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-download"></use></svg>
+            <span>Baixar</span>
+          </a>
+          <a class="aipim-button aipim-button--outline" href="#doar">
+            <svg class="aipim-icon aipim-button__icon-leading" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-heart"></use></svg>
+            <span>Doar</span>
+          </a>
+        </div>
+        <ul class="tag-row" role="list">
+          <li><span class="aipim-tag"><span>Windows 10/11</span></span></li>
+          <li><span class="aipim-tag"><span>Apache-2.0</span></span></li>
+          <li><span class="aipim-tag"><span>Sem cadastro</span></span></li>
+          <li><span class="aipim-tag"><span>Sem internet após a instalação</span></span></li>
+        </ul>
+      </div>
+      <div>
+        <picture>
+          <source srcset="img/logo_dark.png" media="(prefers-color-scheme: dark)">
+          <img class="hero__logo" src="img/logo.png" alt="Logotipo do Pórtica App" width="539" height="694">
+        </picture>
+      </div>
+    </div>
+  </section>
+
+  <main id="conteudo">
+
+    <!-- O QUE É -->
+    <section class="section">
+      <div class="page">
+        <div class="section-head">
+          <p class="overline">O que é</p>
+          <h2>Dos esforços ao detalhamento</h2>
+        </div>
+        <p class="lede">
+          O Pórtica App dimensiona e detalha vigas de concreto armado — seção
+          retangular e seção T — a partir dos esforços que o engenheiro já tem:
+          digitados à mão ou importados dos arquivos <code>.txt</code> exportados
+          pelo FTOOL. Gera relatório PDF (capa, tabelas, diagramas M(x) e V(x),
+          esquema da seção e campos de ART/CREA) e exportação DXF.
+        </p>
+        <p style="margin-top: var(--aipim-space-16); color: var(--aipim-text-secondary);">
+          É software livre (<a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app/blob/public-main/LICENSE">Apache-2.0</a>),
+          roda no Windows e não exige conta, internet ou instalação de Python para usar o executável.
+        </p>
+      </div>
+    </section>
+
+    <!-- PARA QUEM É -->
+    <section class="section section--alt">
+      <div class="page">
+        <div class="section-head">
+          <p class="overline">Para quem é</p>
+          <h2>Feito para quem calcula viga</h2>
+        </div>
+        <div class="grid grid--3">
+          <article class="aipim-card">
+            <div class="aipim-card__body">
+              <h3 class="aipim-card__title">Engenheiros civis</h3>
+              <p class="aipim-card__text">Quem já tem os momentos e cortantes (do FTOOL ou de qualquer análise) e precisa chegar à armadura e ao detalhamento com rastreabilidade.</p>
+            </div>
+          </article>
+          <article class="aipim-card">
+            <div class="aipim-card__body">
+              <h3 class="aipim-card__title">Estudantes e professores</h3>
+              <p class="aipim-card__text">Conferir exercícios de concreto armado e visualizar os domínios de deformação, a armadura dupla e a verificação de ELS.</p>
+            </div>
+          </article>
+          <article class="aipim-card">
+            <div class="aipim-card__body">
+              <h3 class="aipim-card__title">Quem valoriza código aberto</h3>
+              <p class="aipim-card__text">O código está no GitHub e pode ser lido, testado e corrigido. Cálculo estrutural precisa ser auditável.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- FUNCIONALIDADES -->
+    <section class="section" id="funcionalidades">
+      <div class="page">
+        <div class="section-head">
+          <p class="overline">Funcionalidades</p>
+          <h2>O que o app entrega</h2>
+          <p class="lede">Dimensionamento conforme a ABNT NBR 6118:2023, com saídas prontas para o dia a dia de projeto.</p>
+        </div>
+        <div class="grid grid--3">
+          <article class="aipim-card">
+            <div class="aipim-card__body">
+              <div class="aipim-card__header">
+                <span class="aipim-badge aipim-badge--tint aipim-badge--square" aria-hidden="true">
+                  <svg class="aipim-icon" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-check"></use></svg>
+                </span>
+                <div class="aipim-card__heading">
+                  <h3 class="aipim-card__title">Flexão</h3>
+                </div>
+              </div>
+              <p class="aipim-card__text">Seção retangular e seção T (mesa colaborante), com verificação dos domínios de deformação.</p>
+            </div>
+          </article>
+          <article class="aipim-card">
+            <div class="aipim-card__body">
+              <div class="aipim-card__header">
+                <span class="aipim-badge aipim-badge--tint aipim-badge--square" aria-hidden="true">
+                  <svg class="aipim-icon" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-check"></use></svg>
+                </span>
+                <div class="aipim-card__heading">
+                  <h3 class="aipim-card__title">Cisalhamento</h3>
+                </div>
+              </div>
+              <p class="aipim-card__text">Modelo I da NBR 6118, com contribuição do concreto e do aço, estribos trecho a trecho.</p>
+            </div>
+          </article>
+          <article class="aipim-card">
+            <div class="aipim-card__body">
+              <div class="aipim-card__header">
+                <span class="aipim-badge aipim-badge--tint aipim-badge--square" aria-hidden="true">
+                  <svg class="aipim-icon" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-check"></use></svg>
+                </span>
+                <div class="aipim-card__heading">
+                  <h3 class="aipim-card__title">Armadura dupla</h3>
+                </div>
+              </div>
+              <p class="aipim-card__text">Solução com armadura de compressão quando o momento excede o limite do domínio 3.</p>
+            </div>
+          </article>
+          <article class="aipim-card">
+            <div class="aipim-card__body">
+              <div class="aipim-card__header">
+                <span class="aipim-badge aipim-badge--tint aipim-badge--square" aria-hidden="true">
+                  <svg class="aipim-icon" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-check"></use></svg>
+                </span>
+                <div class="aipim-card__heading">
+                  <h3 class="aipim-card__title">Armadura de pele</h3>
+                </div>
+              </div>
+              <p class="aipim-card__text">Dimensionamento automático das costelas para vigas com h ≥ 60 cm.</p>
+            </div>
+          </article>
+          <article class="aipim-card">
+            <div class="aipim-card__body">
+              <div class="aipim-card__header">
+                <span class="aipim-badge aipim-badge--tint aipim-badge--square" aria-hidden="true">
+                  <svg class="aipim-icon" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-clock"></use></svg>
+                </span>
+                <div class="aipim-card__heading">
+                  <h3 class="aipim-card__title">ELS — flecha e fissuração</h3>
+                </div>
+              </div>
+              <p class="aipim-card__text">Flecha imediata e diferida por integração numérica da curvatura; abertura de fissuras wk por classe de agressividade.</p>
+            </div>
+          </article>
+          <article class="aipim-card">
+            <div class="aipim-card__body">
+              <div class="aipim-card__header">
+                <span class="aipim-badge aipim-badge--tint aipim-badge--square" aria-hidden="true">
+                  <svg class="aipim-icon" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-file"></use></svg>
+                </span>
+                <div class="aipim-card__heading">
+                  <h3 class="aipim-card__title">Relatório PDF</h3>
+                </div>
+              </div>
+              <p class="aipim-card__text">Capa, dados de entrada, tabelas, diagramas M(x)/V(x), esquema da seção e campos de ART/CREA.</p>
+            </div>
+          </article>
+          <article class="aipim-card">
+            <div class="aipim-card__body">
+              <div class="aipim-card__header">
+                <span class="aipim-badge aipim-badge--tint aipim-badge--square" aria-hidden="true">
+                  <svg class="aipim-icon" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-image"></use></svg>
+                </span>
+                <div class="aipim-card__heading">
+                  <h3 class="aipim-card__title">Exportação DXF</h3>
+                </div>
+              </div>
+              <p class="aipim-card__text">Desenho da seção R/T com layers e grampos, pronto para o CAD.</p>
+            </div>
+          </article>
+          <article class="aipim-card">
+            <div class="aipim-card__body">
+              <div class="aipim-card__header">
+                <span class="aipim-badge aipim-badge--tint aipim-badge--square" aria-hidden="true">
+                  <svg class="aipim-icon" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-upload"></use></svg>
+                </span>
+                <div class="aipim-card__heading">
+                  <h3 class="aipim-card__title">Importação FTOOL</h3>
+                </div>
+              </div>
+              <p class="aipim-card__text">Leitura dos <code>.txt</code> exportados (momento, cortante, deformações), seções críticas e dimensionamento automático.</p>
+            </div>
+          </article>
+          <article class="aipim-card">
+            <div class="aipim-card__body">
+              <div class="aipim-card__header">
+                <span class="aipim-badge aipim-badge--tint aipim-badge--square" aria-hidden="true">
+                  <svg class="aipim-icon" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-folder"></use></svg>
+                </span>
+                <div class="aipim-card__heading">
+                  <h3 class="aipim-card__title">Projetos .ptc</h3>
+                </div>
+              </div>
+              <p class="aipim-card__text">Salvar e carregar o projeto completo: geometria, materiais, esforços e ajustes.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCREENSHOTS / FIGURAS -->
+    <section class="section section--alt" id="screenshots">
+      <div class="page">
+        <div class="section-head">
+          <p class="overline">Telas e figuras</p>
+          <h2>Como o app se apresenta</h2>
+          <p class="lede">Figuras das seções de viga que o app dimensiona. Capturas de tela do aplicativo serão adicionadas nesta seção.</p>
+        </div>
+        <div class="figure-grid">
+          <figure>
+            <picture>
+              <source srcset="img/ilustracao-viga-rec-escura.png" media="(prefers-color-scheme: dark)">
+              <img src="img/ilustracao-viga-rec.png" alt="Ilustração da seção retangular dimensionada pelo Pórtica App" loading="lazy" width="779" height="986">
+            </picture>
+            <figcaption>Seção retangular — flexão, estribos e detalhamento.</figcaption>
+          </figure>
+          <figure>
+            <picture>
+              <source srcset="img/ilustracao-viga-t-escura.png" media="(prefers-color-scheme: dark)">
+              <img src="img/ilustracao-viga-t.png" alt="Ilustração da seção T (mesa colaborante) dimensionada pelo Pórtica App" loading="lazy" width="905" height="995">
+            </picture>
+            <figcaption>Seção T (mesa colaborante) — flexão com contribuição da mesa.</figcaption>
+          </figure>
+        </div>
+        <!-- SCREENSHOT: 01-tela-inicial.png — tela inicial com os dois tipos de seção (retangular e T) -->
+        <!-- SCREENSHOT: 02-entrada-manual.png — tela da viga com a entrada manual (trechos de flexão e cisalhamento) -->
+        <!-- SCREENSHOT: 03-importacao-ftool.png — painel "Importar do FTOOL" com os arquivos de esforços carregados -->
+        <!-- SCREENSHOT: 04-resultados-flexao.png — modal de resultados da flexão (armadura adotada, bitolas, Checks) -->
+        <!-- SCREENSHOT: 05-relatorio-pdf.png — relatório PDF gerado (capa, tabelas, esquema da seção) -->
+      </div>
+    </section>
+
+    <!-- COMO USAR -->
+    <section class="section" id="como-usar">
+      <div class="page">
+        <div class="section-head">
+          <p class="overline">Como usar</p>
+          <h2>Entrada manual ou importação do FTOOL</h2>
+          <p class="lede">O app tem uma única tela de viga, com dois tipos de seção e duas formas de entrada de esforços.</p>
+        </div>
+        <div class="grid grid--2">
+          <article class="aipim-card">
+            <div class="aipim-card__body">
+              <h3 class="aipim-card__title">Entrada manual</h3>
+              <ol class="steps">
+                <li>Escolha o tipo de seção: retangular ou T.</li>
+                <li>Informe geometria, materiais (fck, fyk, agressividade) e o estribo adotado.</li>
+                <li>Preencha os trechos de flexão (M) e cisalhamento (V).</li>
+                <li>Clique em <strong>Calcular</strong> e confira a armadura e os checks.</li>
+                <li>Gere o relatório PDF e/ou a exportação DXF.</li>
+                <li>Use <strong>Salvar Projeto</strong> (.ptc) para retomar depois.</li>
+              </ol>
+            </div>
+          </article>
+          <article class="aipim-card">
+            <div class="aipim-card__body">
+              <h3 class="aipim-card__title">Importação do FTOOL</h3>
+              <ol class="steps">
+                <li>Clique em <strong>Importar do FTOOL</strong>.</li>
+                <li>Selecione os <code>.txt</code> exportados (momento fletor, cortante e deformações).</li>
+                <li>O app detecta as seções críticas e monta o envelope de combinações.</li>
+                <li>O dimensionamento automático calcula flexão, cisalhamento e grampos.</li>
+                <li>Os diagramas M(x) e V(x) entram no relatório PDF.</li>
+              </ol>
+            </div>
+          </article>
+        </div>
+
+        <div class="aipim-alert" role="status" style="margin-top: var(--aipim-space-24);">
+          <svg class="aipim-icon aipim-alert__icon" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-info"></use></svg>
+          <div class="aipim-alert__content">
+            <p class="aipim-alert__message">Compatível apenas com os arquivos exportados pelo FTOOL. Sem vínculo, endosso ou representação oficial do produto.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DOWNLOAD -->
+    <section class="section section--alt" id="download">
+      <div class="page">
+        <div class="section-head">
+          <p class="overline">Download</p>
+          <h2>Executável pronto para Windows</h2>
+          <p class="lede">Dois assets para Windows 10/11 x64. A diferença é o cliente gráfico do Flet.</p>
+        </div>
+
+        <div class="aipim-alert aipim-alert--warning" role="status">
+          <svg class="aipim-icon aipim-alert__icon" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-warning"></use></svg>
+          <div class="aipim-alert__content">
+            <p class="aipim-alert__title">Ferramenta de apoio</p>
+            <p class="aipim-alert__message">Os resultados devem ser verificados por engenheiro civil habilitado, com ART/RRT, antes de qualquer uso em projeto. Veja <a class="aipim-link" href="#limitacoes">limitações e responsabilidade</a>.</p>
+          </div>
+        </div>
+
+        <div class="grid grid--2" style="margin-top: var(--aipim-space-24);">
+          <article class="aipim-card">
+            <div class="aipim-card__body">
+              <div class="aipim-card__header">
+                <span class="aipim-badge aipim-badge--tint aipim-badge--square" aria-hidden="true">
+                  <svg class="aipim-icon" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-download"></use></svg>
+                </span>
+                <div class="aipim-card__heading">
+                  <h3 class="aipim-card__title">Versão leve (.exe)</h3>
+                </div>
+              </div>
+              <p class="aipim-card__text">
+                ≈ 58 MB. O cliente Flet (~30 MB) é baixado uma única vez no primeiro uso
+                e fica em cache; a partir da segunda execução, abre offline.
+              </p>
+              <a class="aipim-button" href="https://github.com/samuel-c-santos/portica-app/releases/latest/download/portica-v1.0.0-windows-x64.exe" target="_blank" rel="noopener noreferrer" style="margin-top: var(--aipim-space-16);">
+                <svg class="aipim-icon aipim-button__icon-leading" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-download"></use></svg>
+                <span>Baixar .exe (leve)</span>
+              </a>
+            </div>
+          </article>
+          <article class="aipim-card">
+            <div class="aipim-card__body">
+              <div class="aipim-card__header">
+                <span class="aipim-badge aipim-badge--tint aipim-badge--square" aria-hidden="true">
+                  <svg class="aipim-icon" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-check"></use></svg>
+                </span>
+                <div class="aipim-card__heading">
+                  <h3 class="aipim-card__title">Versão offline (.zip)</h3>
+                </div>
+              </div>
+              <p class="aipim-card__text">
+                ≈ 96 MB. O cliente Flet já vem embutido: roda offline desde a primeira
+                execução. Descompacte e execute o <code>portica.exe</code>.
+              </p>
+              <a class="aipim-button aipim-button--outline" href="https://github.com/samuel-c-santos/portica-app/releases/latest/download/portica-v1.0.0-windows-x64.zip" target="_blank" rel="noopener noreferrer" style="margin-top: var(--aipim-space-16);">
+                <svg class="aipim-icon aipim-button__icon-leading" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-download"></use></svg>
+                <span>Baixar .zip (offline)</span>
+              </a>
+            </div>
+          </article>
+        </div>
+
+        <p style="margin-top: var(--aipim-space-24);">
+          Todos os downloads também estão na aba
+          <a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app/releases" target="_blank" rel="noopener noreferrer">Releases do repositório</a>.
+          Recomendação: use o <code>.zip</code> se a máquina estiver offline na primeira execução; senão, o <code>.exe</code> leve é menor e se torna offline a partir da segunda vez.
+        </p>
+
+        <h3 style="margin-top: var(--aipim-space-32);">Conferir a integridade (SHA-256)</h3>
+        <div class="sha-row" style="margin-top: var(--aipim-space-16);">
+          <p class="sha"><strong>portica-v1.0.0-windows-x64.exe</strong><br>
+            <code>db47ad79145d4de173ac998c52749f5e215ca3d62110893f004d3a1ac531b49c</code></p>
+          <p class="sha"><strong>portica-v1.0.0-windows-x64.zip</strong><br>
+            <code>d48a1a0823a9634fd30d273aa0da163696f215eb50e52ac7d8dc3a01c02ad38b</code></p>
+        </div>
+        <pre><code>Get-FileHash .\portica-v1.0.0-windows-x64.exe -Algorithm SHA256
+Get-FileHash .\portica-v1.0.0-windows-x64.zip -Algorithm SHA256</code></pre>
+        <p style="margin-top: var(--aipim-space-12); color: var(--aipim-text-secondary); font-size: var(--aipim-text-body-sm-size);">
+          Os valores acima coincidem com o arquivo <code>SHA256SUMS.txt</code> na raiz do repositório.
+        </p>
+      </div>
+    </section>
+
+    <!-- LIMITAÇÕES E RESPONSABILIDADE -->
+    <section class="section" id="limitacoes">
+      <div class="page">
+        <div class="section-head">
+          <p class="overline">Limitações e responsabilidade</p>
+          <h2>Ferramenta de apoio, não de decisão</h2>
+        </div>
+
+        <div class="aipim-alert aipim-alert--warning" role="status">
+          <svg class="aipim-icon aipim-alert__icon" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-warning"></use></svg>
+          <div class="aipim-alert__content">
+            <p class="aipim-alert__title">Aviso</p>
+            <p class="aipim-alert__message">O Pórtica App é uma ferramenta de apoio ao dimensionamento de vigas de concreto armado conforme a ABNT NBR 6118. Os resultados devem ser verificados por engenheiro civil habilitado, com ART/RRT, antes de qualquer uso em projeto executivo. O software é fornecido "como está", sem garantia de adequação a um caso concreto. Os autores não respondem por decisões de projeto tomadas com base nas saídas do programa.</p>
+          </div>
+        </div>
+
+        <p style="margin-top: var(--aipim-space-24);">O programa <strong>não</strong> substitui:</p>
+        <ul style="margin-top: var(--aipim-space-8);">
+          <li>o projeto estrutural completo, com suas hipóteses de carregamento, combinações e efeitos de segunda ordem;</li>
+          <li>a verificação de um engenheiro civil habilitado, com ART/RRT;</li>
+          <li>a consulta à norma vigente e às suas tabelas;</li>
+          <li>a conferência das premissas adotadas no modelo estrutural.</li>
+        </ul>
+        <p style="margin-top: var(--aipim-space-16);">
+          O aviso completo está em
+          <a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app/blob/public-main/DISCLAIMER.md" target="_blank" rel="noopener noreferrer">DISCLAIMER.md</a>,
+          e também aparece na tela <strong>Sobre</strong> do app e no rodapé de cada página do relatório PDF.
+        </p>
+      </div>
+    </section>
+
+    <!-- DOCUMENTAÇÃO -->
+    <section class="section section--alt" id="documentacao">
+      <div class="page">
+        <div class="section-head">
+          <p class="overline">Documentação</p>
+          <h2>Leia o código e o modelo de cálculo</h2>
+        </div>
+        <ul class="checklist" role="list">
+          <li>
+            <svg class="aipim-icon aipim-icon--sm" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-file"></use></svg>
+            <span><a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app/blob/public-main/README.md" target="_blank" rel="noopener noreferrer">README</a> — visão geral, instalação e uso.</span>
+          </li>
+          <li>
+            <svg class="aipim-icon aipim-icon--sm" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-file"></use></svg>
+            <span><a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app/blob/public-main/docs/calculo.md" target="_blank" rel="noopener noreferrer">Modelo de cálculo</a> — as fórmulas e critérios implementados.</span>
+          </li>
+          <li>
+            <svg class="aipim-icon aipim-icon--sm" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-file"></use></svg>
+            <span><a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app/blob/public-main/docs/mapa_codigo.md" target="_blank" rel="noopener noreferrer">Mapa do código</a> — como o repositório está organizado.</span>
+          </li>
+          <li>
+            <svg class="aipim-icon aipim-icon--sm" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-file"></use></svg>
+            <span><a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app/blob/public-main/docs/CHANGELOG.md" target="_blank" rel="noopener noreferrer">Changelog</a> — histórico de versões.</span>
+          </li>
+          <li>
+            <svg class="aipim-icon aipim-icon--sm" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-file"></use></svg>
+            <span><a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app/blob/public-main/LICENSE" target="_blank" rel="noopener noreferrer">Licença</a> (Apache-2.0) e <a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app/blob/public-main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer">como contribuir</a>.</span>
+          </li>
+          <li>
+            <svg class="aipim-icon aipim-icon--sm" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-file"></use></svg>
+            <span><a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app/tree/public-main/samples" target="_blank" rel="noopener noreferrer">Arquivos de exemplo</a> — <code>.txt</code> do FTOOL e um projeto <code>.ptc</code>.</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- COMO CITAR -->
+    <section class="section" id="citar">
+      <div class="page">
+        <div class="section-head">
+          <p class="overline">Como citar</p>
+          <h2>Citação acadêmica</h2>
+        </div>
+        <p class="lede">O software é citável por DOI. Até a publicação no Zenodo (fase F6), use a referência do repositório:</p>
+        <blockquote style="margin: var(--aipim-space-16) 0 0; padding-inline-start: var(--aipim-space-16); border-inline-start: var(--aipim-border-medium) solid var(--aipim-border-strong); color: var(--aipim-text-secondary);">
+          Pórtica App — Calculadora estrutural de vigas de concreto armado (NBR 6118:2023). Versão 1.0.0. Disponível em: <a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app">https://github.com/samuel-c-santos/portica-app</a>.
+        </blockquote>
+        <p style="margin-top: var(--aipim-space-16);">
+          Depois de publicado no Zenodo, a citação passa a usar o DOI
+          (<a class="aipim-link" href="https://doi.org/10.5281/zenodo.XXXXXXX" target="_blank" rel="noopener noreferrer">10.5281/zenodo.XXXXXXX</a> — placeholder a preencher).
+          A referência máquina-legível está no arquivo
+          <a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app/blob/public-main/CITATION.cff" target="_blank" rel="noopener noreferrer">CITATION.cff</a>.
+        </p>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="section section--alt" id="faq">
+      <div class="page">
+        <div class="section-head">
+          <p class="overline">Perguntas frequentes</p>
+          <h2>FAQ</h2>
+        </div>
+
+        <details class="aipim-accordion" name="faq">
+          <summary class="aipim-accordion__header">
+            <span class="aipim-accordion__title">Roda offline?</span>
+            <svg class="aipim-icon aipim-accordion__chevron" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-chevron-down"></use></svg>
+          </summary>
+          <div class="aipim-accordion__panel">
+            <p>Depende da versão. A versão <strong>offline (.zip)</strong> já vem com o cliente Flet embutido e roda sem internet desde a primeira execução. A versão <strong>leve (.exe)</strong> baixa o cliente gráfico do Flet (~30 MB) uma única vez no primeiro uso; depois disso, fica em cache e o app abre offline a partir da segunda execução. O cálculo em si (dimensionamento, PDF e DXF) é sempre 100% local — sem conta e sem internet.</p>
+          </div>
+        </details>
+
+        <details class="aipim-accordion" name="faq">
+          <summary class="aipim-accordion__header">
+            <span class="aipim-accordion__title">Em quais sistemas roda? Só Windows por enquanto?</span>
+            <svg class="aipim-icon aipim-accordion__chevron" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-chevron-down"></use></svg>
+          </summary>
+          <div class="aipim-accordion__panel">
+            <p>Os executáveis prontos são para <strong>Windows 10/11 x64</strong>. O código-fonte é Python (Flet) e, em princípio, roda em Linux/macOS instalando Python 3.10+ e as dependências (<code>pip install -r requirements.txt</code>), mas nesta versão o autor valida oficialmente apenas o Windows.</p>
+          </div>
+        </details>
+
+        <details class="aipim-accordion" name="faq">
+          <summary class="aipim-accordion__header">
+            <span class="aipim-accordion__title">Substitui o FTOOL ou só complementa?</span>
+            <svg class="aipim-icon aipim-accordion__chevron" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-chevron-down"></use></svg>
+          </summary>
+          <div class="aipim-accordion__panel">
+            <p>Complementa. O Pórtica App <strong>lê</strong> os arquivos <code>.txt</code> exportados pelo FTOOL (momento fletor, cortante e deformações) e faz o dimensionamento e o detalhamento da viga. Não há vínculo ou endosso: "FTOOL" é citado apenas como compatibilidade de formato de arquivo.</p>
+          </div>
+        </details>
+
+        <details class="aipim-accordion" name="faq">
+          <summary class="aipim-accordion__header">
+            <span class="aipim-accordion__title">O resultado substitui a ART?</span>
+            <svg class="aipim-icon aipim-accordion__chevron" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-chevron-down"></use></svg>
+          </summary>
+          <div class="aipim-accordion__panel">
+            <p>Não. O Pórtica App é uma <strong>ferramenta de apoio</strong>. Os resultados devem ser verificados por engenheiro civil habilitado, com ART/RRT, antes de qualquer uso em projeto executivo. Veja a seção <a class="aipim-link" href="#limitacoes">limitações e responsabilidade</a>.</p>
+          </div>
+        </details>
+
+        <details class="aipim-accordion" name="faq">
+          <summary class="aipim-accordion__header">
+            <span class="aipim-accordion__title">O que é ELS?</span>
+            <svg class="aipim-icon aipim-accordion__chevron" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-chevron-down"></use></svg>
+          </summary>
+          <div class="aipim-accordion__panel">
+            <p>ELS são os <strong>Estados-Limites de Serviço</strong> da NBR 6118 — verificações de desempenho em serviço. O app calcula a <strong>flecha</strong> (deformação excessiva, imediata e diferida no tempo) e a <strong>fissuração</strong> (abertura de fissuras wk), comparando com os limites por classe de agressividade ambiental.</p>
+          </div>
+        </details>
+
+        <details class="aipim-accordion" name="faq">
+          <summary class="aipim-accordion__header">
+            <span class="aipim-accordion__title">Preciso saber Python para usar?</span>
+            <svg class="aipim-icon aipim-accordion__chevron" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-chevron-down"></use></svg>
+          </summary>
+          <div class="aipim-accordion__panel">
+            <p>Não. Baixe o executável e use normalmente. Python só é necessário para quem quiser rodar — ou modificar — o código-fonte.</p>
+          </div>
+        </details>
+
+        <details class="aipim-accordion" name="faq">
+          <summary class="aipim-accordion__header">
+            <span class="aipim-accordion__title">É gratuito? Posso usar em projeto comercial?</span>
+            <svg class="aipim-icon aipim-accordion__chevron" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-chevron-down"></use></svg>
+          </summary>
+          <div class="aipim-accordion__panel">
+            <p>Sim, é software livre sob a licença <strong>Apache-2.0</strong>: você pode usar, estudar e modificar. O uso em projeto é por sua conta e responsabilidade, com verificação por engenheiro habilitado e ART/RRT.</p>
+          </div>
+        </details>
+
+        <details class="aipim-accordion" name="faq">
+          <summary class="aipim-accordion__header">
+            <span class="aipim-accordion__title">Como reporto um erro de cálculo?</span>
+            <svg class="aipim-icon aipim-accordion__chevron" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-chevron-down"></use></svg>
+          </summary>
+          <div class="aipim-accordion__panel">
+            <p>Abra uma <a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app/issues" target="_blank" rel="noopener noreferrer">Issue</a> no GitHub informando a versão do app, os dados de entrada, a saída obtida, o valor esperado e a referência normativa. Falhas de cálculo têm procedimento específico, descrito em <a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app/blob/public-main/SECURITY.md" target="_blank" rel="noopener noreferrer">SECURITY.md</a>.</p>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <!-- DOAR -->
+    <section class="section" id="doar">
+      <div class="page">
+        <div class="section-head">
+          <p class="overline">Doar</p>
+          <h2>Ajude a manter o projeto</h2>
+          <p class="lede">Doação opcional, sem paywall e sem feature bloqueada. Se o app te economizou uma tarde, ajude a mantê-lo no ar.</p>
+        </div>
+        <div class="donate-grid">
+          <div>
+            <p>Dois jeitos de contribuir, ambos sem cadastro e sem CNPJ:</p>
+            <ul style="margin-top: var(--aipim-space-8);">
+              <li><strong>Pix</strong> — escaneie o QR ao lado (chave do autor).</li>
+              <li><strong>Ko-fi</strong> — doação pontual ou recorrente pela plataforma.</li>
+            </ul>
+            <div class="hero__cta">
+              <a class="aipim-button" href="https://ko-fi.com/samuelcsantos" target="_blank" rel="noopener noreferrer">
+                <svg class="aipim-icon aipim-button__icon-leading" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-heart"></use></svg>
+                <span>Doar via Ko-fi</span>
+              </a>
+              <a class="aipim-button aipim-button--outline" href="https://github.com/samuel-c-santos/portica-app" target="_blank" rel="noopener noreferrer">
+                <svg class="aipim-icon aipim-button__icon-leading" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-star"></use></svg>
+                <span>Dar estrela no GitHub</span>
+              </a>
+            </div>
+          </div>
+          <div>
+            <img class="qr" src="img/qr-pix.png" alt="QR Code Pix para doação (placeholder — substitua pelo QR estático do autor)" width="512" height="512">
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- CRÉDITOS E LICENÇA -->
+  <footer class="site-footer">
+    <div class="page">
+      <p>
+        <strong>Pórtica App</strong> — software livre sob
+        <a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app/blob/public-main/LICENSE" target="_blank" rel="noopener noreferrer">Apache-2.0</a>.
+        Código-fonte em <a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app" target="_blank" rel="noopener noreferrer">github.com/samuel-c-santos/portica-app</a>.
+      </p>
+      <p>
+        Design system: <a class="aipim-link" href="https://github.com/talis-galhardi/aipim" target="_blank" rel="noopener noreferrer">Aipim</a>, por Talis Galhardi (MIT / CC BY 4.0).
+        Fontes <em>Antonio</em> e <em>Karla</em> (SIL OFL 1.1). Ícones <em>Hugeicons Free</em> (MIT).
+      </p>
+      <p>Ferramenta de apoio: não substitui a verificação de engenheiro civil habilitado, com ART/RRT.</p>
+    </div>
+  </footer>
+
+</body>
+</html>
