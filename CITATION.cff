@@ -17,9 +17,7 @@ version: "1.0.1"
 date-released: "2026-10-28"
 license: Apache-2.0
 repository-code: "https://github.com/samuel-c-santos/portica-app"
-# TAL (a preencher): substituir pelo DOI real (concept DOI do Zenodo) após
-# arquivar a release — ver docs/DOI.md.
-doi: "10.5281/zenodo.XXXXXXX"
+doi: "10.5281/zenodo.23733497"
 keywords:
   - "engenharia estrutural"
   - "concreto armado"
@@ -44,5 +42,4 @@ preferred-citation:
   date-released: "2026-10-28"
   license: Apache-2.0
   repository-code: "https://github.com/samuel-c-santos/portica-app"
-  # TAL (a preencher): usar o concept DOI do Zenodo.
-  doi: "10.5281/zenodo.XXXXXXX"
+  doi: "10.5281/zenodo.23733497"

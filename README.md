@@ -7,9 +7,7 @@ Calculadora estrutural de vigas de concreto armado conforme a **ABNT NBR 6118:20
 [![Testes](https://img.shields.io/badge/testes-pytest-green.svg)](tests/)
 [![Site](https://img.shields.io/badge/site-P%C3%B3rtica_App-1565C0.svg)](https://samuel-c-santos.github.io/portica-app/)
 [![Doar](https://img.shields.io/badge/doar-Ko--fi-FF5E5B.svg)](https://ko-fi.com/samuelsantosportica)
-[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.XXXXXXX-blue.svg)](https://doi.org/10.5281/zenodo.XXXXXXX)
-<!-- TAL (a preencher): substituir "XXXXXXX" no badge acima pelo DOI real do
-     Zenodo após arquivar a release — ver docs/DOI.md. -->
+[![DOI](https://zenodo.org/badge/1428985685.svg)](https://doi.org/10.5281/zenodo.23733497)
 
 ## Screenshots
 
@@ -192,10 +190,7 @@ válido entre versões:
 
 > Santos, S. C. (2026). *Pórtica App: calculadora estrutural de vigas de concreto
 > armado (NBR 6118:2023)* (versão 1.0.1) [software]. Zenodo.
-> https://doi.org/10.5281/zenodo.XXXXXXX
-
-<!-- TAL (a preencher): substituir "XXXXXXX" pelo DOI real (concept DOI do
-     Zenodo) após arquivar a release — ver docs/DOI.md. -->
+> https://doi.org/10.5281/zenodo.23733497
 
 O arquivo [`CITATION.cff`](CITATION.cff) do repositório é a referência
 máquina-legível para ferramentas de citação (GitHub, Zotero, Overleaf).
@@ -233,5 +228,4 @@ O histórico de versões está em [`docs/CHANGELOG.md`](docs/CHANGELOG.md).
 - Perfil do autor e contato: <https://github.com/samuel-c-santos>
 - Doação (opcional, sem paywall e sem feature bloqueada): veja a seção **Doar** da [página pública](https://samuel-c-santos.github.io/portica-app/) — Pix ou Ko-fi.
 
-<!-- O badge e a citação acima usam o placeholder 10.5281/zenodo.XXXXXXX até o
-     autor arquivar a release no Zenodo e colar o DOI real (ver docs/DOI.md). -->
+<!-- DOI: 10.5281/zenodo.23733497 (Zenodo). Badge oficial do Zenodo acima. -->

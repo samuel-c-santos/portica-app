@@ -1,8 +1,7 @@
 # Texto de divulgação — Pórtica App
 
 Duas versões prontas para publicar. Ajuste o link e a URL da página antes de
-postar. O DOI (Zenodo) está com placeholder abaixo — substitua `XXXXXXX` pelo
-DOI real antes de publicar (ver `docs/DOI.md`).
+postar. O DOI (Zenodo) já está preenchido: `10.5281/zenodo.23733497`.
 
 ---
 
@@ -17,7 +16,7 @@ DOI real antes de publicar (ver `docs/DOI.md`).
 >
 > 📄 Página: https://samuel-c-santos.github.io/portica-app/
 > 🧮 Código: https://github.com/samuel-c-santos/portica-app
-> 🔗 DOI: https://doi.org/10.5281/zenodo.XXXXXXX
+> 🔗 DOI: https://doi.org/10.5281/zenodo.23733497
 >
 > #engenhariacivil #estruturas #concretoarmado #opensource #NBR6118
 
@@ -48,7 +47,7 @@ DOI real antes de publicar (ver `docs/DOI.md`).
 >
 > 📄 Página: https://samuel-c-santos.github.io/portica-app/
 > 🧮 Código: https://github.com/samuel-c-santos/portica-app
-> 🔗 DOI: https://doi.org/10.5281/zenodo.XXXXXXX
+> 🔗 DOI: https://doi.org/10.5281/zenodo.23733497
 >
 > #engenhariacivil #estruturas #concretoarmado #opensource #NBR6118
 
@@ -61,6 +60,6 @@ DOI real antes de publicar (ver `docs/DOI.md`).
   "substitui o FTOOL" nem "dimensiona sozinho".
 - **FTOOL** é citado apenas como compatibilidade de formato de arquivo
   (decisão D7). Sem logo, sem "oficial".
-- Substitua o placeholder `XXXXXXX` do **DOI** (Zenodo) pelo DOI real antes de publicar.
+- O DOI já está preenchido: `10.5281/zenodo.23733497`.
 - Publique a versão curta no seu perfil; use a longa em grupos de cálculo
   estrutural e concreto armado.

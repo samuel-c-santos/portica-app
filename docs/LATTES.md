@@ -1,8 +1,7 @@
 # Lattes — Como declarar o Pórtica App
 
 > Guia para registrar o software no **Currículo Lattes** (CNPq) e no **ORCID**.
-> Antes de preencher, gere o DOI seguindo [`docs/DOI.md`](DOI.md). O único campo
-> que depende de você é o **DOI real**; todo o resto já está pronto abaixo.
+> O DOI já está preenchido (`10.5281/zenodo.23733497`); o resto é copiar e colar.
 
 ## 1. Dados prontos para preencher
 
@@ -16,7 +15,7 @@ Tela do Lattes: **Produção técnica → Software** (aba "Outra produção téc
 | Finalidade | Ferramenta de cálculo e detalhamento de vigas de concreto armado, com entrada manual e importação de esforços exportados do FTOOL |
 | Disponibilidade | Irrestrita (código aberto) |
 | URL | https://github.com/samuel-c-santos/portica-app |
-| DOI | `10.5281/zenodo.XXXXXXX` ← **TAL:** substituir pelo DOI real (ver `docs/DOI.md`) |
+| DOI | `10.5281/zenodo.23733497` |
 | Linguagem | Python |
 | Licença | Apache-2.0 |
 
@@ -36,7 +35,7 @@ Tela do Lattes: **Produção técnica → Software** (aba "Outra produção téc
 
 > SANTOS, S. C. **Pórtica App: calculadora estrutural de vigas de concreto armado
 > (NBR 6118:2023)**. Versão 1.0.0 [software]. Zenodo, 2026.
-> DOI: `10.5281/zenodo.XXXXXXX`.
+> DOI: `10.5281/zenodo.23733497`.
 
 Use esta linha na listagem resumida de produções do currículo.
 
@@ -46,7 +45,7 @@ O Lattes não anexa arquivos no registro de software; a evidência fica nos link
 Faça assim:
 
 1. No campo **URL/Homepage**, cole o DOI resolvível
-   `https://doi.org/10.5281/zenodo.XXXXXXX` (ou o link do repositório).
+   `https://doi.org/10.5281/zenodo.23733497` (ou o link do repositório).
 2. Em **Informações adicionais**, cole a "versão curta" da seção 3.
 3. Guarde para o seu arquivo (e para anexar a editais/institucional, se pedirem):
    - **print da página do DOI** no Zenodo (mostra título, autores, licença e DOI);
@@ -65,7 +64,7 @@ e impacto: um software aberto, gratuito e citável no lugar de uma ferramenta pa
 Se você tem ORCID, adicione o software à lista de trabalhos:
 
 1. Em <https://orcid.org>, abra **Works → Add work → Add DOI**.
-2. Cole o DOI real (`10.5281/zenodo.XXXXXXX`). O ORCID puxa os metadados
+2. Cole o DOI (`10.5281/zenodo.23733497`). O ORCID puxa os metadados
    automaticamente via DataCite e cria a entrada "Software".
 3. Confira autores, ano, licença e o link e salve.
 

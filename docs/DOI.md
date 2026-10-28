@@ -4,6 +4,9 @@
 > O DOI é **versionado**: cada release gera um DOI novo; o **concept DOI**
 > permanece estável e é o que se cita no Lattes e no `CITATION.cff`.
 
+> **Status:** o DOI já foi emitido — `10.5281/zenodo.23733497`. Este passo a passo
+> vale para a próxima versão.
+
 ## Pré-requisitos
 
 - Conta no GitHub (autor do repositório).
@@ -44,7 +47,7 @@
 
 ## 5. Devolver o DOI para o repositório
 
-Substitua o placeholder `10.5281/zenodo.XXXXXXX` pelo DOI real em:
+Na próxima versão, substitua o placeholder `10.5281/zenodo.XXXXXXX` pelo novo DOI em:
 
 - `CITATION.cff` (campo `doi`, no topo e em `preferred-citation`)
 - `README.md` (badge e seção "Como citar")

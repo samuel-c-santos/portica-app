@@ -102,11 +102,10 @@ Os valores devem coincidir com os da tabela acima e com o arquivo
 
 ## DOI
 
-O DOI definitivo será emitido na fase de arquivamento no Zenodo. Até lá, use o
-placeholder `10.5281/zenodo.XXXXXXX` — a referência formal está em
-[`CITATION.cff`](CITATION.cff).
+O DOI do software é `10.5281/zenodo.23733497` (Zenodo). A referência formal está
+em [`CITATION.cff`](CITATION.cff).
 
 ## Como citar
 
 > Pórtica App — Calculadora estrutural de vigas de concreto armado (NBR 6118:2023).
-> Versão 1.0.1. Disponível em: <https://github.com/samuel-c-santos/portica-app>.
+> Versão 1.0.1. DOI: <https://doi.org/10.5281/zenodo.23733497>.
