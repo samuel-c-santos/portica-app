@@ -1,8 +1,23 @@
 # Página pública do Pórtica App (site/)
 
-Página única estática construída com o design system **Aipim**, publicada via
-**GitHub Pages**. Não usa CDN: CSS, JS, fontes e ícones são locais — a página
-abre offline.
+Páginas estáticas construídas com o design system **Aipim**, publicadas via
+**GitHub Pages**:
+
+- `index.html` — página principal (download, funcionalidades, FAQ, doação);
+- `calculo.html` — página do **modelo de cálculo** (fórmulas da NBR 6118:2023).
+
+Não usa CDN: CSS, JS, fontes, ícones e imagens são locais — as páginas abrem
+offline. Ambas têm alternância **claro/escuro** (tema do Aipim + `theme.js`).
+
+### Estrutura
+
+| Arquivo | Papel |
+|---|---|
+| `theme.css` | Sobrepõe só os tokens semânticos de cor primária (azul Pórtica). |
+| `base.css` | Layout, fontes locais (`@font-face`), galeria de figuras, inversão de equações no escuro. |
+| `theme.js` | Alternância claro/escuro (persiste no `localStorage`) + troca de imagens temáticas. |
+| `img/equations/*.png` | Equações renderizadas — origem: `docs/equations/` (script `generate_equation_images.py`). |
+| `img/viga_*_secao.png`, `img/cisalhamento.png`, `img/partes_armadura_viga.png` | Figuras técnicas do app — origem: `core/assets/info/`. |
 
 ## Como publicar no GitHub Pages
 
@@ -64,8 +79,13 @@ conteúdo da página com os documentos internos e obrigaria a renomear a pasta
 - `theme.css` sobrescreve **apenas** os tokens semânticos de ação primária
   (`--aipim-action-primary-*`) para usar o azul da marca do Pórtica
   (`#1565C0`). O CSS do Aipim **não** foi editado.
-- O rodapé da página traz a atribuição: *"Design system: Aipim, por Talis
+- O rodapé das páginas traz a atribuição: *"Design system: Aipim, por Talis
   Galhardi (MIT / CC BY 4.0)."* e cita fontes e ícones.
+- As imagens em `img/equations/` e as figuras técnicas são **cópias** dos
+  arquivos de `docs/equations/` e `core/assets/info/` (necessário porque o
+  `site/` é publicado isolado no branch `gh-pages`). Ao regenerar as equações
+  (`python generate_equation_images.py`), copie-as de novo para
+  `img/equations/`.
 
 ## O que falta o autor preencher
 
@@ -82,5 +102,5 @@ conteúdo da página com os documentos internos e obrigaria a renomear a pasta
 - Nenhum CDN externo (CSS, JS, fontes, ícones e imagens são locais).
 - Links de documentação apontam para o repositório público
   (`github.com/samuel-c-santos/portica-app`).
-- A página respeita claro/escuro via `prefers-color-scheme` (e `data-theme`).
+- Alternância claro/escuro por botão (segue o sistema na primeira visita).
 - Foco visível, estado nunca por cor sozinha (ícones + texto nos alertas).

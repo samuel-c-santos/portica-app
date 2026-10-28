@@ -1,0 +1,212 @@
+/* Pórtica App — estilos compartilhados das páginas públicas (layout + fontes).
+ *
+ * Requer (carregar antes): vendor/aipim/aipim.css, vendor/aipim/aipim-components.css
+ * e theme.css. Nenhum CDN: tudo local. Usa apenas tokens `--aipim-*` para cor e
+ * espaçamento (nenhum hex, nenhum `!important`).
+ */
+
+/* ── Fontes locais (Antonio e Karla, SIL OFL 1.1) — sem Google Fonts ────── */
+@font-face {
+  font-family: "Antonio";
+  font-style: normal;
+  font-weight: 100 700;
+  font-display: swap;
+  src: url("vendor/fonts/antonio.ttf") format("truetype");
+}
+@font-face {
+  font-family: "Karla";
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url("vendor/fonts/karla.ttf") format("truetype");
+}
+
+/* ── Base ──────────────────────────────────────────────────────────────── */
+body {
+  margin: 0;
+  background: var(--aipim-bg-canvas);
+  color: var(--aipim-text-primary);
+  font-family: var(--aipim-font-body);
+  font-size: var(--aipim-text-body-size);
+  line-height: var(--aipim-text-body-line);
+}
+
+h1, h2, h3, h4 {
+  margin: 0;
+  font-family: var(--aipim-font-heading);
+  text-transform: uppercase; /* Antonio em caixa alta */
+}
+h1 { font-size: var(--aipim-text-h1-size); line-height: var(--aipim-text-h1-line); font-weight: var(--aipim-text-h1-weight); letter-spacing: var(--aipim-text-h1-tracking); }
+h2 { font-size: var(--aipim-text-h2-size); line-height: var(--aipim-text-h2-line); font-weight: var(--aipim-text-h2-weight); letter-spacing: var(--aipim-text-h2-tracking); }
+h3 { font-size: var(--aipim-text-h3-size); line-height: var(--aipim-text-h3-line); font-weight: var(--aipim-text-h3-weight); letter-spacing: var(--aipim-text-h3-tracking); }
+h4 { font-size: var(--aipim-text-h4-size); line-height: var(--aipim-text-h4-line); font-weight: var(--aipim-text-h4-weight); letter-spacing: var(--aipim-text-h4-tracking); }
+
+/* ── Layout ─────────────────────────────────────────────────────────────── */
+.page {
+  max-width: 72rem;
+  margin-inline: auto;
+  padding-inline: var(--aipim-space-16);
+}
+@media (min-width: 720px) {
+  .page { padding-inline: var(--aipim-space-24); }
+}
+
+.skip-link {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  transform: translateY(-120%);
+  z-index: 50;
+}
+.skip-link:focus { transform: translateY(0); }
+
+/* Barra superior */
+.topbar { border-bottom: var(--aipim-border-thin) solid var(--aipim-border-subtle); }
+.topbar__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--aipim-space-12);
+  padding-block: var(--aipim-space-12);
+}
+.brand {
+  font-family: var(--aipim-font-heading);
+  font-size: var(--aipim-text-h4-size);
+  line-height: 1.1;
+  text-transform: uppercase;
+  letter-spacing: var(--aipim-text-h4-tracking);
+  color: var(--aipim-text-primary);
+  text-decoration: none;
+}
+.topbar nav { display: flex; flex-wrap: wrap; align-items: center; gap: var(--aipim-space-16); }
+
+/* Botão de tema (claro/escuro) */
+#theme-toggle .theme-toggle__sun { display: none; }
+:root[data-theme="dark"] #theme-toggle .theme-toggle__sun { display: inline-block; }
+:root[data-theme="dark"] #theme-toggle .theme-toggle__moon { display: none; }
+
+/* Seções */
+.section { padding-block: var(--aipim-space-48); }
+.section--alt { background: var(--aipim-bg-sunken); }
+.section-head { margin-block-end: var(--aipim-space-32); }
+.overline {
+  margin: 0 0 var(--aipim-space-8);
+  font-family: var(--aipim-font-body);
+  font-size: var(--aipim-text-overline-size);
+  line-height: var(--aipim-text-overline-line);
+  font-weight: var(--aipim-text-overline-weight);
+  letter-spacing: var(--aipim-text-overline-tracking);
+  text-transform: uppercase;
+  color: var(--aipim-text-muted);
+}
+.lede {
+  margin: var(--aipim-space-12) 0 0;
+  font-size: var(--aipim-text-body-lg-size);
+  line-height: var(--aipim-text-body-lg-line);
+  color: var(--aipim-text-secondary);
+  max-width: 68ch;
+}
+
+/* Hero */
+.hero { padding-block: var(--aipim-space-64); }
+.hero__inner { display: grid; gap: var(--aipim-space-32); align-items: center; }
+@media (min-width: 800px) {
+  .hero__inner { grid-template-columns: 1.1fr 0.9fr; }
+}
+.hero__cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--aipim-space-12);
+  margin-block-start: var(--aipim-space-24);
+}
+.hero__logo { max-inline-size: 220px; height: auto; }
+
+/* Grades e listas */
+.grid { display: grid; gap: var(--aipim-space-16); grid-template-columns: 1fr; }
+@media (min-width: 720px) {
+  .grid--2 { grid-template-columns: repeat(2, 1fr); }
+  .grid--3 { grid-template-columns: repeat(3, 1fr); }
+}
+.tag-row { display: flex; flex-wrap: wrap; gap: var(--aipim-space-8); margin-block-start: var(--aipim-space-16); }
+ul, ol { line-height: var(--aipim-text-body-line); }
+.checklist { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--aipim-space-12); }
+.checklist li { display: flex; gap: var(--aipim-space-12); align-items: flex-start; }
+.steps { margin: var(--aipim-space-12) 0 0; padding-inline-start: var(--aipim-space-24); display: grid; gap: var(--aipim-space-8); }
+
+/* Mídia dentro de cards (figuras técnicas) */
+.aipim-card__media img {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: contain;
+  padding: var(--aipim-space-12);
+}
+
+/* Figuras (galeria, todas do mesmo tamanho) */
+.figure-grid { display: grid; gap: var(--aipim-space-16); grid-template-columns: 1fr 1fr; }
+@media (max-width: 719px) { .figure-grid { grid-template-columns: 1fr; } }
+figure.fig { margin: 0; display: flex; flex-direction: column; gap: var(--aipim-space-8); }
+figure.fig .fig-media {
+  block-size: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--aipim-bg-surface);
+  border: var(--aipim-border-thin) solid var(--aipim-border-subtle);
+  border-radius: var(--aipim-radius-lg);
+  padding: var(--aipim-space-16);
+  overflow: hidden;
+}
+figure.fig .fig-media img {
+  max-inline-size: 100%;
+  max-block-size: 100%;
+  object-fit: contain;
+}
+figcaption { font-size: var(--aipim-text-body-sm-size); color: var(--aipim-text-muted); }
+
+/* Código / terminal */
+pre {
+  margin: var(--aipim-space-16) 0 0;
+  padding: var(--aipim-space-16);
+  background: var(--aipim-bg-sunken);
+  border: var(--aipim-border-thin) solid var(--aipim-border-subtle);
+  border-radius: var(--aipim-radius-md);
+  overflow-x: auto;
+}
+code, pre code {
+  font-family: ui-monospace, "Cascadia Mono", Consolas, "Courier New", monospace;
+}
+pre code { color: var(--aipim-text-secondary); }
+
+/* Doação */
+.donate-grid { display: grid; gap: var(--aipim-space-24); grid-template-columns: 1fr; }
+@media (min-width: 800px) { .donate-grid { grid-template-columns: 1.2fr 0.8fr; align-items: start; } }
+.qr {
+  inline-size: 100%;
+  max-inline-size: 240px;
+  height: auto;
+  border: var(--aipim-border-thin) solid var(--aipim-border-subtle);
+  border-radius: var(--aipim-radius-md);
+}
+
+/* Equações e figuras técnicas (desenho escuro sobre fundo transparente).
+   No tema escuro, inverte para traço claro — funciona para arte monocromática. */
+.eq { display: block; max-inline-size: 100%; height: auto; margin: var(--aipim-space-8) 0; }
+:root[data-theme="dark"] .eq,
+:root[data-theme="dark"] .invert-dark { filter: invert(1); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .eq,
+  :root:not([data-theme="light"]) .invert-dark { filter: invert(1); }
+}
+
+/* Rodapé */
+.site-footer { border-top: var(--aipim-border-thin) solid var(--aipim-border-subtle); padding-block: var(--aipim-space-32); }
+.site-footer p { margin: var(--aipim-space-8) 0 0; color: var(--aipim-text-secondary); font-size: var(--aipim-text-body-sm-size); }
+
+/* Citação */
+blockquote {
+  margin: var(--aipim-space-16) 0 0;
+  padding-inline-start: var(--aipim-space-16);
+  border-inline-start: var(--aipim-border-medium) solid var(--aipim-border-strong);
+  color: var(--aipim-text-secondary);
+}

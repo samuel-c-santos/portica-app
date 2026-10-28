@@ -15,6 +15,14 @@ Para informacoes gerais sobre instalacao, execucao e arquitetura, consulte o
 
 ---
 
+> **Equações renderizadas.** As principais fórmulas deste documento também são
+> geradas como imagens PNG (pelo script `generate_equation_images.py`) na pasta
+> [`docs/equations/`](equations/) e são usadas na página **Modelo de cálculo**
+> da página pública (`site/calculo.html`). Se o script for rodado de novo, as
+> imagens devem ser copiadas para `site/img/equations/`.
+
+---
+
 ## Indice
 
 1. [Convencoes e unidades](#1-convencoes-e-unidades)
