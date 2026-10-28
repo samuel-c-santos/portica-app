@@ -4,7 +4,7 @@
 > O DOI é **versionado**: cada release gera um DOI novo; o **concept DOI**
 > permanece estável e é o que se cita no Lattes e no `CITATION.cff`.
 
-> **Status:** o DOI já foi emitido — `10.5281/zenodo.23733497`. Este passo a passo
+> **Status:** o DOI já foi emitido — `10.5281/zenodo.23733498`. Este passo a passo
 > vale para a próxima versão.
 
 ## Pré-requisitos
