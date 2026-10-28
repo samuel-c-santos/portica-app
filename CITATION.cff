@@ -13,8 +13,8 @@ authors:
     given-names: "Samuel"
     alias: "samuel-c-santos"
     website: "https://github.com/samuel-c-santos"
-version: "1.0.0"
-date-released: "2026-10-21"
+version: "1.0.1"
+date-released: "2026-10-28"
 license: Apache-2.0
 repository-code: "https://github.com/samuel-c-santos/portica-app"
 # TAL (a preencher): substituir pelo DOI real (concept DOI do Zenodo) após
@@ -40,8 +40,8 @@ preferred-citation:
     - family-names: "Santos"
       given-names: "Samuel"
       alias: "samuel-c-santos"
-  version: "1.0.0"
-  date-released: "2026-10-21"
+  version: "1.0.1"
+  date-released: "2026-10-28"
   license: Apache-2.0
   repository-code: "https://github.com/samuel-c-santos/portica-app"
   # TAL (a preencher): usar o concept DOI do Zenodo.

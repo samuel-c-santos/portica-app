@@ -1,9 +1,18 @@
-# Pórtica App — v1.0.0
+# Pórtica App — v1.0.1
 
 Calculadora estrutural de vigas de concreto armado conforme a **ABNT NBR 6118:2023**,
 com entrada manual ou importação de esforços exportados do FTOOL. Gera relatório PDF,
 exportação DXF e verificações de ELS. Desenvolvido em Python + Flet, licenciado sob
 **Apache-2.0**.
+
+## Correções na v1.0.1
+
+- Corrige o erro `Text(...) Control must be added to the page first` ao carregar
+  um projeto quando o painel FTOOL estava recolhido. O fluxo de "Carregar Projeto"
+  atualizava os rótulos do painel FTOOL mesmo quando ele não estava montado na
+  página. Agora o painel é reconstruído conforme a fonte de entrada do projeto
+  **antes** de sincronizar esses rótulos, e a sincronização só ocorre quando o
+  painel está visível.
 
 ## O que é
 
@@ -72,8 +81,8 @@ gráfico do Flet: na versão **leve** ele é baixado uma única vez no primeiro 
 
 | Asset | Descrição | Tamanho | SHA-256 |
 |---|---|---|---|
-| `portica-v1.0.0-windows-x64.exe` | Executável **leve** (cliente Flet baixado no 1º uso, ~30 MB) | ≈ 58 MB | `db47ad79145d4de173ac998c52749f5e215ca3d62110893f004d3a1ac531b49c` |
-| `portica-v1.0.0-windows-x64.zip` | Pacote **offline** (cliente Flet embutido — roda sem internet desde a 1ª execução) | ≈ 96 MB | `d48a1a0823a9634fd30d273aa0da163696f215eb50e52ac7d8dc3a01c02ad38b` |
+| `portica-v1.0.1-windows-x64.exe` | Executável **leve** (cliente Flet baixado no 1º uso, ~30 MB) | ≈ 58 MB | `5ee20685d26c46aebeb20b017d25f0ac7da01c179fc1d63af15311232ee4fd5c` |
+| `portica-v1.0.1-windows-x64.zip` | Pacote **offline** (cliente Flet embutido — roda sem internet desde a 1ª execução) | ≈ 96 MB | `2569694bac2a7450d0848af6ab2dbbb9b49588de53f543a5e96c80705b9bfb74` |
 
 O `.zip` contém `portica.exe` (com o cliente embutido) e um `SHA256SUMS.txt` próprio.
 
@@ -84,8 +93,8 @@ partir da segunda execução (o cliente fica em cache em `%USERPROFILE%\.flet\cl
 ### Conferir a integridade (PowerShell)
 
 ```powershell
-Get-FileHash .\portica-v1.0.0-windows-x64.exe -Algorithm SHA256
-Get-FileHash .\portica-v1.0.0-windows-x64.zip -Algorithm SHA256
+Get-FileHash .\portica-v1.0.1-windows-x64.exe -Algorithm SHA256
+Get-FileHash .\portica-v1.0.1-windows-x64.zip -Algorithm SHA256
 ```
 
 Os valores devem coincidir com os da tabela acima e com o arquivo
@@ -100,4 +109,4 @@ placeholder `10.5281/zenodo.XXXXXXX` — a referência formal está em
 ## Como citar
 
 > Pórtica App — Calculadora estrutural de vigas de concreto armado (NBR 6118:2023).
-> Versão 1.0.0. Disponível em: <https://github.com/samuel-c-santos/portica-app>.
+> Versão 1.0.1. Disponível em: <https://github.com/samuel-c-santos/portica-app>.

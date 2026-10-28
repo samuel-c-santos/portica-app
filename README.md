@@ -66,20 +66,20 @@ uso; na versão **offline** ele já vem embutido.
 
 | Asset | Cliente Flet | Tamanho |
 |---|---|---|
-| `portica-v1.0.0-windows-x64.exe` | **Leve** — baixado no 1º uso (~30 MB) | ≈ 58 MB |
-| `portica-v1.0.0-windows-x64.zip` | **Embutido** — roda offline desde a 1ª execução | ≈ 96 MB |
+| `portica-v1.0.1-windows-x64.exe` | **Leve** — baixado no 1º uso (~30 MB) | ≈ 58 MB |
+| `portica-v1.0.1-windows-x64.zip` | **Embutido** — roda offline desde a 1ª execução | ≈ 96 MB |
 
 | Item | Valor |
 |---|---|
-| Versão | 1.0.0 |
+| Versão | 1.0.1 |
 | Plataforma | Windows 10/11 x64 |
 | Checksum | [`SHA256SUMS.txt`](SHA256SUMS.txt) (raiz do repositório, e dentro do zip) |
 
 Para conferir a integridade do download (PowerShell):
 
 ```powershell
-Get-FileHash .\portica-v1.0.0-windows-x64.exe -Algorithm SHA256
-Get-FileHash .\portica-v1.0.0-windows-x64.zip -Algorithm SHA256
+Get-FileHash .\portica-v1.0.1-windows-x64.exe -Algorithm SHA256
+Get-FileHash .\portica-v1.0.1-windows-x64.zip -Algorithm SHA256
 ```
 
 O binário traz as mesmas funcionalidades do código-fonte.
@@ -191,7 +191,7 @@ O software é citável por DOI (Zenodo). Cite o **concept DOI** — ele permanec
 válido entre versões:
 
 > Santos, S. C. (2026). *Pórtica App: calculadora estrutural de vigas de concreto
-> armado (NBR 6118:2023)* (versão 1.0.0) [software]. Zenodo.
+> armado (NBR 6118:2023)* (versão 1.0.1) [software]. Zenodo.
 > https://doi.org/10.5281/zenodo.XXXXXXX
 
 <!-- TAL (a preencher): substituir "XXXXXXX" pelo DOI real (concept DOI do

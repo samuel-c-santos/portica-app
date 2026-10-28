@@ -9,6 +9,19 @@ versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
 Mudanças aceitas e ainda não publicadas em uma versão.
 
+## [1.0.1] — correção do carregamento de projetos
+
+### Corrigido
+
+- Erro ao carregar projeto quando o painel FTOOL estava recolhido:
+  `Text(...) Control must be added to the page first`. O fluxo de
+  "Carregar Projeto" atualizava os rótulos do painel FTOOL mesmo quando ele
+  não estava montado na página. Agora o painel é reconstruído conforme a
+  fonte de entrada do projeto **antes** de sincronizar esses rótulos, e a
+  sincronização só ocorre quando o painel está visível.
+- Adicionado teste de regressão que reproduz o ciclo de vida real do Flet
+  (`update()` em controle fora da página), que o mock de UI anterior escondia.
+
 ## [1.0.0] — primeira publicação open source (Apache-2.0)
 
 ### Adicionado
@@ -67,5 +80,6 @@ Mudanças aceitas e ainda não publicadas em uma versão.
   documentos internos de planejamento, movidos para fora do repositório
   público.
 
-[Não publicado]: https://github.com/samuel-c-santos/portica-app/compare/v1.0.0...HEAD
+[Não publicado]: https://github.com/samuel-c-santos/portica-app/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/samuel-c-santos/portica-app/releases/tag/v1.0.1
 [1.0.0]: https://github.com/samuel-c-santos/portica-app/releases/tag/v1.0.0
