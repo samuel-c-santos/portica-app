@@ -128,7 +128,7 @@ h4 { font-size: var(--aipim-text-h4-size); line-height: var(--aipim-text-h4-line
   .grid--2 { grid-template-columns: repeat(2, 1fr); }
   .grid--3 { grid-template-columns: repeat(3, 1fr); }
 }
-.tag-row { display: flex; flex-wrap: wrap; gap: var(--aipim-space-8); margin-block-start: var(--aipim-space-16); }
+.tag-row { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--aipim-space-8); margin-block-start: var(--aipim-space-16); }
 ul, ol { line-height: var(--aipim-text-body-line); }
 .checklist { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--aipim-space-12); }
 .checklist li { display: flex; gap: var(--aipim-space-12); align-items: flex-start; }
