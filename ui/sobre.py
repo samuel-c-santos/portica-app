@@ -187,7 +187,7 @@ def build_sobre(page, on_back):
                 ),
                 ft.Container(height=Spacing.SM),
                 caption(
-                    "Aviso completo em DISCLAIMER.md — github.com/samuel-c-santos/portica",
+                    "Aviso completo em DISCLAIMER.md — github.com/samuel-c-santos/portica-app",
                     color=Palette.TEXT_DISABLED,
                 ),
             ],
