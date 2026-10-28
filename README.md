@@ -11,11 +11,12 @@ Calculadora estrutural de vigas de concreto armado conforme a **ABNT NBR 6118:20
 
 ## Screenshots
 
-<!-- SCREENSHOT: 01-tela-inicial.png — tela inicial com os dois tipos de seção (retangular e T) -->
-<!-- SCREENSHOT: 02-entrada-manual.png — tela da viga com a entrada manual (trechos de flexão e cisalhamento) -->
-<!-- SCREENSHOT: 03-importacao-ftool.png — painel "Importar do FTOOL" com os arquivos de esforços carregados -->
-<!-- SCREENSHOT: 04-resultados-flexao.png — modal de resultados da flexão (armadura adotada, bitolas, Checks) -->
-<!-- SCREENSHOT: 05-relatorio-pdf.png — relatório PDF gerado (capa, tabelas, esquema da seção) -->
+| | |
+|---|---|
+| ![Tela inicial — seleção de seção](site/img/01-tela-inicial.png) | ![Entrada manual de trechos](site/img/02-entrada-manual.png) |
+| ![Importação de esforços do FTOOL](site/img/03-importacao-ftool.png) | ![Seções dimensionadas](site/img/04-secoes.png) |
+| ![Resultados da flexão](site/img/05-resultados-flexao.png) | ![Relatório PDF](site/img/06-relatorio-pdf.png) |
+| ![Desenho DXF da seção](site/img/07-desenho_dxf.png) | |
 
 ## Funcionalidades
 
