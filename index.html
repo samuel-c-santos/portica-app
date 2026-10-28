@@ -13,180 +13,10 @@
   <link rel="stylesheet" href="vendor/aipim/aipim-components.css">
   <!-- Tema do Pórtica (sobrescreve só os tokens de cor primária/action). -->
   <link rel="stylesheet" href="theme.css">
-
-  <style>
-    /* ── Fontes locais (Antonio e Karla, SIL OFL 1.1) — sem Google Fonts. ── */
-    @font-face {
-      font-family: "Antonio";
-      font-style: normal;
-      font-weight: 100 700;
-      font-display: swap;
-      src: url("vendor/fonts/antonio.ttf") format("truetype");
-    }
-    @font-face {
-      font-family: "Karla";
-      font-style: normal;
-      font-weight: 200 800;
-      font-display: swap;
-      src: url("vendor/fonts/karla.ttf") format("truetype");
-    }
-
-    /* ── Base (tokens do Aipim) ─────────────────────────────────────────── */
-    body {
-      margin: 0;
-      background: var(--aipim-bg-canvas);
-      color: var(--aipim-text-primary);
-      font-family: var(--aipim-font-body);
-      font-size: var(--aipim-text-body-size);
-      line-height: var(--aipim-text-body-line);
-    }
-
-    h1, h2, h3, h4 {
-      margin: 0;
-      font-family: var(--aipim-font-heading);
-      text-transform: var(--aipim-text-h2-transform); /* Antonio em caixa alta */
-    }
-    h1 { font-size: var(--aipim-text-h1-size); line-height: var(--aipim-text-h1-line); font-weight: var(--aipim-text-h1-weight); letter-spacing: var(--aipim-text-h1-tracking); }
-    h2 { font-size: var(--aipim-text-h2-size); line-height: var(--aipim-text-h2-line); font-weight: var(--aipim-text-h2-weight); letter-spacing: var(--aipim-text-h2-tracking); }
-    h3 { font-size: var(--aipim-text-h3-size); line-height: var(--aipim-text-h3-line); font-weight: var(--aipim-text-h3-weight); letter-spacing: var(--aipim-text-h3-tracking); }
-    h4 { font-size: var(--aipim-text-h4-size); line-height: var(--aipim-text-h4-line); font-weight: var(--aipim-text-h4-weight); letter-spacing: var(--aipim-text-h4-tracking); }
-
-    /* ── Layout da página ───────────────────────────────────────────────── */
-    .page {
-      max-width: 72rem;
-      margin-inline: auto;
-      padding-inline: var(--aipim-space-16);
-    }
-    @media (min-width: 720px) {
-      .page { padding-inline: var(--aipim-space-24); }
-    }
-
-    .skip-link {
-      position: absolute;
-      inset-block-start: 0;
-      inset-inline-start: 0;
-      transform: translateY(-120%);
-      z-index: 50;
-    }
-    .skip-link:focus {
-      transform: translateY(0);
-    }
-
-    /* Barra superior */
-    .topbar { border-bottom: var(--aipim-border-thin) solid var(--aipim-border-subtle); }
-    .topbar__inner {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: var(--aipim-space-12);
-      padding-block: var(--aipim-space-12);
-    }
-    .brand {
-      font-family: var(--aipim-font-heading);
-      font-size: var(--aipim-text-h4-size);
-      line-height: 1.1;
-      text-transform: uppercase;
-      letter-spacing: 0.02em;
-      color: var(--aipim-text-primary);
-      text-decoration: none;
-    }
-    .topbar nav { display: flex; flex-wrap: wrap; gap: var(--aipim-space-16); }
-
-    /* Seções */
-    .section { padding-block: var(--aipim-space-48); }
-    .section--alt { background: var(--aipim-bg-sunken); }
-    .section-head { margin-block-end: var(--aipim-space-32); }
-    .overline {
-      margin: 0 0 var(--aipim-space-8);
-      font-family: var(--aipim-font-body);
-      font-size: var(--aipim-text-overline-size);
-      line-height: var(--aipim-text-overline-line);
-      font-weight: var(--aipim-text-overline-weight);
-      letter-spacing: var(--aipim-text-overline-tracking);
-      text-transform: uppercase;
-      color: var(--aipim-text-muted);
-    }
-    .lede {
-      margin: var(--aipim-space-12) 0 0;
-      font-size: var(--aipim-text-body-lg-size);
-      line-height: var(--aipim-text-body-lg-line);
-      color: var(--aipim-text-secondary);
-      max-width: 68ch;
-    }
-
-    /* Hero */
-    .hero { padding-block: var(--aipim-space-64); }
-    .hero__inner {
-      display: grid;
-      gap: var(--aipim-space-32);
-      align-items: center;
-    }
-    @media (min-width: 800px) {
-      .hero__inner { grid-template-columns: 1.1fr 0.9fr; }
-    }
-    .hero__cta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--aipim-space-12);
-      margin-block-start: var(--aipim-space-24);
-    }
-    .hero__logo { max-inline-size: 220px; height: auto; }
-
-    /* Grades e listas */
-    .grid { display: grid; gap: var(--aipim-space-16); grid-template-columns: 1fr; }
-    @media (min-width: 720px) {
-      .grid--2 { grid-template-columns: repeat(2, 1fr); }
-      .grid--3 { grid-template-columns: repeat(3, 1fr); }
-    }
-    .tag-row { display: flex; flex-wrap: wrap; gap: var(--aipim-space-8); margin-block-start: var(--aipim-space-16); }
-    ul, ol { line-height: var(--aipim-text-body-line); }
-    .checklist { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--aipim-space-12); }
-    .checklist li { display: flex; gap: var(--aipim-space-12); align-items: flex-start; }
-    .steps { margin: var(--aipim-space-12) 0 0; padding-inline-start: var(--aipim-space-24); display: grid; gap: var(--aipim-space-8); }
-
-    /* Figuras / screenshots */
-    .figure-grid { display: grid; gap: var(--aipim-space-16); grid-template-columns: 1fr; }
-    @media (min-width: 720px) { .figure-grid { grid-template-columns: repeat(2, 1fr); } }
-    figure { margin: 0; }
-    figure img { inline-size: 100%; height: auto; border-radius: var(--aipim-radius-lg); }
-    figcaption { margin-block-start: var(--aipim-space-8); font-size: var(--aipim-text-body-sm-size); color: var(--aipim-text-muted); }
-
-    /* Download */
-    .download-note { margin-block: var(--aipim-space-24); }
-    .sha-row { display: grid; gap: var(--aipim-space-16); }
-    .sha { margin: 0; }
-    .sha code { word-break: break-all; }
-
-    /* Código / terminal */
-    pre {
-      margin: var(--aipim-space-16) 0 0;
-      padding: var(--aipim-space-16);
-      background: var(--aipim-bg-sunken);
-      border: var(--aipim-border-thin) solid var(--aipim-border-subtle);
-      border-radius: var(--aipim-radius-md);
-      overflow-x: auto;
-    }
-    code, pre code {
-      font-family: ui-monospace, "Cascadia Mono", Consolas, "Courier New", monospace;
-    }
-    pre code { color: var(--aipim-text-secondary); }
-
-    /* Doação */
-    .donate-grid { display: grid; gap: var(--aipim-space-24); grid-template-columns: 1fr; }
-    @media (min-width: 800px) { .donate-grid { grid-template-columns: 1.2fr 0.8fr; align-items: start; } }
-    .qr {
-      inline-size: 100%;
-      max-inline-size: 240px;
-      height: auto;
-      border: var(--aipim-border-thin) solid var(--aipim-border-subtle);
-      border-radius: var(--aipim-radius-md);
-    }
-
-    /* Rodapé */
-    .site-footer { border-top: var(--aipim-border-thin) solid var(--aipim-border-subtle); padding-block: var(--aipim-space-32); }
-    .site-footer p { margin: var(--aipim-space-8) 0 0; color: var(--aipim-text-secondary); font-size: var(--aipim-text-body-sm-size); }
-  </style>
+  <!-- Layout e fontes compartilhados (local). -->
+  <link rel="stylesheet" href="base.css">
+  <!-- Alternância claro/escuro + imagens temáticas (local). -->
+  <script src="theme.js"></script>
 </head>
 <body id="top">
   <a class="skip-link aipim-link" href="#conteudo">Pular para o conteúdo</a>
@@ -198,8 +28,13 @@
         <a class="aipim-link" href="#funcionalidades">Funcionalidades</a>
         <a class="aipim-link" href="#download">Download</a>
         <a class="aipim-link" href="#como-usar">Como usar</a>
+        <a class="aipim-link" href="calculo.html">Modelo de cálculo</a>
         <a class="aipim-link" href="#faq">FAQ</a>
         <a class="aipim-link" href="#doar">Doar</a>
+        <button class="aipim-icon-button" type="button" id="theme-toggle" aria-label="Alternar tema claro/escuro">
+          <svg class="aipim-icon theme-toggle__moon" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-moon"></use></svg>
+          <svg class="aipim-icon theme-toggle__sun" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-sun"></use></svg>
+        </button>
       </nav>
     </div>
   </header>
@@ -229,14 +64,12 @@
           <li><span class="aipim-tag"><span>Windows 10/11</span></span></li>
           <li><span class="aipim-tag"><span>Apache-2.0</span></span></li>
           <li><span class="aipim-tag"><span>Sem cadastro</span></span></li>
-          <li><span class="aipim-tag"><span>Sem internet após a instalação</span></span></li>
+          <li><span class="aipim-tag"><span>Offline</span></span></li>
         </ul>
       </div>
       <div>
-        <picture>
-          <source srcset="img/logo_dark.png" media="(prefers-color-scheme: dark)">
-          <img class="hero__logo" src="img/logo.png" alt="Logotipo do Pórtica App" width="539" height="694">
-        </picture>
+        <img class="hero__logo" src="img/logo.png" alt="Logotipo do Pórtica App" width="539" height="694"
+             data-theme-img data-theme-img-light="img/logo.png" data-theme-img-dark="img/logo_dark.png">
       </div>
     </div>
   </section>
@@ -304,36 +137,31 @@
         </div>
         <div class="grid grid--3">
           <article class="aipim-card">
+            <div class="aipim-card__media"><img src="img/viga_retangular_secao.png" alt="" class="invert-dark" loading="lazy" width="1455" height="1240"></div>
             <div class="aipim-card__body">
-              <div class="aipim-card__header">
-                <span class="aipim-badge aipim-badge--tint aipim-badge--square" aria-hidden="true">
-                  <svg class="aipim-icon" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-check"></use></svg>
-                </span>
-                <div class="aipim-card__heading">
-                  <h3 class="aipim-card__title">Flexão</h3>
-                </div>
-              </div>
+              <h3 class="aipim-card__title">Flexão</h3>
               <p class="aipim-card__text">Seção retangular e seção T (mesa colaborante), com verificação dos domínios de deformação.</p>
             </div>
           </article>
           <article class="aipim-card">
+            <div class="aipim-card__media"><img src="img/cisalhamento.png" alt="" class="invert-dark" loading="lazy" width="1350" height="540"></div>
             <div class="aipim-card__body">
-              <div class="aipim-card__header">
-                <span class="aipim-badge aipim-badge--tint aipim-badge--square" aria-hidden="true">
-                  <svg class="aipim-icon" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-check"></use></svg>
-                </span>
-                <div class="aipim-card__heading">
-                  <h3 class="aipim-card__title">Cisalhamento</h3>
-                </div>
-              </div>
+              <h3 class="aipim-card__title">Cisalhamento</h3>
               <p class="aipim-card__text">Modelo I da NBR 6118, com contribuição do concreto e do aço, estribos trecho a trecho.</p>
+            </div>
+          </article>
+          <article class="aipim-card">
+            <div class="aipim-card__media"><img src="img/partes_armadura_viga.png" alt="" class="invert-dark" loading="lazy" width="1425" height="750"></div>
+            <div class="aipim-card__body">
+              <h3 class="aipim-card__title">Relatório PDF</h3>
+              <p class="aipim-card__text">Capa, dados de entrada, tabelas, diagramas M(x)/V(x), esquema da seção e campos de ART/CREA.</p>
             </div>
           </article>
           <article class="aipim-card">
             <div class="aipim-card__body">
               <div class="aipim-card__header">
                 <span class="aipim-badge aipim-badge--tint aipim-badge--square" aria-hidden="true">
-                  <svg class="aipim-icon" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-check"></use></svg>
+                  <svg class="aipim-icon" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-success"></use></svg>
                 </span>
                 <div class="aipim-card__heading">
                   <h3 class="aipim-card__title">Armadura dupla</h3>
@@ -366,19 +194,6 @@
                 </div>
               </div>
               <p class="aipim-card__text">Flecha imediata e diferida por integração numérica da curvatura; abertura de fissuras wk por classe de agressividade.</p>
-            </div>
-          </article>
-          <article class="aipim-card">
-            <div class="aipim-card__body">
-              <div class="aipim-card__header">
-                <span class="aipim-badge aipim-badge--tint aipim-badge--square" aria-hidden="true">
-                  <svg class="aipim-icon" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-file"></use></svg>
-                </span>
-                <div class="aipim-card__heading">
-                  <h3 class="aipim-card__title">Relatório PDF</h3>
-                </div>
-              </div>
-              <p class="aipim-card__text">Capa, dados de entrada, tabelas, diagramas M(x)/V(x), esquema da seção e campos de ART/CREA.</p>
             </div>
           </article>
           <article class="aipim-card">
@@ -424,27 +239,27 @@
       </div>
     </section>
 
-    <!-- SCREENSHOTS / FIGURAS -->
+    <!-- TELAS E FIGURAS -->
     <section class="section section--alt" id="screenshots">
       <div class="page">
         <div class="section-head">
           <p class="overline">Telas e figuras</p>
           <h2>Como o app se apresenta</h2>
-          <p class="lede">Figuras das seções de viga que o app dimensiona. Capturas de tela do aplicativo serão adicionadas nesta seção.</p>
+          <p class="lede">As seções de viga que o app dimensiona. Capturas de tela do aplicativo serão adicionadas aqui.</p>
         </div>
         <div class="figure-grid">
-          <figure>
-            <picture>
-              <source srcset="img/ilustracao-viga-rec-escura.png" media="(prefers-color-scheme: dark)">
-              <img src="img/ilustracao-viga-rec.png" alt="Ilustração da seção retangular dimensionada pelo Pórtica App" loading="lazy" width="779" height="986">
-            </picture>
+          <figure class="fig">
+            <div class="fig-media">
+              <img src="img/ilustracao-viga-rec.png" alt="Ilustração da seção retangular dimensionada pelo Pórtica App" loading="lazy" width="779" height="986"
+                   data-theme-img data-theme-img-light="img/ilustracao-viga-rec.png" data-theme-img-dark="img/ilustracao-viga-rec-escura.png">
+            </div>
             <figcaption>Seção retangular — flexão, estribos e detalhamento.</figcaption>
           </figure>
-          <figure>
-            <picture>
-              <source srcset="img/ilustracao-viga-t-escura.png" media="(prefers-color-scheme: dark)">
-              <img src="img/ilustracao-viga-t.png" alt="Ilustração da seção T (mesa colaborante) dimensionada pelo Pórtica App" loading="lazy" width="905" height="995">
-            </picture>
+          <figure class="fig">
+            <div class="fig-media">
+              <img src="img/ilustracao-viga-t.png" alt="Ilustração da seção T (mesa colaborante) dimensionada pelo Pórtica App" loading="lazy" width="905" height="995"
+                   data-theme-img data-theme-img-light="img/ilustracao-viga-t.png" data-theme-img-dark="img/ilustracao-viga-t-escura.png">
+            </div>
             <figcaption>Seção T (mesa colaborante) — flexão com contribuição da mesa.</figcaption>
           </figure>
         </div>
@@ -566,18 +381,8 @@
           <a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app/releases" target="_blank" rel="noopener noreferrer">Releases do repositório</a>.
           Recomendação: use o <code>.zip</code> se a máquina estiver offline na primeira execução; senão, o <code>.exe</code> leve é menor e se torna offline a partir da segunda vez.
         </p>
-
-        <h3 style="margin-top: var(--aipim-space-32);">Conferir a integridade (SHA-256)</h3>
-        <div class="sha-row" style="margin-top: var(--aipim-space-16);">
-          <p class="sha"><strong>portica-v1.0.0-windows-x64.exe</strong><br>
-            <code>db47ad79145d4de173ac998c52749f5e215ca3d62110893f004d3a1ac531b49c</code></p>
-          <p class="sha"><strong>portica-v1.0.0-windows-x64.zip</strong><br>
-            <code>d48a1a0823a9634fd30d273aa0da163696f215eb50e52ac7d8dc3a01c02ad38b</code></p>
-        </div>
-        <pre><code>Get-FileHash .\portica-v1.0.0-windows-x64.exe -Algorithm SHA256
-Get-FileHash .\portica-v1.0.0-windows-x64.zip -Algorithm SHA256</code></pre>
         <p style="margin-top: var(--aipim-space-12); color: var(--aipim-text-secondary); font-size: var(--aipim-text-body-sm-size);">
-          Os valores acima coincidem com o arquivo <code>SHA256SUMS.txt</code> na raiz do repositório.
+          Os checksums SHA-256 de cada arquivo estão nas <a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app/releases" target="_blank" rel="noopener noreferrer">notas da release</a>.
         </p>
       </div>
     </section>
@@ -618,34 +423,27 @@ Get-FileHash .\portica-v1.0.0-windows-x64.zip -Algorithm SHA256</code></pre>
       <div class="page">
         <div class="section-head">
           <p class="overline">Documentação</p>
-          <h2>Leia o código e o modelo de cálculo</h2>
+          <h2>Entenda o cálculo e o código</h2>
         </div>
-        <ul class="checklist" role="list">
-          <li>
-            <svg class="aipim-icon aipim-icon--sm" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-file"></use></svg>
-            <span><a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app/blob/public-main/README.md" target="_blank" rel="noopener noreferrer">README</a> — visão geral, instalação e uso.</span>
-          </li>
-          <li>
-            <svg class="aipim-icon aipim-icon--sm" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-file"></use></svg>
-            <span><a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app/blob/public-main/docs/calculo.md" target="_blank" rel="noopener noreferrer">Modelo de cálculo</a> — as fórmulas e critérios implementados.</span>
-          </li>
-          <li>
-            <svg class="aipim-icon aipim-icon--sm" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-file"></use></svg>
-            <span><a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app/blob/public-main/docs/mapa_codigo.md" target="_blank" rel="noopener noreferrer">Mapa do código</a> — como o repositório está organizado.</span>
-          </li>
-          <li>
-            <svg class="aipim-icon aipim-icon--sm" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-file"></use></svg>
-            <span><a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app/blob/public-main/docs/CHANGELOG.md" target="_blank" rel="noopener noreferrer">Changelog</a> — histórico de versões.</span>
-          </li>
-          <li>
-            <svg class="aipim-icon aipim-icon--sm" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-file"></use></svg>
-            <span><a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app/blob/public-main/LICENSE" target="_blank" rel="noopener noreferrer">Licença</a> (Apache-2.0) e <a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app/blob/public-main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer">como contribuir</a>.</span>
-          </li>
-          <li>
-            <svg class="aipim-icon aipim-icon--sm" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-file"></use></svg>
-            <span><a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app/tree/public-main/samples" target="_blank" rel="noopener noreferrer">Arquivos de exemplo</a> — <code>.txt</code> do FTOOL e um projeto <code>.ptc</code>.</span>
-          </li>
-        </ul>
+        <p class="lede">O modelo de cálculo tem página própria. Todo o resto — README, mapa do código, changelog, licença e como contribuir — está no repositório.</p>
+
+        <div style="margin-top: var(--aipim-space-24);">
+          <article class="aipim-card aipim-card--interactive">
+            <div class="aipim-card__body">
+              <h3 class="aipim-card__title"><a class="aipim-card__link" href="calculo.html">Modelo de cálculo</a></h3>
+              <p class="aipim-card__text">Fórmulas e critérios da NBR 6118:2023 implementados: flexão, cisalhamento, viga T, armadura dupla, armadura de pele e ELS.</p>
+              <span class="aipim-card__action">Ler o modelo</span>
+            </div>
+          </article>
+        </div>
+
+        <p style="margin-top: var(--aipim-space-16);">
+          Documentação completa no
+          <a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app" target="_blank" rel="noopener noreferrer">repositório no GitHub</a>:
+          <a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app/blob/public-main/docs/mapa_codigo.md" target="_blank" rel="noopener noreferrer">mapa do código</a>,
+          <a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app/blob/public-main/docs/CHANGELOG.md" target="_blank" rel="noopener noreferrer">changelog</a>,
+          <a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app/blob/public-main/LICENSE" target="_blank" rel="noopener noreferrer">licença</a>.
+        </p>
       </div>
     </section>
 
@@ -657,7 +455,7 @@ Get-FileHash .\portica-v1.0.0-windows-x64.zip -Algorithm SHA256</code></pre>
           <h2>Citação acadêmica</h2>
         </div>
         <p class="lede">O software é citável por DOI. Até a publicação no Zenodo (fase F6), use a referência do repositório:</p>
-        <blockquote style="margin: var(--aipim-space-16) 0 0; padding-inline-start: var(--aipim-space-16); border-inline-start: var(--aipim-border-medium) solid var(--aipim-border-strong); color: var(--aipim-text-secondary);">
+        <blockquote>
           Pórtica App — Calculadora estrutural de vigas de concreto armado (NBR 6118:2023). Versão 1.0.0. Disponível em: <a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app">https://github.com/samuel-c-santos/portica-app</a>.
         </blockquote>
         <p style="margin-top: var(--aipim-space-16);">

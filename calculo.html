@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Modelo de cálculo — Pórtica App</title>
+  <meta name="description" content="Modelo de cálculo do Pórtica App: flexão, cisalhamento, viga T, armadura dupla, armadura de pele e ELS, conforme a ABNT NBR 6118:2023.">
+  <link rel="icon" href="img/logo.png" type="image/png">
+
+  <link rel="stylesheet" href="vendor/aipim/aipim.css">
+  <link rel="stylesheet" href="vendor/aipim/aipim-components.css">
+  <link rel="stylesheet" href="theme.css">
+  <link rel="stylesheet" href="base.css">
+  <script src="theme.js"></script>
+</head>
+<body id="top">
+  <a class="skip-link aipim-link" href="#conteudo">Pular para o conteúdo</a>
+
+  <header class="topbar">
+    <div class="page topbar__inner">
+      <a class="brand" href="index.html">Pórtica App</a>
+      <nav aria-label="Navegação">
+        <a class="aipim-link" href="index.html">← Voltar para a página</a>
+        <button class="aipim-icon-button" type="button" id="theme-toggle" aria-label="Alternar tema claro/escuro">
+          <svg class="aipim-icon theme-toggle__moon" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-moon"></use></svg>
+          <svg class="aipim-icon theme-toggle__sun" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-sun"></use></svg>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main id="conteudo">
+
+    <!-- INTRO -->
+    <section class="section">
+      <div class="page">
+        <p class="overline">Documentação técnica</p>
+        <h1>Modelo de cálculo</h1>
+        <p class="lede">
+          As fórmulas, hipóteses e critérios de dimensionamento implementados no
+          Pórtica App, conforme a ABNT NBR 6118:2023. A documentação completa,
+          com os fluxos de verificação, está no repositório
+          (<a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app/blob/public-main/docs/calculo.md" target="_blank" rel="noopener noreferrer">docs/calculo.md</a>).
+        </p>
+
+        <div class="aipim-alert" role="status" style="margin-top: var(--aipim-space-24);">
+          <svg class="aipim-icon aipim-alert__icon" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-info"></use></svg>
+          <div class="aipim-alert__content">
+            <p class="aipim-alert__message">As tabelas e o texto da NBR 6118 <strong>não</strong> são reproduzidos: os valores normativos (taxas mínimas, cobrimentos, limites de fissuração etc.) vivem no código e devem ser conferidos na norma vigente.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONVENÇÕES -->
+    <section class="section section--alt">
+      <div class="page">
+        <div class="section-head">
+          <p class="overline">Convenções e unidades</p>
+          <h2>Grandezas e coeficientes</h2>
+        </div>
+        <p>Forças em kN, momentos em kN·m, comprimentos em cm, tensões em MPa, áreas em cm².</p>
+        <ul style="margin-top: var(--aipim-space-12);">
+          <li><strong>α<sub>c</sub> = 0,85</strong> e <strong>γ<sub>c</sub> = 1,40</strong> — coeficientes do concreto;</li>
+          <li><strong>γ<sub>s</sub> = 1,15</strong> — coeficiente do aço;</li>
+          <li><strong>γ<sub>f</sub> = 1,30 (peso próprio) / 1,40 (demais ações)</strong> — coeficiente das ações;</li>
+          <li><strong>λ = 0,80</strong> para f<sub>ck</sub> ≤ 50 MPa — fator de redução da resistência.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- FLEXÃO — RETANGULAR -->
+    <section class="section">
+      <div class="page">
+        <div class="section-head">
+          <p class="overline">Flexão · seção retangular</p>
+          <h2>Flexão</h2>
+        </div>
+
+        <h4>Altura útil</h4>
+        <p>A altura útil <code>d</code> desconta da altura total <code>h</code> o cobrimento <code>c</code>, o diâmetro do estribo <code>φt</code> e metade do diâmetro da barra longitudinal <code>φl</code>:</p>
+        <img class="eq" src="img/equations/eq_d.png" alt="d igual a h menos c menos φt menos φl sobre 2" loading="lazy">
+
+        <h4 style="margin-top: var(--aipim-space-24);">Coeficiente KC</h4>
+        <img class="eq" src="img/equations/eq_kc.png" alt="KC igual a bw vezes d ao quadrado sobre Md" loading="lazy">
+
+        <h4 style="margin-top: var(--aipim-space-24);">Linha neutra (equação do 2º grau)</h4>
+        <p>A posição adimensional <code>βx = x/d</code> sai do equilíbrio de momentos, com raiz válida <code>0 &lt; βx &lt; 0,628</code> (domínio 3):</p>
+        <img class="eq" src="img/equations/eq_2grau.png" alt="menos 0,192 vezes fck sobre 10 vezes KC vezes βx ao quadrado, mais 0,48 vezes fck sobre 10 vezes KC vezes βx, menos 1, igual a 0" loading="lazy">
+
+        <h4 style="margin-top: var(--aipim-space-24);">Limite do domínio</h4>
+        <img class="eq" src="img/equations/eq_bxmin.png" alt="βx mínimo igual a 0,45 se fck menor que 50 MPa, ou 0,35 se fck maior ou igual a 50 MPa" loading="lazy">
+
+        <h4 style="margin-top: var(--aipim-space-24);">Posição da linha neutra</h4>
+        <img class="eq" src="img/equations/eq_x.png" alt="x igual a βx vezes d" loading="lazy">
+
+        <h4 style="margin-top: var(--aipim-space-24);">Armadura de tração</h4>
+        <img class="eq" src="img/equations/eq_ks.png" alt="ks igual a 1 sobre fyd vezes 1 menos βx sobre 2, dividido por 10" loading="lazy">
+        <img class="eq" src="img/equations/eq_asreq.png" alt="área de aço requerida igual a ks vezes módulo de Md sobre d" loading="lazy">
+        <img class="eq" src="img/equations/eq_asmin.png" alt="área de aço mínima igual a rô mínimo vezes bw vezes h sobre 100" loading="lazy">
+        <img class="eq" src="img/equations/eq_asadot.png" alt="área de aço adotada igual ao máximo entre a requerida e a mínima" loading="lazy">
+
+        <h4 style="margin-top: var(--aipim-space-24);">Número de barras e espaçamento</h4>
+        <img class="eq" src="img/equations/eq_nbarras.png" alt="n igual ao teto de área adotada sobre área de uma barra" loading="lazy">
+        <img class="eq" src="img/equations/eq_eh.png" alt="espaçamento horizontal livre eh maior ou igual a 2,0 cm" loading="lazy">
+      </div>
+    </section>
+
+    <!-- CISALHAMENTO -->
+    <section class="section section--alt">
+      <div class="page">
+        <div class="section-head">
+          <p class="overline">Cisalhamento · Modelo I</p>
+          <h2>Cisalhamento</h2>
+        </div>
+
+        <h4>Solicitação de cálculo</h4>
+        <img class="eq" src="img/equations/eq_vsd.png" alt="Vsd igual a Vk vezes γf, com γf igual a 1,4" loading="lazy">
+
+        <h4 style="margin-top: var(--aipim-space-24);">Compressão diagonal do concreto (V<sub>Rd2</sub>)</h4>
+        <img class="eq" src="img/equations/eq_vrd2.png" alt="Vrd2 igual a 0,27 vezes λ vezes fcd vezes bw vezes d sobre 10" loading="lazy">
+
+        <h4 style="margin-top: var(--aipim-space-24);">Resistências do concreto</h4>
+        <img class="eq" src="img/equations/eq_fcd.png" alt="fcd igual a αc vezes fck sobre γc, com αc igual a 0,85 e γc igual a 1,4" loading="lazy">
+        <img class="eq" src="img/equations/eq_fctm.png" alt="fctm igual a 0,30 vezes fck elevado a dois terços, e fctk,inf igual a 0,7 vezes fctm" loading="lazy">
+        <img class="eq" src="img/equations/eq_fctd.png" alt="fctd igual a fctk,inf sobre γc dividido por 10" loading="lazy">
+
+        <h4 style="margin-top: var(--aipim-space-24);">Contribuição do concreto (V<sub>c</sub>) e do aço (V<sub>sw</sub>)</h4>
+        <img class="eq" src="img/equations/eq_vc.png" alt="Vc igual a 0,6 vezes fctd vezes bw vezes d" loading="lazy">
+        <img class="eq" src="img/equations/eq_vsw.png" alt="Vsw igual a Vsd menos Vc" loading="lazy">
+
+        <h4 style="margin-top: var(--aipim-space-24);">Armadura transversal</h4>
+        <img class="eq" src="img/equations/eq_aswmin.png" alt="Asw sobre s mínimo igual a ρw vezes bw" loading="lazy">
+        <img class="eq" src="img/equations/eq_sestribo.png" alt="espaçamento s igual a 100 sobre a razão entre Asw adotado e Asw por ramo" loading="lazy">
+      </div>
+    </section>
+
+    <!-- VIGA T -->
+    <section class="section">
+      <div class="page">
+        <div class="section-head">
+          <p class="overline">Flexão · seção T</p>
+          <h2>Viga T (mesa colaborante)</h2>
+        </div>
+
+        <h4>Largura efetiva da mesa</h4>
+        <img class="eq" src="img/equations/eq_bfef.png" alt="bf,ef igual ao mínimo entre bf e bw mais b1 esquerdo mais b1 direito" loading="lazy">
+
+        <h4 style="margin-top: var(--aipim-space-24);">Momento positivo — linha neutra na mesa</h4>
+        <img class="eq" src="img/equations/eq_kc_t.png" alt="KC igual a bf,ef vezes d ao quadrado sobre Md" loading="lazy">
+        <img class="eq" src="img/equations/eq_ln_mesa.png" alt="se 0,8 x menor que hf, a linha neutra está dentro da mesa e a viga T é válida" loading="lazy">
+
+        <div class="grid grid--2" style="margin-top: var(--aipim-space-24); align-items: start;">
+          <div>
+            <h4>Quando a linha neutra cai na alma</h4>
+            <p style="margin-top: var(--aipim-space-8);">O momento é decomposto em duas parcelas: a resistida pelas abas (M<sub>d1</sub>) e a resistida pela alma (M<sub>d2</sub>). A armadura total é <code>As = As1 + As2</code>, com a equação do 2º grau resolvida com <code>bw</code> para a alma. Para momento negativo, o cálculo é idêntico ao da viga retangular com largura <code>bw</code>.</p>
+          </div>
+          <figure class="fig">
+            <div class="fig-media">
+              <img src="img/viga_t_secao.png" alt="Esquema da seção T com mesa colaborante" class="invert-dark" loading="lazy" width="2170" height="1663">
+            </div>
+            <figcaption>Seção T — mesa colaborante e alma.</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- DEMAIS VERIFICAÇÕES -->
+    <section class="section section--alt">
+      <div class="page">
+        <div class="section-head">
+          <p class="overline">Outras verificações</p>
+          <h2>Armadura dupla, pele e ELS</h2>
+        </div>
+        <div class="grid grid--3">
+          <article class="aipim-card">
+            <div class="aipim-card__body">
+              <h3 class="aipim-card__title">Armadura dupla</h3>
+              <p class="aipim-card__text">Quando o momento excede o limite do domínio 3, o app calcula a armadura de compressão (As′). O momento excedente é resistido por um par adicional de armaduras, com <code>d′</code> igual à distância da face comprimida ao CG da armadura de compressão.</p>
+            </div>
+          </article>
+          <article class="aipim-card">
+            <div class="aipim-card__body">
+              <h3 class="aipim-card__title">Armadura de pele</h3>
+              <p class="aipim-card__text">Vigas com <code>h ≥ 60 cm</code> exigem armadura lateral (NBR 6118:17.3.5.2.3). O app seleciona automaticamente o menor diâmetro que atende à área mínima por face, ao espaçamento máximo vertical e a <code>φpele ≤ φestribo</code>.</p>
+            </div>
+          </article>
+          <article class="aipim-card">
+            <div class="aipim-card__body">
+              <h3 class="aipim-card__title">ELS — flecha e fissuração</h3>
+              <p class="aipim-card__text">Flecha imediata e diferida por integração numérica da curvatura (NBR 6118:17.3.2), e abertura de fissuras <code>wk</code> (NBR 6118:17.3.3). Os limites dependem da classe de agressividade ambiental informada.</p>
+            </div>
+          </article>
+        </div>
+        <p style="margin-top: var(--aipim-space-16);">
+          O detalhamento completo (estádio II, Branson, iteração de bitola, ajustes de ELS e detalhamento de estribos por região) está em
+          <a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app/blob/public-main/docs/calculo.md" target="_blank" rel="noopener noreferrer">docs/calculo.md</a>.
+        </p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="page">
+      <p>
+        <strong>Pórtica App</strong> — software livre sob
+        <a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app/blob/public-main/LICENSE" target="_blank" rel="noopener noreferrer">Apache-2.0</a>.
+        Código-fonte em <a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app" target="_blank" rel="noopener noreferrer">github.com/samuel-c-santos/portica-app</a>.
+      </p>
+      <p>
+        Design system: <a class="aipim-link" href="https://github.com/talis-galhardi/aipim" target="_blank" rel="noopener noreferrer">Aipim</a>, por Talis Galhardi (MIT / CC BY 4.0).
+        Fontes <em>Antonio</em> e <em>Karla</em> (SIL OFL 1.1). Ícones <em>Hugeicons Free</em> (MIT).
+      </p>
+      <p>Ferramenta de apoio: não substitui a verificação de engenheiro civil habilitado, com ART/RRT.</p>
+    </div>
+  </footer>
+
+</body>
+</html>
