@@ -1,6 +1,6 @@
 # Pórtica App
 
-Calculadora estrutural de vigas de concreto armado conforme a **ABNT NBR 6118:2023** — flexão, cisalhamento, armadura dupla, armadura de pele, ELS e detalhamento, com entrada manual ou importação de esforços exportados do FTOOL.
+Calculadora estrutural de vigas de concreto armado conforme a **ABNT NBR 6118:2023**: flexão, cisalhamento, armadura dupla, armadura de pele, ELS e detalhamento, com entrada manual ou importação de esforços exportados do FTOOL.
 
 [![Licença](https://img.shields.io/badge/licen%C3%A7a-Apache--2.0-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10%2B-3776AB.svg)](https://www.python.org/)
@@ -13,7 +13,7 @@ Calculadora estrutural de vigas de concreto armado conforme a **ABNT NBR 6118:20
 
 | | |
 |---|---|
-| ![Tela inicial — seleção de seção](site/img/01-tela-inicial.png) | ![Entrada manual de trechos](site/img/02-entrada-manual.png) |
+| ![Tela inicial: seleção de seção](site/img/01-tela-inicial.png) | ![Entrada manual de trechos](site/img/02-entrada-manual.png) |
 | ![Importação de esforços do FTOOL](site/img/03-importacao-ftool.png) | ![Seções dimensionadas](site/img/04-secoes.png) |
 | ![Resultados da flexão](site/img/05-resultados-flexao.png) | ![Relatório PDF](site/img/06-relatorio-pdf.png) |
 | ![Desenho DXF da seção](site/img/07-desenho_dxf.png) | |
@@ -35,8 +35,8 @@ Calculadora estrutural de vigas de concreto armado conforme a **ABNT NBR 6118:20
 | Dimensionamento automático | Armadura, estribos e bitolas dimensionados a partir dos esforços importados |
 | Envelope de combinações | Envelope das combinações de ação e verificação no pior caso |
 | Diagramas M(x) e V(x) | Desenho dos diagramas de momento fletor e esforço cortante no relatório |
-| ELS — flecha | Flecha imediata e diferida por integração numérica da curvatura |
-| ELS — fissuração | Abertura de fissuras `wk1`, `wk2` e mínima, com limite por classe de agressividade |
+| ELS: flecha | Flecha imediata e diferida por integração numérica da curvatura |
+| ELS: fissuração | Abertura de fissuras `wk1`, `wk2` e mínima, com limite por classe de agressividade |
 | Estribos por região | Detalhamento dos estribos trecho a trecho, a partir do diagrama de cortantes |
 | Grampos suplementares | Grampos de 2ª e 3ª camadas quando a armadura não cabe em uma camada |
 
@@ -65,8 +65,8 @@ uso; na versão **offline** ele já vem embutido.
 
 | Asset | Cliente Flet | Tamanho |
 |---|---|---|
-| `portica-v1.0.1-windows-x64.exe` | **Leve** — baixado no 1º uso (~30 MB) | ≈ 58 MB |
-| `portica-v1.0.1-windows-x64.zip` | **Embutido** — roda offline desde a 1ª execução | ≈ 96 MB |
+| `portica-v1.0.1-windows-x64.exe` | **Leve**: baixado no 1º uso (~30 MB) | ≈ 58 MB |
+| `portica-v1.0.1-windows-x64.zip` | **Embutido**: roda offline desde a 1ª execução | ≈ 96 MB |
 
 | Item | Valor |
 |---|---|
@@ -90,12 +90,12 @@ que está acontecendo. Depois do download, o cliente fica em cache
 (`%USERPROFILE%\.flet\client`) e o app abre **offline** a partir da segunda vez.
 
 **Versão offline (`.zip`):** o cliente Flet já vem embutido no executável, então o
-app abre **offline desde a primeira execução** — ideal para máquinas sem internet.
+app abre **offline desde a primeira execução**. Ideal para máquinas sem internet.
 Basta descompactar o `.zip` e executar o `portica.exe`.
 
 Se o download falhar (por exemplo, máquina sem internet, proxy ou firewall),
 o app mostra uma mensagem explicando o que fazer em vez de abrir uma janela em
-branco — basta conectar à internet e executar o Portica App novamente.
+branco: basta conectar à internet e executar o Portica App novamente.
 
 ### Gerar o executável a partir do código
 
@@ -128,7 +128,7 @@ O app tem **uma única tela de viga** com dois tipos de seção (retangular e T)
 
 ### Importação de arquivos do FTOOL
 
-O app é compatível com os arquivos `.txt` exportados pelo FTOOL (apenas leitura de dados — não há vínculo, endosso ou representação oficial do produto).
+O app é compatível com os arquivos `.txt` exportados pelo FTOOL (apenas leitura de dados; não há vínculo, endosso ou representação oficial do produto).
 
 1. Na tela da viga, clique em **Importar do FTOOL**.
 2. Selecione os arquivos `.txt` exportados: momento fletor, esforço cortante e deformações. O app valida o formato de cada arquivo (a primeira linha deve ser o número de pontos) e mostra a curva importada.
@@ -155,7 +155,7 @@ portica_app/
 
 A separação em camadas permite que o núcleo de cálculo (`core/`) seja reutilizado sem dependência de interface. O modelo de cálculo está descrito em [`docs/calculo.md`](docs/calculo.md) e o mapa do código em [`docs/mapa_codigo.md`](docs/mapa_codigo.md).
 
-As figuras técnicas exibidas no app (`core/assets/info/`) são desenhos próprios, gerados pelo script [`generate_info_figures.py`](generate_info_figures.py) — nenhuma imagem de origem desconhecida é distribuída com o repositório.
+As figuras técnicas exibidas no app (`core/assets/info/`) são desenhos próprios, gerados pelo script [`generate_info_figures.py`](generate_info_figures.py). Nenhuma imagem de origem desconhecida é distribuída com o repositório.
 
 ## Testes
 
@@ -165,9 +165,9 @@ python -m pytest tests -q
 
 ## Referências normativas
 
-- **ABNT NBR 6118:2023** — Projeto de estruturas de concreto armado — partes 1 a 5 (referência da implementação; os valores e tabelas normativos não são reproduzidos neste repositório).
+- **ABNT NBR 6118:2023**: Projeto de estruturas de concreto armado, partes 1 a 5 (referência da implementação; os valores e tabelas normativos não são reproduzidos neste repositório).
 - **ABNT NBR 6118:2023, Emenda 1:2026**.
-- **ABNT NBR 7480** — Aço destinado a armaduras de concreto armado.
+- **ABNT NBR 7480**: Aço destinado a armaduras de concreto armado.
 
 O app implementa as fórmulas e os critérios de dimensionamento; os valores de tabelas e o texto normativo permanecem sob a titularidade da ABNT e devem ser consultados na norma vigente.
 
@@ -186,7 +186,7 @@ tela **Sobre** do app e no rodapé de cada página do relatório PDF.
 
 ## Como citar
 
-O software é citável por DOI (Zenodo). Cite o **concept DOI** — ele permanece
+O software é citável por DOI (Zenodo). Cite o **concept DOI**, que permanece
 válido entre versões:
 
 > dos Santos, S. C. (2026). *Pórtica App: calculadora estrutural de vigas de concreto
@@ -198,7 +198,7 @@ máquina-legível para ferramentas de citação (GitHub, Zotero, Overleaf).
 
 ## Documentação / Site
 
-- **Página pública**: <https://samuel-c-santos.github.io/portica-app/> — download, funcionalidades, FAQ, como citar e doação (o código-fonte da página está em [`site/`](site/)).
+- **Página pública**: <https://samuel-c-santos.github.io/portica-app/> (download, funcionalidades, FAQ, como citar e doação; o código-fonte da página está em [`site/`](site/)).
 - **Modelo de cálculo**: [`docs/calculo.md`](docs/calculo.md)
 - **Mapa do código**: [`docs/mapa_codigo.md`](docs/mapa_codigo.md)
 - **Histórico de versões**: [`docs/CHANGELOG.md`](docs/CHANGELOG.md)
@@ -212,7 +212,7 @@ as licenças das bibliotecas de terceiros em [`THIRD_PARTY.md`](THIRD_PARTY.md).
 
 ## Contribuição
 
-Contribuições são bem-vindas — correções de cálculo sobretudo. O guia completo (como rodar a suíte, padrão de commits e o que não é aceito) está em [`CONTRIBUTING.md`](CONTRIBUTING.md).
+Contribuições são bem-vindas, correções de cálculo sobretudo. O guia completo (como rodar a suíte, padrão de commits e o que não é aceito) está em [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 Antes de abrir um *pull request*, rode a suíte de testes e descreva a correção com a referência normativa correspondente.
 
@@ -225,6 +225,6 @@ O histórico de versões está em [`docs/CHANGELOG.md`](docs/CHANGELOG.md).
 
 - Dúvidas, correções e Issues: <https://github.com/samuel-c-santos/portica-app/issues>
 - Perfil do autor e contato: <https://github.com/samuel-c-santos>
-- Doação (opcional, sem paywall e sem feature bloqueada): veja a seção **Doar** da [página pública](https://samuel-c-santos.github.io/portica-app/) — Pix ou Ko-fi.
+- Doação (opcional, sem paywall e sem feature bloqueada): veja a seção **Doar** da [página pública](https://samuel-c-santos.github.io/portica-app/): Pix ou Ko-fi.
 
 <!-- DOI: 10.5281/zenodo.23733497 (Zenodo). Badge oficial do Zenodo acima. -->
