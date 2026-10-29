@@ -383,12 +383,12 @@ KC = bf,ef · d² / Md
 A equacao do segundo grau e a verificacao de dominio seguem o mesmo roteiro da
 viga retangular, porem com `bf,ef` em vez de `bw`.
 
-#### 4.2.2 LN na alma (η·x >= hf) — Decomposicao do momento
+#### 4.2.2 LN na alma (η·x >= hf): Decomposicao do momento
 
 Quando `η · x >= hf`, a linha neutra esta na alma. O momento e decomposto em
 duas parcelas:
 
-**Parcela 1 — Momento resistido pelas abas (Md1):**
+**Parcela 1: momento resistido pelas abas (Md1)**
 
 ```
 αc = 0,85  (fck ≤ 50 MPa)
@@ -399,7 +399,7 @@ fcd' = αc · fck / (1,4 · 10)    (kN/cm²)
 Md1 = fcd' · (bf,ef - bw) · hf · (d - hf/2)    (kN·cm)
 ```
 
-**Parcela 2 — Momento resistido pela alma (Md2):**
+**Parcela 2: momento resistido pela alma (Md2)**
 
 ```
 Md2 = Md - Md1    (kN·cm)
@@ -438,7 +438,7 @@ flowchart TD
     E -->|Nao| AD["Armadura dupla"]
     E -->|Sim| G["Calcular x = bx · d"]
     G --> H{"η·x < hf?"}
-    H -->|Sim| LN_MESA["LN na mesa — calculo direto"]
+    H -->|Sim| LN_MESA["LN na mesa: calculo direto"]
     H -->|Nao| DECOMP["Decompor: Md1 + Md2"]
     DECOMP --> RESOLVER["Resolver eq. 2o grau com bw para Md2"]
     RESOLVER --> SOMAR["As = As1 + As2"]

@@ -1,4 +1,4 @@
-# Mapa do Código — Pórtica App
+# Mapa do Código: Pórtica App
 
 > Atualizado em 04/08/2026. Referência rápida de arquivos, funções e classes.
 > Útil para onboarding de desenvolvedores e IAs que trabalham no código.
@@ -50,7 +50,7 @@ portica_app/
 
 ---
 
-## 2. core/calculos/engenharia.py — Motor NBR 6118
+## 2. core/calculos/engenharia.py: Motor NBR 6118
 
 ### Funções auxiliares
 
@@ -90,9 +90,9 @@ portica_app/
 
 ---
 
-## 3. core/detailing/ — Engine Geométrica de Seção
+## 3. core/detailing/: Engine Geométrica de Seção
 
-### domain.py — Lógica de posicionamento
+### domain.py: Lógica de posicionamento
 
 | Classe | Linha | Responsabilidade |
 |--------|-------|-----------------|
@@ -103,7 +103,7 @@ portica_app/
 | `BeamDetailingInput` | 152 | Input do detailer (bw, h, phi, cob, total_bars, is_t, bf, hf) |
 | `BeamDetailer` | 171 | Distribui barras em camadas respeitando NBR 6118 (e_h, e_v) |
 
-### presentation.py — Painter agnóstico + renderers
+### presentation.py: Painter agnóstico + renderers
 
 **Comandos (comandos de desenho independentes de renderer):**
 
@@ -126,7 +126,7 @@ portica_app/
 | `FpdfRenderer` | 654 | Renderiza comandos em PDF (fpdf2) |
 | `desenhar_secao_com_detailer(...)` | 819 | Wrapper: detailer + painter + renderer para PDF |
 
-### dxf_export.py — Exportação DXF
+### dxf_export.py: Exportação DXF
 
 | Função | Linha | Responsabilidade |
 |--------|-------|-----------------|
@@ -134,7 +134,7 @@ portica_app/
 
 ---
 
-## 4. core/relatorio_base.py — PDF Compartilhado
+## 4. core/relatorio_base.py: PDF Compartilhado
 
 ### Classes e funções auxiliares
 
@@ -150,7 +150,7 @@ portica_app/
 | `_legenda_secao(...)` | 1425 | Legenda da seção (cores, símbolos) |
 | `_converter_svg_para_png(svg_path)` | 1479 | Converte SVG → PNG para PDF |
 
-### Funções de desenho de seção (4 funções independentes — ATENÇÃO)
+### Funções de desenho de seção (4 funções independentes, atenção)
 
 | Função | Linha | Gera | Usa layout_convergido? |
 |--------|-------|------|------------------------|
@@ -170,9 +170,9 @@ portica_app/
 
 ---
 
-## 5. ui/ftool/ — Módulos FTOOL
+## 5. ui/ftool/: Módulos FTOOL
 
-### parser.py — Leitura de arquivos TXT
+### parser.py: Leitura de arquivos TXT
 
 | Função | Linha | Responsabilidade |
 |--------|-------|-----------------|
@@ -182,7 +182,7 @@ portica_app/
 | `parse_tudo(pasta)` | 174 | Lê todos os arquivos de uma pasta |
 | `validate_file_type(filepath, tipo)` | 215 | Valida tipo do arquivo (heurísticas) |
 
-### secoes_criticas.py — Detecção de seções críticas
+### secoes_criticas.py: Detecção de seções críticas
 
 | Classe/Função | Linha | Responsabilidade |
 |---------------|-------|-----------------|
@@ -195,7 +195,7 @@ portica_app/
 | `calcular_lo_para_secao(...)` | 166 | Calcula l0 (vão teórico) a partir de M=0 |
 | `detectar_todas_secoes(momentos, cortantes)` | 222 | Combina todas as detecções |
 
-### dimensionamento.py — Dimensionamento automático
+### dimensionamento.py: Dimensionamento automático
 
 | Função | Linha | Responsabilidade |
 |--------|-------|-----------------|
@@ -204,7 +204,7 @@ portica_app/
 | `gerar_relatorio_viga_comum_premium(...)` | 281 | PDF Premium (viga retangular) |
 | `gerar_relatorio_viga_t_premium(...)` | 434 | PDF Premium (viga T) |
 
-### els.py — Estado Limite de Serviço
+### els.py: Estado Limite de Serviço
 
 | Classe/Função | Linha | Responsabilidade |
 |---------------|-------|-----------------|
@@ -214,21 +214,21 @@ portica_app/
 | `_momento_inercia_bruto_viga(...)` | 113 | Inércia bruta (Ig) |
 | `_momento_fissuracao(...)` | 125 | Momento de fissuração (Mr) |
 | `_estadio_ii_viga(...)` | 140 | Inércia do Estádio II (seção fissurada) |
-| `_inercia_equivalente(...)` | 200 | Inércia equivalente (Ieq) — Branson |
+| `_inercia_equivalente(...)` | 200 | Inércia equivalente (Ieq), por Branson |
 | `calcular_flecha(...)` | 210 | Flecha imediata + diferida (integração numérica de κ) |
 | `calcular_fissuracao(...)` | 360 | Abertura de fissuras (wk₁, wk₂) |
 | `_sugerir_correcao_flecha(...)` | 481 | Sugestões quando flecha não passa |
 | `_sugerir_correcao_fissuracao(...)` | 502 | Sugestões quando fissuração não passa |
 | `gerar_relatorio_els(...)` | 519 | Texto do relatório ELS |
 
-### diagrama.py — Diagrama de esforços
+### diagrama.py: Diagrama de esforços
 
 | Função | Linha | Responsabilidade |
 |--------|-------|-----------------|
 | `_desenhar_grafico(...)` | 11 | Desenha gráfico M(x) ou V(x) em fpdf2 |
 | `gerar_diagrama_esforcos(...)` | 215 | Gera diagrama completo (M + V) no PDF |
 
-### envelope.py — Envelope de combinações
+### envelope.py: Envelope de combinações
 
 | Função | Linha | Responsabilidade |
 |--------|-------|-----------------|
@@ -236,7 +236,7 @@ portica_app/
 | `detectar_secoes_envelope(...)` | 79 | Detecta seções críticas do envelope |
 | `gerar_relatorio_envelope(...)` | 199 | Gera relatório do envelope |
 
-### detailing.py — Detalhamento de estribos
+### detailing.py: Detalhamento de estribos
 
 | Função | Linha | Responsabilidade |
 |--------|-------|-----------------|
@@ -249,21 +249,21 @@ portica_app/
 
 ---
 
-## 6. ui/ — UI (componentes compartilhados)
+## 6. ui/: UI (componentes compartilhados)
 
-### viga.py — Tela principal da viga
+### viga.py: Tela principal da viga
 
 | Função | Linha | Responsabilidade |
 |--------|-------|-----------------|
 | `build_viga_screen(...)` | 213 | Constrói tela completa (geometria, trechos, cálculo, PDF, DXF) |
 
-### home.py — Tela inicial
+### home.py: Tela inicial
 
 | Função | Linha | Responsabilidade |
 |--------|-------|-----------------|
 | `build_home(...)` | 301 | Cards de modo + projetos recentes |
 
-### theme.py — Design system
+### theme.py: Design system
 
 | Classe | Linha | Responsabilidade |
 |--------|-------|-----------------|
@@ -274,7 +274,7 @@ portica_app/
 
 Funções de componente: `primary_button`, `tonal_button`, `outlined_button`, `success_button`, `surface_card`, `section_header`, `field`, `status_chip`, `icon_pill`.
 
-### recent_projects.py — Projetos recentes
+### recent_projects.py: Projetos recentes
 
 | Função | Linha | Responsabilidade |
 |--------|-------|-----------------|
@@ -284,9 +284,9 @@ Funções de componente: `primary_button`, `tonal_button`, `outlined_button`, `s
 
 ---
 
-## 7. ui/ — viga.py (tela principal com FTOOL)
+## 7. ui/: viga.py (tela principal com FTOOL)
 
-### viga.py — Tela principal da viga (com FTOOL)
+### viga.py: Tela principal da viga (com FTOOL)
 
 | Função | Linha | Responsabilidade |
 |--------|-------|-----------------|

@@ -64,16 +64,16 @@ respectivos pacotes instalados:
   incorporação do código-fonte delas no repositório. Essa é a condição de uso
   da LGPL que mantém a compatibilidade com a Apache-2.0.
 - As bibliotecas **MIT / BSD / Apache-2.0 / PSF / MPL-2.0** são compatíveis
-  com a Apache-2.0 e exigem apenas a retenção do aviso de copyright — por
+  com a Apache-2.0 e exigem apenas a retenção do aviso de copyright; por
   isso o `NOTICE` e este arquivo existem.
 
 ## Correção em relação ao planejamento interno
 
 O planejamento interno (fase F3) registrava **svglib** como BSD e **fpdf2**
-como "LGPL — uso por link dinâmico". A verificação feita nos pacotes
+como "LGPL, uso por link dinâmico". A verificação feita nos pacotes
 instalados mostra que:
 
-- **svglib 2.0.2** é **LGPL-3.0-or-later**, não BSD — o texto distribuído em
+- **svglib 2.0.2** é **LGPL-3.0-or-later**, não BSD; o texto distribuído em
   `svglib-2.0.2.dist-info/licenses/LICENSE.txt` é a LGPL versão 3;
 - **reportlab 5.0.0** e **rlPyCairo 0.4.0** são **BSD** (ReportLab Inc.);
 - **fpdf2 2.8.7** é **LGPL-3.0-only**, confirmado pelo texto integral da LGPL
@@ -110,7 +110,7 @@ mantidos, e a atribuição aparece no rodapé da página.
 
 | Item | Licença | Origem / uso |
 |---|---|---|
-| **Aipim** (design system) | Código **MIT**; design e documentação **CC BY 4.0** | <https://github.com/talis-galhardi/aipim> — tokens, componentes e script em `site/vendor/aipim/`. Crédito: "Aipim design system by Talis Galhardi". |
+| **Aipim** (design system) | Código **MIT**; design e documentação **CC BY 4.0** | <https://github.com/talis-galhardi/aipim>: tokens, componentes e script em `site/vendor/aipim/`. Crédito: "Aipim design system by Talis Galhardi". |
 | **Antonio** e **Karla** (fontes) | **SIL Open Font License 1.1** | Fontes variáveis locais em `site/vendor/fonts/` (arquivos `OFL.txt` incluídos). |
 | **Hugeicons Free** (ícones) | **MIT** | `site/vendor/aipim/sprite.svg` (Hugeicons Free v4.3.5, Copyright (c) 2025 Hugeicons). |
 

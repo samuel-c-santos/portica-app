@@ -3,10 +3,10 @@
 Páginas estáticas construídas com o design system **Aipim**, publicadas via
 **GitHub Pages**:
 
-- `index.html` — página principal (download, funcionalidades, FAQ, doação);
-- `calculo.html` — página do **modelo de cálculo** (fórmulas da NBR 6118:2023).
+- `index.html`: página principal (download, funcionalidades, FAQ, doação);
+- `calculo.html`: página do **modelo de cálculo** (fórmulas da NBR 6118:2023).
 
-Não usa CDN: CSS, JS, fontes, ícones e imagens são locais — as páginas abrem
+Não usa CDN: CSS, JS, fontes, ícones e imagens são locais; as páginas abrem
 offline. Ambas têm alternância **claro/escuro** (tema do Aipim + `theme.js`).
 
 ### Estrutura
@@ -16,8 +16,8 @@ offline. Ambas têm alternância **claro/escuro** (tema do Aipim + `theme.js`).
 | `theme.css` | Sobrepõe só os tokens semânticos de cor primária (azul Pórtica). |
 | `base.css` | Layout, fontes locais (`@font-face`), galeria de figuras, inversão de equações no escuro. |
 | `theme.js` | Alternância claro/escuro (persiste no `localStorage`) + troca de imagens temáticas. |
-| `img/equations/*.png` | Equações renderizadas — origem: `docs/equations/` (script `generate_equation_images.py`). |
-| `img/viga_*_secao.png`, `img/cisalhamento.png`, `img/partes_armadura_viga.png` | Figuras técnicas do app — origem: `core/assets/info/`. |
+| `img/equations/*.png` | Equações renderizadas; origem: `docs/equations/` (script `generate_equation_images.py`). |
+| `img/viga_*_secao.png`, `img/cisalhamento.png`, `img/partes_armadura_viga.png` | Figuras técnicas do app; origem: `core/assets/info/`. |
 
 ## Como publicar no GitHub Pages
 
@@ -28,7 +28,7 @@ código e o deploy é um único comando; nada de CI obrigatório.
 ### Passo a passo (feito pelo autor, uma única vez)
 
 1. **Suba o branch `gh-pages`** com o conteúdo de `site/` (`public` é o
-   remote do repositório público — ajuste se o seu remote tiver outro nome):
+   remote do repositório público; ajuste se o seu remote tiver outro nome):
 
    ```powershell
    # Envia o conteúdo de site/ para o branch gh-pages (raiz do branch).
@@ -70,7 +70,7 @@ conteúdo da página com os documentos internos e obrigaria a renomear a pasta
 |---|---|---|
 | Tokens (`--aipim-*`, claro e escuro) | `vendor/aipim/aipim.css` | Aipim (MIT) |
 | Componentes (card, alert, button, tag, accordion, link, badge…) | `vendor/aipim/aipim-components.css` | Aipim (MIT) |
-| Script opcional (tabs/modal/dismiss) | `vendor/aipim/aipim.js` | Aipim (MIT) — **não carregado** atualmente (a página usa só `<details>` nativo e links) |
+| Script opcional (tabs/modal/dismiss) | `vendor/aipim/aipim.js` | Aipim (MIT), **não carregado** atualmente (a página usa só `<details>` nativo e links) |
 | Ícones (SVG sprite) | `vendor/aipim/sprite.svg` | Hugeicons Free (MIT) |
 | Fonte Antonio (variável) | `vendor/fonts/antonio.ttf` | SIL OFL 1.1 |
 | Fonte Karla (variável) | `vendor/fonts/karla.ttf` | SIL OFL 1.1 |
@@ -91,9 +91,9 @@ conteúdo da página com os documentos internos e obrigaria a renomear a pasta
 
 - **QR Pix**: extraído do PDF do banco (chave e-mail `samuelsantosambiental@gmail.com`,
   Belém/PA). Já está em `img/qr-pix.png`.
-- **Ko-fi**: configurado — `https://ko-fi.com/samuelsantosportica` (também em
+- **Ko-fi**: configurado em `https://ko-fi.com/samuelsantosportica` (também em
   `.github/FUNDING.yml`).
-- **DOI**: `10.5281/zenodo.23733497` (Zenodo) — já preenchido.
+- **DOI**: `10.5281/zenodo.23733497` (Zenodo). Já preenchido.
 - **Screenshots**: 7 capturas já adicionadas em `img/` (`01-tela-inicial.png` …
   `07-desenho_dxf.png`) e referenciadas em `index.html` e no README principal.
 - **URL final**: confirmar `https://samuel-c-santos.github.io/portica-app/` e

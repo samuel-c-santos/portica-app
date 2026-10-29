@@ -28,7 +28,7 @@ python -m pytest tests\test_relatorio.py::test_gerar_pdf -q
 ```
 
 Antes de abrir um *pull request*, a suíte precisa passar inteira. Não há
-serviço de CI configurado no momento — a verificação é local.
+serviço de CI configurado no momento; a verificação é local.
 
 ## Padrão de commit (*Conventional Commits*)
 
@@ -83,7 +83,7 @@ esperado.
 - **Paywall, features bloqueadas, remoção de features existentes** ou
   qualquer mecanismo que condicione o uso do software a pagamento, cadastro ou
   chave.
-- **Refatoração de interface sem issue prévia** — discuta primeiro em uma
+- **Refatoração de interface sem issue prévia**. Discuta primeiro em uma
   *issue*. Mudanças grandes de UI são caras de revisar para um maintainer
   único e tends a conflitar.
 - Mudanças no motor de cálculo (`core/calculos`) sem teste de regressão.

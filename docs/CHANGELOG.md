@@ -9,7 +9,7 @@ versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
 Mudanças aceitas e ainda não publicadas em uma versão.
 
-## [1.0.1] — correção do carregamento de projetos
+## [1.0.1]: correção do carregamento de projetos
 
 ### Corrigido
 
@@ -22,7 +22,7 @@ Mudanças aceitas e ainda não publicadas em uma versão.
 - Adicionado teste de regressão que reproduz o ciclo de vida real do Flet
   (`update()` em controle fora da página), que o mock de UI anterior escondia.
 
-## [1.0.0] — primeira publicação open source (Apache-2.0)
+## [1.0.0]: primeira publicação open source (Apache-2.0)
 
 ### Adicionado
 
@@ -44,7 +44,7 @@ Mudanças aceitas e ainda não publicadas em uma versão.
   pacote instalado.
 - Aviso de responsabilidade na tela **Sobre**, no rodapé de cada página do
   relatório PDF e no README.
-- Rodapé do PDF com a linha "Uso sob responsabilidade do usuário — ver README
+- Rodapé do PDF com a linha "Uso sob responsabilidade do usuário: ver README
   do projeto".
 - `docs/CHANGELOG.md` (este arquivo).
 
@@ -61,7 +61,7 @@ Mudanças aceitas e ainda não publicadas em uma versão.
   verifica o cliente desktop do Flet antes de abrir o app, mostra uma tela de
   progresso durante o download único (~30 MB) e, se o download falhar
   (sem internet, proxy, firewall), apresenta uma mensagem de erro com o que
-  fazer — em vez de uma janela em branco. O download é gravado no cache do
+  fazer, em vez de uma janela em branco. O download é gravado no cache do
   Flet (`%USERPROFILE%\.flet\client`), então as execuções seguintes são
   offline.
 - README reescrito para open source: o que é, instalação, uso, importação

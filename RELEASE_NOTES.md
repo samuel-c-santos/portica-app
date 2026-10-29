@@ -1,4 +1,4 @@
-# Pórtica App — v1.0.1
+# Pórtica App: v1.0.1
 
 Calculadora estrutural de vigas de concreto armado conforme a **ABNT NBR 6118:2023**,
 com entrada manual ou importação de esforços exportados do FTOOL. Gera relatório PDF,
@@ -17,21 +17,21 @@ exportação DXF e verificações de ELS. Desenvolvido em Python + Flet, licenci
 ## O que é
 
 O Pórtica App dimensiona e detalha vigas de concreto armado (seção retangular e seção
-T), partindo dos esforços que o engenheiro já tem — digitados à mão ou importados dos
+T), partindo dos esforços que o engenheiro já tem: digitados à mão ou importados dos
 arquivos `.txt` exportados pelo FTOOL. É uma ferramenta de apoio ao projeto: os
 resultados devem ser verificados por engenheiro civil habilitado, com ART/RRT.
 
 ## Funcionalidades principais
 
-- **Flexão** — seção retangular e seção T (mesa colaborante), com verificação dos domínios de deformação.
-- **Cisalhamento** — Modelo I da NBR 6118, com contribuição do concreto e do aço.
-- **Armadura dupla** — solução com armadura de compressão quando o momento excede o limite do domínio 3.
-- **Armadura de pele** — dimensionamento automático das costelas para vigas com `h ≥ 60 cm`.
-- **ELS** — flecha (imediata e diferida) e fissuração (`wk1`, `wk2` e mínima), por classe de agressividade.
-- **Relatório PDF** — capa, dados de entrada, tabelas, diagramas M(x)/V(x), esquema da seção e campos de ART/CREA.
-- **Exportação DXF** — desenho da seção R/T com layers e grampos.
-- **Projetos `.ptc`** — salvar e carregar o projeto completo (geometria, materiais, esforços, ajustes).
-- **Importação FTOOL** — leitura dos `.txt` exportados (momento fletor, cortante e deformações), detecção das seções críticas, envelope de combinações e dimensionamento automático.
+- **Flexão**: seção retangular e seção T (mesa colaborante), com verificação dos domínios de deformação.
+- **Cisalhamento**: Modelo I da NBR 6118, com contribuição do concreto e do aço.
+- **Armadura dupla**: solução com armadura de compressão quando o momento excede o limite do domínio 3.
+- **Armadura de pele**: dimensionamento automático das costelas para vigas com `h ≥ 60 cm`.
+- **ELS**: flecha (imediata e diferida) e fissuração (`wk1`, `wk2` e mínima), por classe de agressividade.
+- **Relatório PDF**: capa, dados de entrada, tabelas, diagramas M(x)/V(x), esquema da seção e campos de ART/CREA.
+- **Exportação DXF**: desenho da seção R/T com layers e grampos.
+- **Projetos `.ptc`**: salvar e carregar o projeto completo (geometria, materiais, esforços, ajustes).
+- **Importação FTOOL**: leitura dos `.txt` exportados (momento fletor, cortante e deformações), detecção das seções críticas, envelope de combinações e dimensionamento automático.
 
 ## Como usar
 
@@ -69,7 +69,7 @@ O aviso completo está em [`DISCLAIMER.md`](DISCLAIMER.md) e também aparece na 
 
 ## Licença
 
-**Apache-2.0** — o texto completo está em [`LICENSE`](LICENSE), com os avisos de
+**Apache-2.0**: o texto completo está em [`LICENSE`](LICENSE), com os avisos de
 copyright em [`NOTICE`](NOTICE) e as licenças das bibliotecas de terceiros em
 [`THIRD_PARTY.md`](THIRD_PARTY.md).
 
@@ -82,7 +82,7 @@ gráfico do Flet: na versão **leve** ele é baixado uma única vez no primeiro 
 | Asset | Descrição | Tamanho | SHA-256 |
 |---|---|---|---|
 | `portica-v1.0.1-windows-x64.exe` | Executável **leve** (cliente Flet baixado no 1º uso, ~30 MB) | ≈ 58 MB | `5ee20685d26c46aebeb20b017d25f0ac7da01c179fc1d63af15311232ee4fd5c` |
-| `portica-v1.0.1-windows-x64.zip` | Pacote **offline** (cliente Flet embutido — roda sem internet desde a 1ª execução) | ≈ 96 MB | `2569694bac2a7450d0848af6ab2dbbb9b49588de53f543a5e96c80705b9bfb74` |
+| `portica-v1.0.1-windows-x64.zip` | Pacote **offline** (cliente Flet embutido, roda sem internet desde a 1ª execução) | ≈ 96 MB | `2569694bac2a7450d0848af6ab2dbbb9b49588de53f543a5e96c80705b9bfb74` |
 
 O `.zip` contém `portica.exe` (com o cliente embutido) e um `SHA256SUMS.txt` próprio.
 
@@ -102,12 +102,12 @@ Os valores devem coincidir com os da tabela acima e com o arquivo
 
 ## DOI
 
-- **Concept DOI** (todas as versões — use para citar): `10.5281/zenodo.23733497`
+- **Concept DOI** (todas as versões; use para citar): `10.5281/zenodo.23733497`
 - **DOI da versão v1.0.1**: `10.5281/zenodo.23733498`
 
 A referência formal está em [`CITATION.cff`](CITATION.cff).
 
 ## Como citar
 
-> Pórtica App — Calculadora estrutural de vigas de concreto armado (NBR 6118:2023).
+> Pórtica App: Calculadora estrutural de vigas de concreto armado (NBR 6118:2023).
 > Versão 1.0.1. DOI (todas as versões): <https://doi.org/10.5281/zenodo.23733497>.

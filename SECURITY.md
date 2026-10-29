@@ -18,7 +18,7 @@ Inclua **obrigatoriamente**:
 | **Versão** | número exibido na tela **Sobre** (e, se disponível, a data do build) |
 | **Dados de entrada** | geometria (`h`, `bw`, `bf`, `hf`), materiais (`fck`, `fyk`, classe de agressividade), estribo adotado e o tipo de seção (retangular ou T) |
 | **Esforços** | tabela de trechos de flexão (`M`) e de cisalhamento (`V`) exatamente como preenchida; no caso de importação FTOOL, os arquivos `.txt` usados ou os pontos exportados |
-| **Ajustes** | bitola mínima forçada, barras extras, sobrescrita de `h` ou `fck` — se algum tiver sido usado |
+| **Ajustes** | bitola mínima forçada, barras extras, sobrescrita de `h` ou `fck`: se algum tiver sido usado |
 | **Saída obtida** | o que o programa exibiu (armadura adotada, estribos, flechas, fissuras, `checks` e o alerta exato) |
 | **Valor esperado** | o resultado que você considera correto |
 | **Referência normativa** | cláusula da **ABNT NBR 6118:2023** (e Emenda, se aplicável) que fundamenta o valor esperado, ou o cálculo manual de referência |
@@ -50,9 +50,9 @@ Referência: NBR 6118:2023, item 6.3.2.2 (As,min = 0,10% Ac)
   manual dentro da precisão da norma (a diferença deve ser da ordem do
   arredondamento da bitola adotada).
 - Resultado que muda ao trocar a bitola adotada, sem que isso contradiga a
-  norma — o programa dimensiona e depois **adota** a armadura que cabe.
+  norma: o programa dimensiona e depois **adota** a armadura que cabe.
 - Diferença de arredondamento na flexão de seção T em que as mesas
-  colaborantes dependem da largura efetiva — nesse caso, reporte a premissa
+  colaborantes dependem da largura efetiva. Nesse caso, reporte a premissa
   usada (o programa exibe `bf_efet`).
 
 ## Vulnerabilidades de segurança

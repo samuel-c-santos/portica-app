@@ -41,7 +41,7 @@ interpretação ou de aplicação inadequada da ferramenta.
 ## Escopo de responsabilidade do relatório PDF
 
 O relatório PDF gerado pelo programa carrega, em cada página, o rodapé
-"Uso sob responsabilidade do usuário — ver README do projeto" e um bloco de
+"Uso sob responsabilidade do usuário: ver README do projeto" e um bloco de
 Aviso de Responsabilidade Técnica. Esses avisos não anulam a responsabilidade
 do engenheiro responsável pelo projeto.
 
@@ -53,11 +53,11 @@ saída obtida, o valor esperado e a referência normativa aplicável.
 
 ## Referências
 
-- **ABNT NBR 6118:2023** — Projeto de estruturas de concreto armado — partes 1
+- **ABNT NBR 6118:2023**: Projeto de estruturas de concreto armado, partes 1
   a 5. Os valores e tabelas normativos não são reproduzidos neste repositório;
   consulte a norma vigente.
 - **ABNT NBR 6118:2023, Emenda 1:2026**.
-- **ABNT NBR 7480** — Aço destinado a armaduras de concreto armado.
+- **ABNT NBR 7480**: Aço destinado a armaduras de concreto armado.
 
 ## Licença
 
