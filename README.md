@@ -195,8 +195,6 @@ válido entre versões:
 
 O arquivo [`CITATION.cff`](CITATION.cff) do repositório é a referência
 máquina-legível para ferramentas de citação (GitHub, Zotero, Overleaf).
-Instruções para preencher o Lattes e o ORCID estão em [`docs/LATTES.md`](docs/LATTES.md),
-e o passo a passo do Zenodo em [`docs/DOI.md`](docs/DOI.md).
 
 ## Documentação / Site
 
