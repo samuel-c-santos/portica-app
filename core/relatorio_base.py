@@ -210,7 +210,7 @@ class PorticaPDF(FPDF):
         self.ln(4.2)
         self.set_font("Helvetica", "I", 7)
         self.set_text_color(*C_GRAY400)
-        self.cell(IW, 4, "Uso sob responsabilidade do usuário: ver README do projeto", border=0, align="L")
+        self.cell(IW, 4, "Uso sob responsabilidade do usuário — ver README do projeto", border=0, align="L")
 
     def section_title(self, numero: int, texto: str):
         # Evita órfãos de títulos de seção

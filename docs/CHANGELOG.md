@@ -44,8 +44,8 @@ Mudanças aceitas e ainda não publicadas em uma versão.
   pacote instalado.
 - Aviso de responsabilidade na tela **Sobre**, no rodapé de cada página do
   relatório PDF e no README.
-- Rodapé do PDF com a linha "Uso sob responsabilidade do usuário: ver README
-  do projeto".
+- Rodapé do PDF com aviso de responsabilidade do usuário e indicação do
+  README do projeto.
 - `docs/CHANGELOG.md` (este arquivo).
 
 ### Alterado

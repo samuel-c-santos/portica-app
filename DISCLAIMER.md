@@ -40,10 +40,10 @@ interpretação ou de aplicação inadequada da ferramenta.
 
 ## Escopo de responsabilidade do relatório PDF
 
-O relatório PDF gerado pelo programa carrega, em cada página, o rodapé
-"Uso sob responsabilidade do usuário: ver README do projeto" e um bloco de
-Aviso de Responsabilidade Técnica. Esses avisos não anulam a responsabilidade
-do engenheiro responsável pelo projeto.
+O relatório PDF gerado pelo programa carrega, em cada página, um rodapé com o
+aviso de responsabilidade do usuário e a indicação do README do projeto, além
+de um bloco de Aviso de Responsabilidade Técnica. Esses avisos não anulam a
+responsabilidade do engenheiro responsável pelo projeto.
 
 ## Reportar problemas
 
