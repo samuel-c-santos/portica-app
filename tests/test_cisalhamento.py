@@ -102,6 +102,45 @@ class TestCisalhamento:
         )
         assert res[0] is None
 
+
+class TestRamosMortos:
+    """EP-03.3: ramos que antes eram mortos/mascarados devem estar cobertos."""
+
+    def test_fck_zero_cisalhamento_erro_explicito(self):
+        """EP-01.4 no cisalhamento: fck=0 → ValueError, nunca ZeroDivisionError."""
+        with pytest.raises(ValueError, match="fck"):
+            calcular_cisalhamento_viga_comum(
+                h_cm=70.0,
+                bw_cm=20.0,
+                fck_mpa=0.0,
+                diam_estribo_mm=5.0,
+                diam_barra_mm=16.0,
+                fyk_estribo_kn_cm2=60.0,
+                fyk_barra_mpa=50.0,
+                caa=2,
+                forcas_cortantes=[132.0],
+            )
+
+    def test_ramo_s_max_restritivo_coberto(self):
+        """Vsd > 0,67·Vrd2 → s_max = min(0,3·d; 20) — o ramo mais restritivo.
+
+        Caso à mão (benchmark EP-03.1: tests/benchmarks/test_bench_cisalhamento.py):
+        Vk=350 → Vsd=490 > 0,67·516,97 = 346,4 → s_max = 19,7 cm.
+        """
+        r = calcular_cisalhamento_viga_comum(
+            h_cm=70.0,
+            bw_cm=20.0,
+            fck_mpa=30.0,
+            diam_estribo_mm=5.0,
+            diam_barra_mm=16.0,
+            fyk_estribo_kn_cm2=50.0,
+            fyk_barra_mpa=50.0,
+            caa=2,
+            forcas_cortantes=[350.0],
+        )[0]
+        assert 350.0 * 1.4 > 0.67 * r.vrd2_kn
+        assert r.s_max_cm == pytest.approx(19.7, abs=0.05)
+
     def test_vc_positivo(self, viga_exemplo):
         """Vc (contribuicao do concreto) deve ser positivo."""
         res = calcular_cisalhamento_viga_comum(

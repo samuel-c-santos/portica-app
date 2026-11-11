@@ -56,20 +56,29 @@ def test_2_secao_pequena_forca_armadura_dupla():
     assert res.md_limite_knm < res.momento_kNm
     assert res.md_excedente_knm > 0.0
 
-    # EP-03.2: o md_limite é derivado da calibração empírica do próprio motor
-    # (kc_lim = 1/(fck_conv·bx_min·(0,48 − 0,192·bx_min)) = 1,88196) — valor
-    # empírico POR DEFINIÇÃO, não validado contra a norma (EP-02.1 trocará a
-    # calibração). A conta à mão reproduz a fórmula do motor:
+    # EP-03.2/EP-03.3: o md_limite é derivado da calibração empírica do próprio
+    # motor (kc_lim = 1/(fck_conv·bx_min·(0,48 − 0,192·bx_min)) = 1,88196) —
+    # valor empírico POR DEFINIÇÃO, não validado contra a norma (EP-02.1
+    # trocará a calibração). A conta à mão reproduz a fórmula do motor:
     #     kc_lim = 1/(3·0,45·(0,48 − 0,0864)) = 1,88196
     #     md_lim = 12·45,7²/(1,88196·100) = 133,17 kN·m
     assert res.status_bitola == "NÃO CABE"
     assert res.md_limite_knm == pytest.approx(133.169, abs=1.0)
-    # Momento excedente: 194.88 - 46.93 = 147.95
+    # Momento excedente: 194.88 - 133.17 = 61.71
     assert res.md_excedente_knm == pytest.approx(194.88 - res.md_limite_knm, abs=0.1)
 
     assert res.as_linha_cm2 > 0.0
     assert res.as_linha_adotada > 0.0
     assert "Armadura dupla utilizada" in res.alerta
+
+    # EP-03.3: ramos as1/as2 da armadura dupla com referência à mão
+    #     Md_lim = 133.169 kN·m ; md_exc = 61.711 kN·m = 6171.1 kN·cm
+    #     ks_lim = 1/(43.4783·(1−0.225)) = 0.0296066
+    #     As1 = ks_lim·Md_lim/d = 0.0296066·13316.9/45.7 = 8.643 cm²
+    #     As2 = md_exc/(fyd·(d−d')) = 6171.1/(43.4783·41.4) = 3.428 cm²
+    #     As,req = As1 + As2 = 12.071 cm²
+    assert res.as_linha_cm2 == pytest.approx(3.428, abs=0.02)
+    assert res.as_req_cm2 == pytest.approx(12.071, abs=0.05)
 
 
 def test_3_limite_neutral_axis_fck_alto():
