@@ -141,3 +141,57 @@ def test_5_armadura_dupla_momento_negativo():
     assert res.as_linha_adotada > 0.0
     assert res.md_limite_knm < res.momento_kNm
     assert "Armadura dupla utilizada" in res.alerta
+
+
+def test_6_balanco_as_linha_maior_que_as2_quando_fs_nao_escoa():
+    """EP-02.4: com d' grande (CAA IV, Ø20), f_s' < fyd → As' > As2.
+
+    h=30, bw=40, fck=30, cob=50 mm, Ø20, Mk=160/1,4 → Md=160 kN·m.
+    d=23,5 cm ; x_lim=0,45·23,5=10,575 cm ; d'=6,5 cm (detalhamento, 1 camada)
+    Md,lim = 1,82143·40·10,575·(23,5−4,23) = 148,47 kN·m
+    As2 = (160−148,47)·100/(43,4783·(23,5−6,5)) = 1,56 cm²
+    ε_s' = 3,5‰·(10,575−6,5)/10,575 = 1,348‰ → f_s' = 28,3 kN/cm² (< fyd)
+    As' = 1,56·43,4783/28,3 = 2,40 cm² (ρ''=1,2 cm² não governa)
+    """
+    res = calcular_flexao_viga_comum(
+        h_cm=30.0,
+        bw_cm=40.0,
+        caa=4,
+        fck_mpa=30.0,
+        diam_estribo_mm=5.0,
+        diam_barra_mm=20.0,
+        fyk_mpa=50.0,
+        momentos=[160.0 / 1.4],
+        gamma_f=1.4,
+    )
+    r = res[0]
+    assert r is not None
+    assert r.armadura_dupla is True
+    assert r.as_linha_cm2 == pytest.approx(2.40, abs=0.03)
+    # o balanço exige mais compressão que a tração adicional (As2 ≈ 1,56)
+    assert r.as_linha_cm2 > 1.56
+    assert r.as_linha_adotada >= r.as_linha_cm2
+
+
+def test_7_rho_linha_minima_governa():
+    """EP-02.4: As' ≥ ρ'' = 0,1% da área de concreto.
+
+    h=100, bw=30 → ρ'' = 0,001·3000 = 3,0 cm². Com Md próximo de Md,lim,
+    o As' de balanço é menor e o mínimo governa.
+    """
+    res = calcular_flexao_viga_comum(
+        h_cm=100.0,
+        bw_cm=30.0,
+        caa=2,
+        fck_mpa=30.0,
+        diam_estribo_mm=5.0,
+        diam_barra_mm=16.0,
+        fyk_mpa=50.0,
+        momentos=[1350.0],
+        gamma_f=1.4,
+    )
+    r = res[0]
+    assert r is not None
+    assert r.armadura_dupla is True
+    assert r.as_linha_cm2 == pytest.approx(3.0, abs=0.01)
+    assert r.as_linha_adotada >= 3.0

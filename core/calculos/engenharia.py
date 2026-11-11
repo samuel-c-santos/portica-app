@@ -151,6 +151,136 @@ def fctd_kn_cm2(fck: float) -> float:
     return fctkinf_mpa(fck) / 10 / GAMMA_C
 
 
+def _tensao_aco_compressao_kn_cm2(
+    fyd_kn_cm2: float, d_linha_cm: float, x_cm: float, es_kn_cm2: float = 21000.0
+) -> float:
+    """Tensão no aço de compressão por compatibilidade (NBR 6118:2023, 17.2.3).
+
+    ε_s' = ε_cu·(x − d')/x, limitada a ε_yd (aço elastoplástico). Retorna 0
+    quando a armadura está fora da zona comprimida (d' ≥ x).
+    """
+    if x_cm <= 0:
+        return 0.0
+    eps_cu = 0.0035
+    eps_s_linha = eps_cu * (x_cm - d_linha_cm) / x_cm
+    if eps_s_linha <= 0:
+        return 0.0
+    return min(fyd_kn_cm2, es_kn_cm2 * eps_s_linha)
+
+
+def _d_linha_detalhado(
+    h_cm: float,
+    bw_cm: float,
+    cob_mm: float,
+    diam_estribo_mm: float,
+    diam_barra_mm: float,
+    qtd_barras_linha: int,
+    is_t: bool = False,
+    bf_cm: float = 0.0,
+    hf_cm: float = 0.0,
+    d_max_agregado_mm: float = 19.0,
+) -> float:
+    """d' real da armadura de compressão pelo detalhamento (EP-02.4).
+
+    O detalhador é chamado com `is_superior=True`, então `d_efetiva` é a
+    distância da face comprimida (topo) ao centroide das barras. Em caso de
+    recusa geométrica, recai na estimativa de 1 camada.
+    """
+    estimativa = cob_mm / 10.0 + diam_estribo_mm / 10.0 + diam_barra_mm / 20.0
+    if qtd_barras_linha <= 0:
+        return estimativa
+    try:
+        layout = BeamDetailer().detail(
+            BeamDetailingInput(
+                bw=bw_cm * 10.0,
+                h=h_cm * 10.0,
+                c_nom=cob_mm,
+                phi_estribo=diam_estribo_mm,
+                phi_barra=diam_barra_mm,
+                d_max_agregado=d_max_agregado_mm,
+                total_bars=qtd_barras_linha,
+                is_t=is_t,
+                bf_cm=bf_cm,
+                hf_cm=hf_cm,
+                is_superior=True,
+            )
+        )
+        total = max(layout.total_bars, 1)
+        y_cg_comprimido_mm = sum(lyr.y_centroid * lyr.bar_count for lyr in layout.layers) / total
+        return y_cg_comprimido_mm / 10.0
+    except ValueError:
+        return estimativa
+
+
+def _d_linha_dupla(
+    h_cm: float,
+    bw_cm: float,
+    cob_mm: float,
+    diam_estribo_mm: float,
+    diam_barra_mm: float,
+    md_exc_kncm: float,
+    fyd_kn_cm2: float,
+    d_cm: float,
+    d_lin_est_cm: float,
+    is_t: bool = False,
+    bf_cm: float = 0.0,
+    hf_cm: float = 0.0,
+) -> float:
+    """d' da compressão: detalha a quantidade estimada e devolve a posição real."""
+    a_bar = area_barra(diam_barra_mm)
+    denom = _denom_as2(d_cm, d_lin_est_cm, contexto="d' da armadura de compress?o (estimativa)")
+    as2_est = md_exc_kncm / (fyd_kn_cm2 * denom) if fyd_kn_cm2 > 0 else 0.0
+    # Limite de seguran?a: evita loop patol?gico do detalhador com quantidade
+    # absurda de barras em se??es invi?veis (a se??o ser? recusada adiante).
+    qtd = min(max(1, math.ceil(as2_est / a_bar)), 1000) if a_bar > 0 else 1
+    return _d_linha_detalhado(
+        h_cm,
+        bw_cm,
+        cob_mm,
+        diam_estribo_mm,
+        diam_barra_mm,
+        qtd,
+        is_t=is_t,
+        bf_cm=bf_cm,
+        hf_cm=hf_cm,
+    )
+
+
+def _as2_as_linha_dupla(
+    md_exc_kncm: float,
+    fyd_kn_cm2: float,
+    d_cm: float,
+    d_linha_cm: float,
+    x_cm: float,
+    bw_cm: float,
+    h_cm: float,
+    is_t: bool = False,
+    bf_cm: float = 0.0,
+    hf_cm: float = 0.0,
+    contexto: str = "",
+) -> tuple[float, float]:
+    """Balanço da armadura dupla (NBR 6118:2023, 17.2.3 e 17.3.5.2.4).
+
+    As2 = Md,exc/(fyd·(d − d'))  (tração adicional)
+    As' = As2·fyd/f_s'            (compressão; f_s' por compatibilidade ≤ fyd)
+    As' ≥ 0,1% da área de concreto (ρ'' mínimo).
+    """
+    denom = _denom_as2(d_cm, d_linha_cm, contexto=contexto)
+    as2 = md_exc_kncm / (fyd_kn_cm2 * denom)
+    f_s_linha = _tensao_aco_compressao_kn_cm2(fyd_kn_cm2, d_linha_cm, x_cm)
+    if f_s_linha <= 0:
+        raise ValueError(
+            f"Seção recusada: armadura de compressão fora da zona comprimida "
+            f"(d'={d_linha_cm:.2f} cm ≥ x={x_cm:.2f} cm). Contexto: {contexto}"
+        )
+    as_linha = as2 * fyd_kn_cm2 / f_s_linha
+    area_concreto = bw_cm * h_cm
+    if is_t and bf_cm > bw_cm and hf_cm > 0:
+        area_concreto += (bf_cm - bw_cm) * hf_cm
+    as_linha = max(as_linha, 0.001 * area_concreto)
+    return as2, as_linha
+
+
 def _bx_lim_ductilidade(fck_mpa: float) -> float:
     """Limite de ductilidade x/d (NBR 6118:2023, 14.6.4.3, δ=1,0)."""
     return BX_LIM_DUCTILIDADE_ATE_50 if fck_mpa <= 50 else BX_LIM_DUCTILIDADE_ACIMA_50
@@ -507,6 +637,9 @@ def dimensionar_bitola_iterativa(
     d_max_agregado_mm: float = 19.0,
     max_iter: int = 5,
     tol_mm: float = 1.0,
+    is_t: bool = False,
+    bf_cm: float = 0.0,
+    hf_cm: float = 0.0,
 ) -> ResultadoBitola:
     """Realiza o loop de convergência iterativa para encontrar a armadura e o detalhamento geométrico."""
     if bw_detalhamento_cm is None:
@@ -535,17 +668,37 @@ def dimensionar_bitola_iterativa(
 
         if Md_kNcm > md_lim_kNcm:
             # Armadura dupla mantém a linha neutra no limite de ductilidade.
-            denom = _denom_as2(
+            as1 = md_lim_kNcm / (fyd * (d_cm - 0.4 * x_lim_cm))
+            d_linha_cm = _d_linha_dupla(
+                h_cm,
+                bw_calculo_cm,
+                cob_mm,
+                diam_estribo_mm,
+                diam_barra_mm,
+                Md_kNcm - md_lim_kNcm,
+                fyd,
                 d_cm,
                 d_lin_est,
+                is_t=is_t,
+                bf_cm=bf_cm,
+                hf_cm=hf_cm,
+            )
+            as2, _as_linha_req = _as2_as_linha_dupla(
+                Md_kNcm - md_lim_kNcm,
+                fyd,
+                d_cm,
+                d_linha_cm,
+                x_lim_cm,
+                bw_calculo_cm,
+                h_cm,
+                is_t=is_t,
+                bf_cm=bf_cm,
+                hf_cm=hf_cm,
                 contexto=(
-                    f"Md={Md_kNm:+.1f} kN·m, "
-                    f"seção {bw_calculo_cm:.0f}×{h_cm:.0f} cm, "
-                    f"Ø{diam_barra_mm:g} mm, iteração {it}"
+                    f"Md={Md_kNm:+.1f} kN·m, seção "
+                    f"{bw_calculo_cm:.0f}×{h_cm:.0f} cm, Ø{diam_barra_mm:g} mm"
                 ),
             )
-            as1 = md_lim_kNcm / (fyd * (d_cm - 0.4 * x_lim_cm))
-            as2 = (Md_kNcm - md_lim_kNcm) / (fyd * denom)
             as_req = as1 + as2
         else:
             x_ln, _x1, _x2 = _resolver_ln(Md_kNcm, fck_mpa, bw_calculo_cm, d_cm)
@@ -560,7 +713,9 @@ def dimensionar_bitola_iterativa(
 
         a_bar = area_barra(diam_barra_mm)
         qtd_barras = math.ceil(as_necessaria / a_bar) if a_bar > 0 else 0
-        qtd_barras = max(1, qtd_barras)
+        # Limite de seguran?a contra loop patol?gico do detalhador; se??es com
+        # milhares de barras s?o invi?veis de qualquer forma.
+        qtd_barras = min(max(1, qtd_barras), 1000)
 
         try:
             inp = BeamDetailingInput(
@@ -852,19 +1007,32 @@ def calcular_flexao_viga_comum(
             md_excedente_knm = (Md_kNcm - md_lim_kNcm) / 100.0
             ks = 1.0 / (fyd * (1.0 - 0.4 * bx_min))
             as1 = md_lim_kNcm / (fyd * (d_cm - 0.4 * x_lim_cm))
-            as2 = (Md_kNcm - md_lim_kNcm) / (
-                fyd
-                * _denom_as2(
-                    d_cm,
-                    d_lin,
-                    contexto=(
-                        f"Mk={Mk_kNm:+.1f} kN·m (Md={Md_kNm:.1f} kN·m, γf={gamma_f}), "
-                        f"seção {bw_cm:.0f}×{h_cm:.0f} cm, Ø{diam_barra_mm:g} mm, "
-                        f"cob={cob_mm:.0f} mm, CAA {caa}"
-                    ),
-                )
+            contexto_dupla = (
+                f"Mk={Mk_kNm:+.1f} kN·m (Md={Md_kNm:.1f} kN·m, γf={gamma_f}), "
+                f"seção {bw_cm:.0f}×{h_cm:.0f} cm, Ø{diam_barra_mm:g} mm, "
+                f"cob={cob_mm:.0f} mm, CAA {caa}"
             )
-            as_linha_cm2 = as2
+            d_linha_cm = _d_linha_dupla(
+                h_cm,
+                bw_cm,
+                cob_mm,
+                diam_estribo_mm,
+                diam_barra_mm,
+                Md_kNcm - md_lim_kNcm,
+                fyd,
+                d_cm,
+                d_lin,
+            )
+            as2, as_linha_cm2 = _as2_as_linha_dupla(
+                Md_kNcm - md_lim_kNcm,
+                fyd,
+                d_cm,
+                d_linha_cm,
+                x_lim_cm,
+                bw_cm,
+                h_cm,
+                contexto=contexto_dupla,
+            )
             as_req = as1 + as2
             bx = bx_min
             x_cm = x_lim_cm
@@ -1325,6 +1493,9 @@ def calcular_flexao_viga_t(
             fyk_mpa=fyk_mpa,
             Md_kNm=Md_kNm,
             bw_detalhamento_cm=bw_cm,
+            is_t=True,
+            bf_cm=bf_cm,
+            hf_cm=hf_cm,
         )
 
         tabela_bitolas = []
@@ -1342,6 +1513,9 @@ def calcular_flexao_viga_t(
                     fyk_mpa=fyk_mpa,
                     Md_kNm=Md_kNm,
                     bw_detalhamento_cm=bw_cm,
+                    is_t=True,
+                    bf_cm=bf_cm,
+                    hf_cm=hf_cm,
                 )
                 tabela_bitolas.append(res_cand)
 
@@ -1380,20 +1554,38 @@ def calcular_flexao_viga_t(
                 x1, x2 = x1m, x2m
                 if Md_kNcm > md_lim_mesa:
                     as1 = md_lim_mesa / (fyd * (d_cm - 0.4 * x_lim_mesa))
-                    as2 = (Md_kNcm - md_lim_mesa) / (
-                        fyd
-                        * _denom_as2(
-                            d_cm,
-                            d_lin,
-                            contexto=(
-                                f"Mk={Mk_kNm:+.1f} kN·m (Md={Md_kNm:.1f} kN·m), "
-                                f"seção T {bw_cm:.0f}×{h_cm:.0f} cm, "
-                                f"Ø{diam_barra_mm:g} mm"
-                            ),
-                        )
+                    contexto_dupla = (
+                        f"Mk={Mk_kNm:+.1f} kN·m (Md={Md_kNm:.1f} kN·m), "
+                        f"seção T {bw_cm:.0f}×{h_cm:.0f} cm, Ø{diam_barra_mm:g} mm"
+                    )
+                    d_linha_cm = _d_linha_dupla(
+                        h_cm,
+                        bw_cm,
+                        cob_mm,
+                        diam_estribo_mm,
+                        diam_barra_mm,
+                        Md_kNcm - md_lim_mesa,
+                        fyd,
+                        d_cm,
+                        d_lin,
+                        is_t=True,
+                        bf_cm=bf_efetivo,
+                        hf_cm=hf_cm,
+                    )
+                    as2, as_linha_cm2 = _as2_as_linha_dupla(
+                        Md_kNcm - md_lim_mesa,
+                        fyd,
+                        d_cm,
+                        d_linha_cm,
+                        x_lim_mesa,
+                        bw_cm,
+                        h_cm,
+                        is_t=True,
+                        bf_cm=bf_efetivo,
+                        hf_cm=hf_cm,
+                        contexto=contexto_dupla,
                     )
                     as_req = as1 + as2
-                    as_linha_cm2 = as2
                     bx = bx_min
                     x_cm = x_lim_mesa
                     alerta = (
@@ -1437,20 +1629,45 @@ def calcular_flexao_viga_t(
                     md2_lim, x_lim2 = _momento_limite_ln(fck_mpa, bw_cm, d_cm, bx_min)
                     if Md2_kNcm > md2_lim:
                         as2_1 = md2_lim / (fyd * (d_cm - 0.4 * x_lim2))
-                        as2_2 = (Md2_kNcm - md2_lim) / (
-                            fyd
-                            * _denom_as2(
-                                d_cm,
-                                d_lin,
-                                contexto=(
-                                    f"Mk={Mk_kNm:+.1f} kN·m (Md={Md_kNm:.1f} kN·m), "
-                                    f"seção T {bw_cm:.0f}×{h_cm:.0f} cm (alma), "
-                                    f"Ø{diam_barra_mm:g} mm"
-                                ),
+                        contexto_dupla = (
+                            f"Mk={Mk_kNm:+.1f} kN·m (Md={Md_kNm:.1f} kN·m), "
+                            f"seção T {bw_cm:.0f}×{h_cm:.0f} cm (alma), "
+                            f"Ø{diam_barra_mm:g} mm"
+                        )
+                        if d_lin > hf_cm:
+                            raise ValueError(
+                                f"Seção T recusada: armadura de compressão fora "
+                                f"da mesa (d'={d_lin:.2f} cm > hf={hf_cm:.2f} cm). "
+                                f"Contexto: {contexto_dupla}"
                             )
+                        d_linha_cm = _d_linha_dupla(
+                            h_cm,
+                            bw_cm,
+                            cob_mm,
+                            diam_estribo_mm,
+                            diam_barra_mm,
+                            Md2_kNcm - md2_lim,
+                            fyd,
+                            d_cm,
+                            d_lin,
+                            is_t=True,
+                            bf_cm=bf_efetivo,
+                            hf_cm=hf_cm,
+                        )
+                        as2_2, as_linha_cm2 = _as2_as_linha_dupla(
+                            Md2_kNcm - md2_lim,
+                            fyd,
+                            d_cm,
+                            d_linha_cm,
+                            x_lim2,
+                            bw_cm,
+                            h_cm,
+                            is_t=True,
+                            bf_cm=bf_efetivo,
+                            hf_cm=hf_cm,
+                            contexto=contexto_dupla,
                         )
                         as2 = as2_1 + as2_2
-                        as_linha_cm2 = as2_2
                         as_req = as1 + as2
                         bx = bx_min
                         x_cm = x_lim2
@@ -1488,20 +1705,33 @@ def calcular_flexao_viga_t(
             md_lim, x_lim = _momento_limite_ln(fck_mpa, bw_cm, d_cm, bx_min)
             if Md_kNcm > md_lim:
                 as1 = md_lim / (fyd * (d_cm - 0.4 * x_lim))
-                as2 = (Md_kNcm - md_lim) / (
-                    fyd
-                    * _denom_as2(
-                        d_cm,
-                        d_lin,
-                        contexto=(
-                            f"Mk={Mk_kNm:+.1f} kN·m (Md={Md_kNm:.1f} kN·m), "
-                            f"seção T {bw_cm:.0f}×{h_cm:.0f} cm (momento negativo), "
-                            f"Ø{diam_barra_mm:g} mm"
-                        ),
-                    )
+                contexto_dupla = (
+                    f"Mk={Mk_kNm:+.1f} kN·m (Md={Md_kNm:.1f} kN·m), "
+                    f"seção T {bw_cm:.0f}×{h_cm:.0f} cm (momento negativo), "
+                    f"Ø{diam_barra_mm:g} mm"
+                )
+                d_linha_cm = _d_linha_dupla(
+                    h_cm,
+                    bw_cm,
+                    cob_mm,
+                    diam_estribo_mm,
+                    diam_barra_mm,
+                    Md_kNcm - md_lim,
+                    fyd,
+                    d_cm,
+                    d_lin,
+                )
+                as2, as_linha_cm2 = _as2_as_linha_dupla(
+                    Md_kNcm - md_lim,
+                    fyd,
+                    d_cm,
+                    d_linha_cm,
+                    x_lim,
+                    bw_cm,
+                    h_cm,
+                    contexto=contexto_dupla,
                 )
                 as_req = as1 + as2
-                as_linha_cm2 = as2
                 bx = bx_min
                 x_cm = x_lim
                 alerta = (

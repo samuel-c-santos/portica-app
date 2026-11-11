@@ -203,3 +203,26 @@ class TestVigaT:
         assert r.tipo == "NEGATIVO"
         assert r.bf_efetivo_cm == pytest.approx(55.0, abs=0.01)
         assert r.asmin_cm2 == pytest.approx(4.125, abs=0.01)
+
+
+def test_armadura_compressao_fora_da_mesa_recusa():
+    """EP-02.4: T com LN na alma e d' > hf não pode usar As' na mesa.
+
+    hf=3 cm < d'=4,3 cm (cob+estribo+Ø/2) → recusa explícita.
+    """
+    with pytest.raises(ValueError, match="fora da mesa"):
+        calcular_flexao_viga_t(
+            h_cm=50,
+            bw_cm=15,
+            bf_cm=60,
+            hf_cm=3,
+            caa=2,
+            fck_mpa=30,
+            diam_estribo_mm=5.0,
+            diam_barra_mm=16.0,
+            fyk_mpa=50.0,
+            momentos=[240.0],
+            b1esq_cm=20,
+            b1dir_cm=20,
+            gamma_f=1.4,
+        )

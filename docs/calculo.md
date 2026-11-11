@@ -503,10 +503,11 @@ armadura de compressão (As').
 
 ### 5.1 Momento limite
 
-```
-Md,lim = bw · d² / KC,lim
+No limite de ductilidade `bx_min` (item 14.6.4.3):
 
-KC,lim = 1 / (fck/10 · bx_min · (0,48 - 0,192 · bx_min))
+```
+x_lim = bx_min · d
+Md,lim = fcd · b · x_lim · (d - 0,4 · x_lim)
 ```
 
 ### 5.2 Calculo da armadura dupla
@@ -514,14 +515,21 @@ KC,lim = 1 / (fck/10 · bx_min · (0,48 - 0,192 · bx_min))
 ```
 Md,excedente = Md - Md,lim
 
-As1 = ks,lim · Md,lim / d           (tracionada limite)
-As2 = Md,excedente / (fyd · (d - d'))  (tracionada adicional)
-As' = As2                            (comprimida)
+As1 = Md,lim / (fyd · (d - 0,4 · x_lim))   (tracionada limite)
+As2 = Md,excedente / (fyd · (d - d'))      (tracionada adicional)
+
+f_s' = min(fyd, Es · ecu · (x_lim - d') / x_lim)   (compatibilidade)
+As' = As2 · fyd / f_s'                      (comprimida)
 
 As,total = As1 + As2
 ```
 
-Onde `d' = cob/10 + phi_t/10 + phi_l/20` (distancia da face comprimida ao CG da armadura de compressão).
+`As'` so e igual a `As2` quando o aço de compressão escoa (`f_s' = fyd`).
+Se `f_s' < fyd` (d' grande em relação a x), `As' > As2`. O EP-02.4 aplica
+ainda o minimo construtivo `rho'' >= 0,1%` da area de concreto.
+
+O `d'` e a posicao real do centroide da armadura de compressao obtida pelo
+detalhamento (`BeamDetailer`), nao uma estimativa de uma camada.
 
 ### 5.3 Adocao de As'
 
