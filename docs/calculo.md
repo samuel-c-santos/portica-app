@@ -302,13 +302,16 @@ conforme o `fck` e o tipo de aco do estribo (CA-50 ou CA-60).
 
 ### 3.7 Espacamento entre estribos
 
-O espacamento e calculado a partir do estribo efetivamente escolhido:
+O espacamento necessario e calculado a partir do estribo efetivamente
+escolhido:
 
 ```
-s = Asw,ramo · 100 / Asw,usado    (cm)
+s_req = Asw,ramo · 100 / Asw,usado    (cm)
+s_adotado = min(s_req, s_max)         (EP-02.5)
 ```
 
 Onde `Asw,ramo` e a area de 2 ramos do estribo (`2 * area` de uma barra `phi_t`).
+O espacamento **adotado** nunca supera o `s_max` normativo do item 3.8.
 
 ### 3.8 Espacamento maximo (NBR 6118:18.3.3.2)
 
@@ -602,6 +605,9 @@ O `BeamDetailer` calcula a disposicao real das barras em camadas, considerando:
 - Largura disponivel: `bw - 2·cob - 2·phi_t`
 - Diametro do agregado graudo (`d_max = 19 mm` default)
 - Espacamento horizontal minimo: `max(20 mm, phi_l, 1,2·d_max)`
+- Espacamento vertical minimo entre camadas:
+  `e_v,min = max(20 mm, phi_l, 1,33·d_max)` (definicao unica em
+  `core/detailing/domain.py`, compartilhada com o DXF)
 - Quantidade de barras por camada e numero de camadas
 
 Retorna: posicoes das barras, camadas, espacamento real, altura efetiva (`d_efetiva`).
@@ -777,7 +783,8 @@ O motor divide o comprimento da viga em regioes conforme o diagrama de cortante.
 Para cada regiao, calcula o estribo adequado considerando:
 
 - Cortante maxima da regiao
-- Espacamento maximo normativo (item 3.8)
+- Geometria real da viga (cobrimento, `phi_t` e `phi_l` informados)
+- Espacamento maximo normativo (item 3.8), que limita o espacamento adotado
 - Taxa minima de armadura transversal
 
 ### 11.2 Saida

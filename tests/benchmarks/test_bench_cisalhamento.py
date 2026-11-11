@@ -21,6 +21,7 @@ Caso de referência com a conta à mão, NBR 6118:2023 (§17.4.2, Modelo I):
     Asw/s,adot = max(req, min) = 2,4723 cm²/m
     s  = Asw,ramo/(Asw/s) = (2·0,19635·100)/2,4723 = 15,88 cm
     s_max (Vsd ≤ 0,67·Vrd2) = min(0,6·d, 30) = min(39,42, 30) = 30 cm
+    s,adotado = min(s, s_max)  [EP-02.5: o espaçamento adotado é limitado]
 """
 
 import pytest
@@ -134,3 +135,18 @@ class TestCisalhamentoCA60:
         asw_req_sem_cap = r.vsw_kn / (60.0 / 1.15 * 65.7) * 100
         assert asw_req_sem_cap < asw_req_capado
         assert r.asw_usado_cm2_m == pytest.approx(2.4674, abs=0.01)
+
+
+def test_espacamento_adotado_limitado_por_smax():
+    """EP-02.5: com Ø8 e Vk baixa, o s requerido (~43 cm) é cortado em s_max."""
+    from core.calculos.engenharia import area_barra
+
+    r = calcular_cisalhamento_viga_comum(
+        forcas_cortantes=[30.0],
+        gamma_f=1.4,
+        **{**CASE, "diam_estribo_mm": 8.0, "fyk_estribo_kn_cm2": 50.0},
+    )[0]
+    s_requerido = 2 * area_barra(8.0) * 100 / r.asw_usado_cm2_m
+    assert s_requerido > r.s_max_cm
+    assert r.dist_estribos_cm == pytest.approx(r.s_max_cm, abs=0.05)
+    assert r.passa_smax == "SIM"

@@ -172,6 +172,18 @@ class BeamDetailingInput:
 # ══════════════════════════════════════════════════════════════════════════════
 
 
+def ev_min_mm(d_max_agregado_mm: float, phi_barra_mm: float) -> float:
+    """Espaçamento vertical mínimo entre camadas (NBR 6118:2023, 18.3.2.2).
+
+    Regra única usada pelo detalhamento e pela exportação DXF (EP-02.5):
+    e_v,min = max(20 mm; φ; 1,33·d_max). O fator 1,33 é o adotado
+    historicamente pelo motor e é conservador em relação ao mínimo 0,5·d_max
+    da norma; mantê-lo em uma única definição evita divergência entre
+    desenho, DXF e relatório.
+    """
+    return max(20.0, phi_barra_mm, 1.33 * d_max_agregado_mm)
+
+
 class BeamDetailer:
     """UseCase: calcula o layout de armadura na seção transversal de viga.
 
@@ -248,7 +260,7 @@ class BeamDetailer:
 
         # ── 2. Espaçamentos mínimos normativos ────────────────────────────────
         eh_min = max(20.0, inp.phi_barra, 1.2 * inp.d_max_agregado)
-        ev_min = max(20.0, inp.phi_barra, 1.33 * inp.d_max_agregado)
+        ev_min = ev_min_mm(inp.d_max_agregado, inp.phi_barra)
 
         # ── 3. Número máximo de barras por camada ─────────────────────────────
         if inp.phi_barra > h_space:

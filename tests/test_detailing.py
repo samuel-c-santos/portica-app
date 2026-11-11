@@ -44,19 +44,45 @@ def test_cobre_toda_viga():
 
 
 def test_espacamento_dentro_limite():
-    """EP-03.2: espaçamento dentro dos limites CONSTRUTIVOS do módulo.
-
-    O teto de 30 cm é hard-coded em detailing.py (limpa incondicionalmente)
-    e o piso de 5 cm idem. O s_max NORMATIVO min(0,3·d; 20 cm) com regime
-    por Vsd/Vrd2 só entra no EP-02.5 (que também substitui o d e as bitolas
-    hard-coded do módulo).
-    """
+    """EP-02.5: espaçamento adotado ≤ s_max real (Vsd/Vrd2), não 30 cm fixo."""
     cortantes = _ler_cortantes()
     regioes = detalhar_estribos(
-        h_cm=70, bw_cm=20, fck_mpa=30, fyk_mpa=50, fyk_estribo_kn_cm2=60, caa=2, cortantes=cortantes
+        h_cm=70,
+        bw_cm=20,
+        fck_mpa=30,
+        fyk_mpa=50,
+        fyk_estribo_kn_cm2=60,
+        caa=2,
+        cortantes=cortantes,
+        phi_estribo_mm=5.0,
+        diam_barra_mm=16.0,
+        cobrimento_mm=30.0,
     )
     for r in regioes:
-        assert 5.0 <= r["espacamento_cm"] <= 30.0
+        assert r["espacamento_cm"] <= r["s_max_cm"] + 0.05
+
+
+def test_espacamento_limitado_pelo_smax_nao_por_30_fixo():
+    """Ø8 com cortante baixa: o s necessário (≈43 cm) é cortado pelo s_max."""
+    cortantes = _ler_cortantes()
+    regioes = detalhar_estribos(
+        h_cm=70,
+        bw_cm=20,
+        fck_mpa=30,
+        fyk_mpa=50,
+        fyk_estribo_kn_cm2=50,
+        caa=2,
+        cortantes=cortantes,
+        phi_estribo_mm=8.0,
+        diam_barra_mm=16.0,
+        cobrimento_mm=30.0,
+    )
+    assert regioes
+    for r in regioes:
+        assert r["espacamento_cm"] <= r["s_max_cm"] + 0.05
+        # o teto antigo de 30 cm não é mais aplicado cegamente
+        if r["s_max_cm"] < 30.0:
+            assert r["espacamento_cm"] <= r["s_max_cm"] + 0.05
 
 
 def test_sem_cortantes():

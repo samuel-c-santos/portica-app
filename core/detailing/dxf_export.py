@@ -2,6 +2,8 @@ from typing import Any
 
 import ezdxf
 
+from core.detailing.domain import ev_min_mm
+
 
 def exportar_secao_dxf(
     bw_cm: float,
@@ -15,6 +17,7 @@ def exportar_secao_dxf(
     is_t: bool = False,
     bf_cm: float | None = None,
     hf_cm: float | None = None,
+    d_max_agregado_mm: float = 19.0,
     nome_arquivo: str = "secao_viga.dxf",
 ):
     """
@@ -88,18 +91,10 @@ def exportar_secao_dxf(
     msp.add_lwpolyline(vertices_estribo, close=True, dxfattribs={"layer": "ESTRIBO"})
 
     # 3. Desenhar Armaduras Longitudinais Principais
-    # Se for seção T, vamos verificar se as barras superiores precisam ser comprimidas para caber na alma
-    superior_bars_need_mapping = False
-    if is_t and bf_cm:
-        for bar in bar_positions:
-            bx = bar.get("x") if isinstance(bar, dict) else getattr(bar, "x", None)
-            by = bar.get("y") if isinstance(bar, dict) else getattr(bar, "y", None)
-            if bx is not None and by is not None:
-                # Se for barra superior (na metade de cima) e estiver fora dos limites da alma (bw)
-                if by > (h_cm * 10.0) / 2.0 and bx > (bw_cm * 10.0):
-                    superior_bars_need_mapping = True
-                    break
-
+    # Coordenadas das barras vêm em mm com origem no canto inferior-esquerdo
+    # da MESA (viga T) ou da seção (retangular). No DXF T o referencial é
+    # centrado no eixo da alma, então aplica-se a translação (e, para barras
+    # superiores fora da alma, uma transformação afim explícita).
     for bar in bar_positions:
         bx = bar.get("x") if isinstance(bar, dict) else getattr(bar, "x", None)
         by = bar.get("y") if isinstance(bar, dict) else getattr(bar, "y", None)
@@ -108,15 +103,17 @@ def exportar_secao_dxf(
         ) or phi_barra_mm
         r_vis_cm = (b_phi / 10.0) / 2.0
         if bx is not None and by is not None:
-            # Se for barra superior e precisamos mapear/comprimir para a alma
-            if is_t and bf_cm and superior_bars_need_mapping and by > (h_cm * 10.0) / 2.0:
-                bx_mapped = bx * (bw_cm / bf_cm)
-            else:
-                bx_mapped = bx
-
-            cx = (bx_mapped / 10.0) + x_shift
+            x_cm = bx / 10.0
+            if is_t and bf_cm:
+                # Translação: centro da mesa (bf/2) → 0.
+                x_cm = x_cm - bf_cm / 2.0
+                # Barras superiores fora da alma: mapeia a largura da mesa
+                # para a largura da alma preservando o centro (afim, não
+                # escala com origem no canto).
+                if by > (h_cm * 10.0) / 2.0 and abs(x_cm) > bw_cm / 2.0:
+                    x_cm = x_cm * (bw_cm / bf_cm)
             cy = by / 10.0
-            msp.add_circle((cx, cy), r_vis_cm, dxfattribs={"layer": "ARMADURA_LONG"})
+            msp.add_circle((x_cm, cy), r_vis_cm, dxfattribs={"layer": "ARMADURA_LONG"})
 
     # 4. Desenhar Armadura de Pele (Laterais)
     if n_barras_pele > 0 and phi_pele_mm > 0:
@@ -161,8 +158,8 @@ def exportar_secao_dxf(
             if top_bars_bottoms:
                 fundo_sup_cm = min(top_bars_bottoms)
 
-        # Calcular ev_min (em cm)
-        ev_min_cm = max(2.0, phi_barra_mm / 10.0, 2.28)
+        # Calcular ev_min (em cm) pela definição única do domínio
+        ev_min_cm = ev_min_mm(d_max_agregado_mm, phi_barra_mm) / 10.0
 
         # Determinar limites brutos (sem gaps)
         y_bottom_raw_cm = topo_cm if topo_cm is not None else (cob_cm + phi_est_cm)

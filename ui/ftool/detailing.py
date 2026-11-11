@@ -9,28 +9,49 @@ import math
 from core.calculos.engenharia import calcular_cisalhamento_viga_comum
 
 
-def _calc_asw_s(vk_kn, gamma_f, h_cm, bw_cm, fck_mpa, fyk_mpa, fyk_estribo_kn_cm2, caa):
+def _calc_asw_s(
+    vk_kn,
+    gamma_f,
+    h_cm,
+    bw_cm,
+    fck_mpa,
+    fyk_mpa,
+    fyk_estribo_kn_cm2,
+    caa,
+    phi_estribo_mm,
+    phi_barra_mm,
+    cobrimento_mm,
+    d_max_agregado_mm,
+):
+    """Asw/s e s_max do MOTOR com a geometria real da viga (EP-02.5).
+
+    Antes o módulo chamava o motor com Ø5/Ø16 e cobrimento fixos, então o
+    Asw/s da tabela era de uma viga diferente da do usuário.
+    """
     res = calcular_cisalhamento_viga_comum(
         h_cm=h_cm,
         bw_cm=bw_cm,
         fck_mpa=fck_mpa,
-        diam_estribo_mm=5.0,
-        diam_barra_mm=16.0,
+        diam_estribo_mm=phi_estribo_mm,
+        diam_barra_mm=phi_barra_mm,
         fyk_estribo_kn_cm2=fyk_estribo_kn_cm2,
         fyk_barra_mpa=fyk_mpa,
         caa=caa,
         forcas_cortantes=[vk_kn],
         gamma_f=gamma_f,
     )
-    return res[0].asw_usado_cm2_m if (res and res[0]) else 0.0
+    if res and res[0]:
+        return res[0].asw_usado_cm2_m, res[0].s_max_cm
+    return 0.0, 30.0
 
 
-def _calc_espacamento(asw_s_cm2m, phi_mm):
+def _calc_espacamento(asw_s_cm2m, phi_mm, s_max_cm):
+    """Espaçamento adotado: o menor entre o necessário e o s_max normativo."""
     area = math.pi * (phi_mm / 10) ** 2 / 4
     if asw_s_cm2m <= 0:
-        return 30.0
+        return s_max_cm
     s = (2 * area) / asw_s_cm2m * 100
-    return max(5.0, min(s, 30.0))
+    return min(s, s_max_cm)
 
 
 def _encontrar_apoios(cortantes: list[tuple[float, float]]) -> list[float]:
@@ -52,17 +73,23 @@ def detalhar_estribos(
     cortantes: list[tuple[float, float]],
     phi_estribo_mm=5.0,
     gamma_f=1.4,
+    diam_barra_mm=16.0,
+    cobrimento_mm=30.0,
+    d_max_agregado_mm=19.0,
 ) -> list[dict]:
     """
     Divide a viga em zonas de estribos usando decalagem al = d.
     Para cada vao, gera 3 zonas: Apoio Esq / Vao / Apoio Dir.
+
+    EP-02.5: usa a geometria real (cobrimento, Ø do estribo e da barra) e o
+    s_max do motor (função de Vsd/Vrd2), não mais d e bitolas hard-coded.
     """
     if not cortantes:
         return []
 
     pontos = sorted(cortantes, key=lambda p: p[0])
     L = max(p[0] for p in pontos)
-    d_cm = h_cm - 3.0 - 0.5 - 0.8
+    d_cm = h_cm - cobrimento_mm / 10.0 - phi_estribo_mm / 10.0 - diam_barra_mm / 20.0
     al_m = d_cm / 100
 
     apoios = _encontrar_apoios(pontos)
@@ -84,13 +111,27 @@ def detalhar_estribos(
         if ze_fim > xi:
             pts = [p for p in pontos if xi <= p[0] <= ze_fim]
             vk = max(abs(p[1]) for p in pts) if pts else 0
-            asw = _calc_asw_s(vk, gamma_f, h_cm, bw_cm, fck_mpa, fyk_mpa, fyk_estribo_kn_cm2, caa)
+            asw, s_max = _calc_asw_s(
+                vk,
+                gamma_f,
+                h_cm,
+                bw_cm,
+                fck_mpa,
+                fyk_mpa,
+                fyk_estribo_kn_cm2,
+                caa,
+                phi_estribo_mm,
+                diam_barra_mm,
+                cobrimento_mm,
+                d_max_agregado_mm,
+            )
             zonas.append(
                 {
                     "x_inicio": round(xi, 2),
                     "x_fim": round(ze_fim, 2),
                     "phi_mm": phi_estribo_mm,
-                    "espacamento_cm": round(_calc_espacamento(asw, phi_estribo_mm), 1),
+                    "espacamento_cm": round(_calc_espacamento(asw, phi_estribo_mm, s_max), 1),
+                    "s_max_cm": round(s_max, 1),
                     "asw_s_cm2m": round(asw, 2),
                     "zona": "Apoio",
                 }
@@ -102,13 +143,27 @@ def detalhar_estribos(
         if zv_fim > zv_ini + 0.1:
             pts = [p for p in pontos if zv_ini <= p[0] <= zv_fim]
             vk = max(abs(p[1]) for p in pts) if pts else 0
-            asw = _calc_asw_s(vk, gamma_f, h_cm, bw_cm, fck_mpa, fyk_mpa, fyk_estribo_kn_cm2, caa)
+            asw, s_max = _calc_asw_s(
+                vk,
+                gamma_f,
+                h_cm,
+                bw_cm,
+                fck_mpa,
+                fyk_mpa,
+                fyk_estribo_kn_cm2,
+                caa,
+                phi_estribo_mm,
+                diam_barra_mm,
+                cobrimento_mm,
+                d_max_agregado_mm,
+            )
             zonas.append(
                 {
                     "x_inicio": round(zv_ini, 2),
                     "x_fim": round(zv_fim, 2),
                     "phi_mm": phi_estribo_mm,
-                    "espacamento_cm": round(_calc_espacamento(asw, phi_estribo_mm), 1),
+                    "espacamento_cm": round(_calc_espacamento(asw, phi_estribo_mm, s_max), 1),
+                    "s_max_cm": round(s_max, 1),
                     "asw_s_cm2m": round(asw, 2),
                     "zona": "Vao",
                 }
@@ -121,13 +176,27 @@ def detalhar_estribos(
         if xf - zd_ini > 0.1:
             pts = [p for p in pontos if zd_ini <= p[0] <= xf]
             vk = max(abs(p[1]) for p in pts) if pts else 0
-            asw = _calc_asw_s(vk, gamma_f, h_cm, bw_cm, fck_mpa, fyk_mpa, fyk_estribo_kn_cm2, caa)
+            asw, s_max = _calc_asw_s(
+                vk,
+                gamma_f,
+                h_cm,
+                bw_cm,
+                fck_mpa,
+                fyk_mpa,
+                fyk_estribo_kn_cm2,
+                caa,
+                phi_estribo_mm,
+                diam_barra_mm,
+                cobrimento_mm,
+                d_max_agregado_mm,
+            )
             zonas.append(
                 {
                     "x_inicio": round(zd_ini, 2),
                     "x_fim": round(xf, 2),
                     "phi_mm": phi_estribo_mm,
-                    "espacamento_cm": round(_calc_espacamento(asw, phi_estribo_mm), 1),
+                    "espacamento_cm": round(_calc_espacamento(asw, phi_estribo_mm, s_max), 1),
+                    "s_max_cm": round(s_max, 1),
                     "asw_s_cm2m": round(asw, 2),
                     "zona": "Apoio",
                 }

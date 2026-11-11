@@ -217,3 +217,36 @@ def test_exportar_secao_dxf_com_pele_e_camadas_duplas():
         # ys_pele deve ser exatamente [10.8 + 15.4667 + 0.5, 10.8 + 30.9333 + 1.5] = [26.7667, 43.2333]
         assert abs(ys[0] - 26.7667) < 1e-3
         assert abs(ys[1] - 43.2333) < 1e-3
+
+
+def test_exportar_secao_dxf_t_afim():
+    """EP-02.5: barras da viga T usam translação/afim, não escala com origem no canto.
+
+    bf=60, bw=20, h=70. Barra inferior no centro da alma x=300 mm → x=0 cm.
+    Barra superior na mesa x=100 mm (fora da alma) → (10−30)·(20/60) = −6,667 cm.
+    """
+    with tempfile.TemporaryDirectory() as tmpdir:
+        dxf_path = os.path.join(tmpdir, "secao_t_afim.dxf")
+        exportar_secao_dxf(
+            bw_cm=20.0,
+            h_cm=70.0,
+            cob_cm=3.0,
+            phi_estribo_mm=5.0,
+            bar_positions=[
+                {"x": 300.0, "y": 45.0},
+                {"x": 100.0, "y": 655.0},
+            ],
+            phi_barra_mm=16.0,
+            is_t=True,
+            bf_cm=60.0,
+            hf_cm=10.0,
+            nome_arquivo=dxf_path,
+        )
+        doc = ezdxf.readfile(dxf_path)
+        msp = doc.modelspace()
+        barras = sorted(
+            (e for e in msp if e.dxftype() == "CIRCLE" and e.dxf.layer == "ARMADURA_LONG"),
+            key=lambda c: c.dxf.center.y,
+        )
+        assert barras[0].dxf.center.x == pytest.approx(0.0, abs=1e-6)
+        assert barras[1].dxf.center.x == pytest.approx(-6.6666667, abs=1e-6)

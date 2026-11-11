@@ -208,6 +208,9 @@ def dimensionar_trechos_ftool(
                 cortantes=cortantes,
                 phi_estribo_mm=diam_estribo_mm,
                 gamma_f=gamma_f,
+                diam_barra_mm=diam_barra_mm,
+                cobrimento_mm=cobrimento_els_mm(dados_viga),
+                d_max_agregado_mm=dados_viga.get("d_max_agregado_mm", 19.0),
             )
             detalhamento = calcular_qtd_estribos(detalhamento)
         except ERROS_DADOS as ex:

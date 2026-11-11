@@ -904,6 +904,7 @@ def calcular_flexao_viga_comum(
     fyk_mpa: float,
     momentos: list[float],
     gamma_f: float = GAMMA_F_RESTO,
+    d_max_agregado_mm: float = 19.0,
 ) -> list[ResultadoFlexao]:
     """Calcula flexao para uma secao retangular com multiplos momentos.
 
@@ -953,6 +954,7 @@ def calcular_flexao_viga_comum(
             fyk_mpa=fyk_mpa,
             Md_kNm=Md_kNm,
             bw_detalhamento_cm=bw_cm,
+            d_max_agregado_mm=d_max_agregado_mm,
         )
 
         tabela_bitolas = []
@@ -970,6 +972,7 @@ def calcular_flexao_viga_comum(
                     fyk_mpa=fyk_mpa,
                     Md_kNm=Md_kNm,
                     bw_detalhamento_cm=bw_cm,
+                    d_max_agregado_mm=d_max_agregado_mm,
                 )
                 tabela_bitolas.append(res_cand)
 
@@ -1091,7 +1094,7 @@ def calcular_flexao_viga_comum(
 
         # Verificação de espaçamento horizontal com base no detalhamento geométrico convergido
         espaco_disp = bw_cm - 2 * (cob_mm / 10) - 2 * (diam_estribo_mm / 10)
-        eh_min = max(2.0, diam_barra_mm / 10, 1.2 * 1.9)
+        eh_min = max(2.0, diam_barra_mm / 10, 1.2 * d_max_agregado_mm / 10)
         eh_passa = "SIM" if res_bitola.cabe else "NÃO"
         if res_bitola.layout and res_bitola.layout.layers:
             eh_real = res_bitola.eh_real_mm / 10.0
@@ -1281,17 +1284,18 @@ def calcular_cisalhamento_viga_comum(
         # Asw/s adotado = max(necessario, minimo)
         asw_usado = max(asw_req_cm2_m, asw_min)  # cm²/m
 
-        # Espacamento: s = (Asw ramo) / (Asw/s) * 100 (cm)
-        # asw_ramo em cm², asw_usado em cm²/m -> s em cm
-        dist_estribos = (asw_ramo * 100) / asw_usado if asw_usado > 0 else 999
-
         # Verificação de espaçamento máximo dos estribos (NBR 6118:18.3.3.2)
         if Vsd_aplicado <= 0.67 * vrd2:
             s_max = min(0.6 * d_cm, 30.0)
         else:
             s_max = min(0.3 * d_cm, 20.0)
 
-        passa_smax = "SIM" if dist_estribos <= s_max + 0.05 else "NÃO"
+        # Espacamento: s = (Asw ramo) / (Asw/s) * 100 (cm)
+        # asw_ramo em cm², asw_usado em cm²/m -> s em cm
+        dist_estribos = (asw_ramo * 100) / asw_usado if asw_usado > 0 else 999
+        # EP-02.5: o espaçamento ADOTADO é limitado pelo s_max normativo.
+        dist_estribos = min(dist_estribos, s_max)
+        passa_smax = "SIM"
 
         resultados.append(
             ResultadoCisalhamento(
@@ -1428,6 +1432,7 @@ def calcular_flexao_viga_t(
     bf1esq_cm: float | None = None,
     bf1dir_cm: float | None = None,
     gamma_f: float = GAMMA_F_RESTO,
+    d_max_agregado_mm: float = 19.0,
 ) -> list[ResultadoFlexaoT]:
     """Calcula flexao para secao de Viga T.
 
@@ -1496,6 +1501,7 @@ def calcular_flexao_viga_t(
             is_t=True,
             bf_cm=bf_cm,
             hf_cm=hf_cm,
+            d_max_agregado_mm=d_max_agregado_mm,
         )
 
         tabela_bitolas = []
@@ -1516,6 +1522,7 @@ def calcular_flexao_viga_t(
                     is_t=True,
                     bf_cm=bf_cm,
                     hf_cm=hf_cm,
+                    d_max_agregado_mm=d_max_agregado_mm,
                 )
                 tabela_bitolas.append(res_cand)
 
@@ -1796,7 +1803,7 @@ def calcular_flexao_viga_t(
         )
         barras_cima = qtd_barras - qtd_barras_1cam
         espaco_disp = bw_cm - 2 * (cob_mm / 10.0) - 2 * (diam_estribo_mm / 10.0)
-        eh_min = max(2.0, diam_barra_mm / 10.0, 1.2 * 1.9)
+        eh_min = max(2.0, diam_barra_mm / 10.0, 1.2 * d_max_agregado_mm / 10)
         bx_passa = "NÃO" if dominio_4 else ("SIM" if bx <= bx_min + 1e-9 else "NÃO")
 
         # EP-02.2: domínio 4 é recusa explícita (nunca "CABE" com As,min)

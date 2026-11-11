@@ -3540,6 +3540,7 @@ def build_viga_screen(
                 is_t=is_t,
                 bf_cm=bf_cm,
                 hf_cm=hf_cm,
+                d_max_agregado_mm=state.get("d_max_agregado_mm", 19.0),
                 nome_arquivo=out,
             )
 
