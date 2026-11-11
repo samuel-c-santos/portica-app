@@ -22,7 +22,7 @@ class TestFckValidacao:
                 fck_mpa=0.0,
                 diam_estribo_mm=5.0,
                 diam_barra_mm=16.0,
-                fyk_mpa=50.0,
+                fyk_kn_cm2=50.0,
                 momentos=[60.0],
             )
 
@@ -35,7 +35,7 @@ class TestFckValidacao:
                 fck_mpa=-30.0,
                 diam_estribo_mm=5.0,
                 diam_barra_mm=16.0,
-                fyk_mpa=50.0,
+                fyk_kn_cm2=50.0,
                 momentos=[60.0],
             )
 
@@ -50,7 +50,7 @@ class TestFckValidacao:
                 fck_mpa=0.0,
                 diam_estribo_mm=5.0,
                 diam_barra_mm=12.5,
-                fyk_mpa=50.0,
+                fyk_kn_cm2=50.0,
                 momentos=[80.0],
             )
 
@@ -71,7 +71,7 @@ class TestBracoArmaduraDupla:
                 fck_mpa=30.0,
                 diam_estribo_mm=6.3,
                 diam_barra_mm=12.5,
-                fyk_mpa=50.0,
+                fyk_kn_cm2=50.0,
                 momentos=[10.0],
             )
 
@@ -123,7 +123,7 @@ class TestSemSentinelaBx999:
             fck_mpa=30.0,
             diam_estribo_mm=5.0,
             diam_barra_mm=16.0,
-            fyk_mpa=50.0,
+            fyk_kn_cm2=50.0,
             momentos=[-400.0],
         )
         r = res[0]

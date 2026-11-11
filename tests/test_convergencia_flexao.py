@@ -20,7 +20,7 @@ def test_convergencia_bitola_1_camada():
         diam_estribo_mm=5.0,
         diam_barra_mm=12.5,
         fck_mpa=30.0,
-        fyk_mpa=50.0,
+        fyk_kn_cm2=50.0,
         Md_kNm=45.0,
         bw_detalhamento_cm=20.0,
     )
@@ -42,7 +42,7 @@ def test_convergencia_bitola_multiplas_camadas():
         diam_estribo_mm=5.0,
         diam_barra_mm=16.0,
         fck_mpa=30.0,
-        fyk_mpa=50.0,
+        fyk_kn_cm2=50.0,
         Md_kNm=100.0,
         bw_detalhamento_cm=14.0,
     )
@@ -61,7 +61,7 @@ def test_integ_flexao_comum_retorna_layout_e_tabela():
         fck_mpa=30.0,
         diam_estribo_mm=5.0,
         diam_barra_mm=12.5,
-        fyk_mpa=50.0,
+        fyk_kn_cm2=50.0,
         momentos=[60.0],
     )
     assert len(resultados) == 1
@@ -89,7 +89,7 @@ def test_nao_convergencia_por_max_iter_e_recusada():
         diam_estribo_mm=5.0,
         diam_barra_mm=10.0,
         fck_mpa=30.0,
-        fyk_mpa=50.0,
+        fyk_kn_cm2=50.0,
         Md_kNm=50.0 * 1.4,
         bw_detalhamento_cm=15.0,
         max_iter=1,
@@ -123,7 +123,7 @@ def test_caso_h50_bw15_mk400_oscilador_e_recusado():
         diam_estribo_mm=5.0,
         diam_barra_mm=16.0,
         fck_mpa=30.0,
-        fyk_mpa=50.0,
+        fyk_kn_cm2=50.0,
         Md_kNm=400.0 * 1.4,
         bw_detalhamento_cm=15.0,
     )
@@ -141,7 +141,7 @@ def test_convergencia_normal_expone_flag():
         diam_estribo_mm=5.0,
         diam_barra_mm=12.5,
         fck_mpa=30.0,
-        fyk_mpa=50.0,
+        fyk_kn_cm2=50.0,
         Md_kNm=45.0,
         bw_detalhamento_cm=20.0,
     )
@@ -159,7 +159,7 @@ def test_resultado_flexao_expone_convergencia():
         fck_mpa=30.0,
         diam_estribo_mm=5.0,
         diam_barra_mm=12.5,
-        fyk_mpa=50.0,
+        fyk_kn_cm2=50.0,
         momentos=[60.0],
     )
     res = resultados[0]
@@ -177,7 +177,7 @@ def test_integ_flexao_viga_t_retorna_layout_e_tabela():
         fck_mpa=30.0,
         diam_estribo_mm=5.0,
         diam_barra_mm=12.5,
-        fyk_mpa=50.0,
+        fyk_kn_cm2=50.0,
         momentos=[80.0],
     )
     assert len(resultados) == 1

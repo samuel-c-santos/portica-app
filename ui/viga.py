@@ -1033,9 +1033,8 @@ def build_viga_screen(
                     fck_mpa=fck,
                     diam_estribo_mm=diam_est,
                     diam_barra_mm=diam_bar,
-                    # fyk entra em kN/cm² (dropdown "fyk aço (kN/cm²)"); o nome
-                    # do parâmetro do motor é legado — unificação: EP-04.2
-                    fyk_mpa=fyk,
+                    # fyk entra em kN/cm² (dropdown "fyk aço (kN/cm²)")
+                    fyk_kn_cm2=fyk,
                     momentos=momentos,
                     b1esq_cm=b1e,
                     b1dir_cm=b1d,
@@ -1049,9 +1048,8 @@ def build_viga_screen(
                     fck_mpa=fck,
                     diam_estribo_mm=diam_est,
                     diam_barra_mm=diam_bar,
-                    # fyk entra em kN/cm² (dropdown "fyk aço (kN/cm²)"); o nome
-                    # do parâmetro do motor é legado — unificação: EP-04.2
-                    fyk_mpa=fyk,
+                    # fyk entra em kN/cm² (dropdown "fyk aço (kN/cm²)")
+                    fyk_kn_cm2=fyk,
                     momentos=momentos,
                     gamma_f=gamma_f,
                 )
@@ -1069,7 +1067,7 @@ def build_viga_screen(
                 diam_estribo_mm=diam_est,
                 diam_barra_mm=diam_bar,
                 fyk_estribo_kn_cm2=fyke,
-                fyk_barra_mpa=fyk,
+                fyk_barra_kn_cm2=fyk,
                 caa=caa,
                 forcas_cortantes=cortantes,
                 gamma_f=gamma_f,
@@ -3144,7 +3142,7 @@ def build_viga_screen(
                         hf_cm=hf,
                         caa=int(caa_dd.control.value),
                         fck_mpa=float(fck_dd.control.value or 0),
-                        fyk_mpa=float(fyk_dd.control.value or 0),
+                        fyk_kn_cm2=float(fyk_dd.control.value or 0),
                         fyk_estribo_kn_cm2=float(fyke_dd.control.value or 0),
                         phi_estribo_mm=float(phi_est_dd.control.value),
                         phi_barra_mm=float(phi_bar_dd.control.value),
@@ -3172,7 +3170,7 @@ def build_viga_screen(
                         hf_cm=hf,
                         caa=int(caa_dd.control.value),
                         fck_mpa=float(fck_dd.control.value or 0),
-                        fyk_mpa=float(fyk_dd.control.value or 0),
+                        fyk_kn_cm2=float(fyk_dd.control.value or 0),
                         fyk_estribo_kn_cm2=float(fyke_dd.control.value or 0),
                         phi_estribo_mm=float(phi_est_dd.control.value),
                         phi_barra_mm=float(phi_bar_dd.control.value),
@@ -3194,7 +3192,7 @@ def build_viga_screen(
                         bw_cm=float(bw_tf.control.value or 0),
                         caa=int(caa_dd.control.value),
                         fck_mpa=float(fck_dd.control.value or 0),
-                        fyk_mpa=float(fyk_dd.control.value or 0),
+                        fyk_kn_cm2=float(fyk_dd.control.value or 0),
                         fyk_estribo_kn_cm2=float(fyke_dd.control.value or 0),
                         phi_estribo_mm=float(phi_est_dd.control.value),
                         phi_barra_mm=float(phi_bar_dd.control.value),
@@ -3220,7 +3218,7 @@ def build_viga_screen(
                         bw_cm=float(bw_tf.control.value or 0),
                         caa=int(caa_dd.control.value),
                         fck_mpa=float(fck_dd.control.value or 0),
-                        fyk_mpa=float(fyk_dd.control.value or 0),
+                        fyk_kn_cm2=float(fyk_dd.control.value or 0),
                         fyk_estribo_kn_cm2=float(fyke_dd.control.value or 0),
                         phi_estribo_mm=float(phi_est_dd.control.value),
                         phi_barra_mm=float(phi_bar_dd.control.value),

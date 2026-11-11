@@ -198,7 +198,7 @@ class TestFlexaoTMomentoNegativo:
             fck_mpa=30.0,
             diam_estribo_mm=5.0,
             diam_barra_mm=16.0,
-            fyk_mpa=50.0,
+            fyk_kn_cm2=50.0,
             momentos=[-80.0],
         )
         r = res[0]
@@ -218,7 +218,7 @@ class TestFlexaoTMomentoNegativo:
             fck_mpa=30.0,
             diam_estribo_mm=5.0,
             diam_barra_mm=16.0,
-            fyk_mpa=50.0,
+            fyk_kn_cm2=50.0,
             momentos=[-130.0],
         )
         r = res[0]
@@ -239,7 +239,7 @@ class TestFlexaoTMomentoNegativo:
             fck_mpa=30.0,
             diam_estribo_mm=5.0,
             diam_barra_mm=12.5,
-            fyk_mpa=50.0,
+            fyk_kn_cm2=50.0,
             momentos=[-120.0],
         )
         r = res[0]

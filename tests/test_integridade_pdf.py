@@ -41,7 +41,7 @@ def _texto_do_pdf_relatorio(monkeypatch, res_flex, res_cis, fyk_estribo_kn_cm2=6
             bw_cm=15.0,
             caa=2,
             fck_mpa=30.0,
-            fyk_mpa=50.0,
+            fyk_kn_cm2=50.0,
             fyk_estribo_kn_cm2=fyk_estribo_kn_cm2,
             phi_estribo_mm=5.0,
             phi_barra_mm=16.0,
@@ -66,7 +66,7 @@ class TestPdfIntegridadeAs:
             fck_mpa=30.0,
             diam_estribo_mm=5.0,
             diam_barra_mm=16.0,
-            fyk_mpa=50.0,
+            fyk_kn_cm2=50.0,
             momentos=[96.9],
             gamma_f=1.4,
         )
@@ -77,7 +77,7 @@ class TestPdfIntegridadeAs:
             diam_estribo_mm=5.0,
             diam_barra_mm=16.0,
             fyk_estribo_kn_cm2=60.0,
-            fyk_barra_mpa=50.0,
+            fyk_barra_kn_cm2=50.0,
             caa=2,
             forcas_cortantes=[50.0],
         )
@@ -108,7 +108,7 @@ class TestPdfIntegridadeAs:
             fck_mpa=30.0,
             diam_estribo_mm=5.0,
             diam_barra_mm=16.0,
-            fyk_mpa=50.0,
+            fyk_kn_cm2=50.0,
             momentos=[400.0],
             gamma_f=1.4,
         )
@@ -121,7 +121,7 @@ class TestPdfIntegridadeAs:
             diam_estribo_mm=5.0,
             diam_barra_mm=16.0,
             fyk_estribo_kn_cm2=60.0,
-            fyk_barra_mpa=50.0,
+            fyk_barra_kn_cm2=50.0,
             caa=2,
             forcas_cortantes=[50.0],
         )

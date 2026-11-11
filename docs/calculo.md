@@ -47,8 +47,15 @@ As grandezas seguem o convencionado em calculo estrutural brasileiro:
 - Forcas em kN (quilonewton)
 - Momentos em kNm (quilonewton metro)
 - Comprimentos em cm
-- Tensoes em MPa (megapascal)
+- Tensoes do concreto em MPa (`fck`, `fctm`); tensoes de calculo em kN/cm² (`fcd`, `fyd`)
+- Resistencia caracteristica do aco `fyk` em kN/cm² (CA-50 = 50 kN/cm² = 500 MPa)
 - Areas em cm² (centimetro quadrado)
+
+> **Chaves de arquivo legadas**: os arquivos `.ptc` guardam as chaves
+> `fyk_mpa`, `fyk_estribo_mpa` e `fyk_barra_mpa`, mas os **valores estao em
+> kN/cm²** (ex.: `50` para CA-50). Os nomes das chaves foram mantidos por
+> compatibilidade com projetos existentes; a API do motor usa
+> `fyk_kn_cm2`, `fyk_estribo_kn_cm2` e `fyk_barra_kn_cm2`.
 
 Coeficientes de ponderacao e fatores parciais adotados:
 
@@ -637,8 +644,8 @@ Verificacao conforme NBR 6118:17.3.2 (Estado Limite de Servico).
 
 ```
 Eci = 5600 · √fck    (MPa)
-αe = 0,8 + 0,2 · (fck/80)
-Ecs = Eci · αe / 1000    (GPa)
+αi = 0,8 + 0,2 · (fck/80)    (≤ 1,0; NBR 6118:8.2.8)
+Ecs = Eci · αi / 1000    (GPa)
 ```
 
 ### 8.2 Parametros da secao
@@ -675,9 +682,12 @@ Ieq = Ic                                           (se Mr > Mk)
 
 Para secao retangular:
 ```
-x_ii = d · (√(αe²·ρ² + 2·αe·ρ) - αe·ρ)
-I_ii = bw · x_ii³/3 + αe · As · (d - x_ii)²
+x_ii = d · (√(αE²·ρ² + 2·αE·ρ) - αE·ρ)
+I_ii = bw · x_ii³/3 + αE · As · (d - x_ii)²
 ```
+
+sendo `αE = Es/Ecs` a razao modular (adimensional, ≈ 7,8) — **nao confundir**
+com o fator `αi` do Ecs em 8.1.
 
 Para secao T (momento positivo):
 1. Tenta `x_ii ≤ hf` com largura `bf`
@@ -722,7 +732,7 @@ Verificacao conforme NBR 6118:17.3.3.
 ### 9.1 Tensao na armadura (Estadio II)
 
 ```
-σs = αe · M_els · (d - x_ii) / I_ii · 10    (MPa)
+σs = αE · M_els · (d - x_ii) / I_ii · 10    (MPa)
 ```
 
 ### 9.2 Abertura de fissura (wk)

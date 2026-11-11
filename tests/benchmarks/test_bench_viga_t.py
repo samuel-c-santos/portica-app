@@ -59,7 +59,7 @@ class TestAsMinVigaT:
             fck_mpa=30.0,
             diam_estribo_mm=5.0,
             diam_barra_mm=12.5,
-            fyk_mpa=50.0,
+            fyk_kn_cm2=50.0,
             momentos=[10.0],
         )[0]
         assert r.asmin_cm2 == pytest.approx(rho_min(30) * 15.0 * 50.0 / 100.0, abs=0.01)

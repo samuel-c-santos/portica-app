@@ -131,7 +131,7 @@ class TestFluxoEndToEnd:
             fck_mpa=30.0,
             diam_estribo_mm=5.0,
             diam_barra_mm=16.0,
-            fyk_mpa=50.0,
+            fyk_kn_cm2=50.0,
             momentos=[400.0],
         )
         res = resultados[0]
@@ -152,7 +152,7 @@ class TestFluxoEndToEnd:
             fck_mpa=30.0,
             diam_estribo_mm=5.0,
             diam_barra_mm=16.0,
-            fyk_mpa=50.0,
+            fyk_kn_cm2=50.0,
             momentos=momentos,
         )
         assert len(resultados) == len(momentos)
@@ -180,7 +180,7 @@ class TestFluxoEndToEnd:
             fck_mpa=30.0,
             diam_estribo_mm=5.0,
             diam_barra_mm=12.5,
-            fyk_mpa=50.0,
+            fyk_kn_cm2=50.0,
             momentos=[80.0],
         )
         for res in resultados:

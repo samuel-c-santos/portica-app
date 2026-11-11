@@ -793,7 +793,7 @@ class PorticaPDF(FPDF):
         bw_cm,
         cob_mm,
         fck_mpa,
-        fyk_mpa,
+        fyk_kn_cm2,
         fyk_estribo_kn_cm2,
         phi_estribo_mm,
         phi_barra_mm,
@@ -914,7 +914,7 @@ class PorticaPDF(FPDF):
                     ]
                 )
 
-                fyd = fyk_mpa / 1.15
+                fyd = fyk_kn_cm2 / 1.15
                 lines.extend(
                     [
                         "4. Area de aco necessaria (As,req):",
@@ -1820,7 +1820,7 @@ def gerar_relatorio_viga_comum(
     bw_cm: float,
     caa: int,
     fck_mpa: float,
-    fyk_mpa: float,
+    fyk_kn_cm2: float,
     fyk_estribo_kn_cm2: float,
     phi_estribo_mm: float,
     phi_barra_mm: float,
@@ -1869,7 +1869,7 @@ def gerar_relatorio_viga_comum(
                 "rows": [
                     ("Classe (CAA)", _caa_nome(caa)),
                     ("Concreto (fck)", f"{fck_mpa:g} MPa"),
-                    ("Aço Long. (fyk)", f"{fyk_mpa:g} kN/cm²"),
+                    ("Aço Long. (fyk)", f"{fyk_kn_cm2:g} kN/cm²"),
                     ("Coef. gf", f"{gamma_f:g}"),
                 ],
             },
@@ -2165,7 +2165,7 @@ def gerar_relatorio_viga_comum(
         bw_cm,
         cob_mm,
         fck_mpa,
-        fyk_mpa,
+        fyk_kn_cm2,
         fyk_estribo_kn_cm2,
         phi_estribo_mm,
         phi_barra_mm,
@@ -2190,7 +2190,7 @@ def gerar_relatorio_viga_t(
     hf_cm: float,
     caa: int,
     fck_mpa: float,
-    fyk_mpa: float,
+    fyk_kn_cm2: float,
     fyk_estribo_kn_cm2: float,
     phi_estribo_mm: float,
     phi_barra_mm: float,
@@ -2241,7 +2241,7 @@ def gerar_relatorio_viga_t(
                 "rows": [
                     ("Classe (CAA)", _caa_nome(caa)),
                     ("Concreto (fck)", f"{fck_mpa:g} MPa"),
-                    ("Aço Long. (fyk)", f"{fyk_mpa:g} kN/cm²"),
+                    ("Aço Long. (fyk)", f"{fyk_kn_cm2:g} kN/cm²"),
                     ("Coef. gf", f"{gamma_f:g}"),
                 ],
             },
@@ -2527,7 +2527,7 @@ def gerar_relatorio_viga_t(
         bw_cm,
         cob_mm,
         fck_mpa,
-        fyk_mpa,
+        fyk_kn_cm2,
         fyk_estribo_kn_cm2,
         phi_estribo_mm,
         phi_barra_mm,

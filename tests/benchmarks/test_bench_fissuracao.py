@@ -6,7 +6,7 @@ Mk=200 kN·m, CAA II (w_lim = 0,3 mm).
 
 Conta à mão, NBR 6118:2023 (§17.3.3.2):
 
-    σs = αe·M·(d − x_ii)/I_ii = 7,8247·20000·(65 − 20,4528)/243291
+    σs = αE·M·(d − x_ii)/I_ii = 7,8247·20000·(65 − 20,4528)/243291
        = 7,8247·20000·44,5472/243291 = 28,658 kN/cm² = 286,58 MPa
     ηb = 2,25 (barras nervuradas); φr = φ = 1,25 cm
     termo1 = φr/(12,5·ηb) = 1,25/28,125 = 0,0444444
@@ -44,7 +44,7 @@ def _fissurar():
         d_cm=65.0,
         caa=2,
         fck_mpa=30.0,
-        fyk_mpa=50.0,
+        fyk_kn_cm2=50.0,
         as_tracao_cm2=12.0,
         phi_barra_mm=12.5,
         momentos=[(1.0, 200.0)],

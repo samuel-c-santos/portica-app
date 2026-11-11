@@ -66,7 +66,7 @@ class TestRecusaDominio4:
             fck_mpa=30.0,
             diam_estribo_mm=5.0,
             diam_barra_mm=16.0,
-            fyk_mpa=50.0,
+            fyk_kn_cm2=50.0,
             momentos=[220.0],
             gamma_f=1.4,
         )

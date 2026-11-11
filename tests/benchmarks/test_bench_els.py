@@ -10,14 +10,14 @@ Caso de referência com a conta à mão, NBR 6118:2023 (§17.3.2 e §17.3.3):
     Mr   = 1,5·fct·Ic/yt = 1,5·0,289647·571666,67/35 = 7094,4 kN·cm
     Eci  = 5600·√30 = 30672,5 MPa ; αi = 0,875 ; Ecs = 26838,4 MPa
          = 2683,84 kN/cm²
-    αe   = Es/Ecs = 21000/2683,84 = 7,8247
+    αE   = Es/Ecs = 21000/2683,84 = 7,8247
 
     Estádio II (x_ii, T retangular):
     ρ = As/(bw·d) = 12/1300 = 0,0092308
-    x_ii = d·(√(αe²ρ² + 2αeρ) − αeρ)
+    x_ii = d·(√(αE²ρ² + 2αEρ) − αEρ)
          = 65·(√(0,0052176 + 0,144465) − 0,072233)
          = 65·(0,386892 − 0,072233) = 65·0,314659 = 20,4528 cm
-    I_ii = bw·x³/3 + αe·As·(d − x)²
+    I_ii = bw·x³/3 + αE·As·(d − x)²
          = 20·20,4528³/3 + 7,8247·12·(44,5472)²
          = 57035 + 93,897·1984,46 = 57035 + 186,256 = 243,291 cm⁴
 
@@ -31,7 +31,7 @@ import pytest
 
 from ui.ftool.els import _estadio_ii_viga, _inercia_equivalente, _momento_fissuracao
 
-ALFA_E = 7.8247
+RATIO_MODULAR = 7.8247
 IC = 571666.67
 MR = 7094.4
 X_II = 20.4528
@@ -53,7 +53,7 @@ class TestEstadioII:
             bw_cm=20.0,
             d_cm=65.0,
             as_cm2=12.0,
-            alfa_e=ALFA_E,
+            ratio_modular=RATIO_MODULAR,
             is_t=False,
             positivo=True,
         )

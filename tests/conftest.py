@@ -23,8 +23,8 @@ def viga_exemplo():
         "fck_mpa": 30,
         "diam_estribo_mm": 5,
         "diam_barra_mm": 16,
-        "fyk_mpa": 50,
-        "fyk_estribo_mpa": 60,
+        "fyk_kn_cm2": 50,
+        "fyk_estribo_kn_cm2": 60,
         "gamma_f": 1.4,
     }
 
@@ -32,7 +32,7 @@ def viga_exemplo():
 @pytest.fixture
 def viga_exemplo_flexao(viga_exemplo):
     """Parametros para calcular_flexao_viga_comum (sem fyk_estribo_kn_cm2)."""
-    return {k: v for k, v in viga_exemplo.items() if k != "fyk_estribo_mpa"}
+    return {k: v for k, v in viga_exemplo.items() if k != "fyk_estribo_kn_cm2"}
 
 
 @pytest.fixture
@@ -44,8 +44,8 @@ def viga_exemplo_cisalhamento(viga_exemplo):
         "fck_mpa": viga_exemplo["fck_mpa"],
         "diam_estribo_mm": viga_exemplo["diam_estribo_mm"],
         "diam_barra_mm": viga_exemplo["diam_barra_mm"],
-        "fyk_estribo_mpa": viga_exemplo["fyk_estribo_mpa"],
-        "fyk_barra_mpa": viga_exemplo["fyk_mpa"],
+        "fyk_estribo_kn_cm2": viga_exemplo["fyk_estribo_kn_cm2"],
+        "fyk_barra_kn_cm2": viga_exemplo["fyk_kn_cm2"],
         "caa": viga_exemplo["caa"],
         "gamma_f": viga_exemplo["gamma_f"],
     }
@@ -63,7 +63,7 @@ def viga_exemplo_t():
         "fck_mpa": 30,
         "diam_estribo_mm": 5,
         "diam_barra_mm": 16,
-        "fyk_mpa": 50,
+        "fyk_kn_cm2": 50,
         "b1esq_cm": 20,
         "b1dir_cm": 20,
         "gamma_f": 1.4,

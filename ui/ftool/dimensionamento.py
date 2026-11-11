@@ -97,13 +97,13 @@ def dimensionar_trechos_ftool(
     fck_mpa = dados_viga["fck_mpa"]
     diam_estribo_mm = dados_viga["diam_estribo_mm"]
     diam_barra_mm = dados_viga["diam_barra_mm"]
-    fyk_mpa = dados_viga["fyk_mpa"]
+    fyk_kn_cm2 = dados_viga["fyk_mpa"]
 
     # Cisalhamento precisa do fyk do estribo e da barra
     fyk_estribo_kn_cm2 = dados_viga.get(
         "fyk_estribo_mpa", 60.0
     )  # chave legada .ptc; UNIDADE: kN/cm² (CA-50=50, CA-60=60)
-    fyk_barra_mpa = dados_viga.get("fyk_barra_mpa", fyk_mpa)
+    fyk_barra_kn_cm2 = dados_viga.get("fyk_barra_mpa", fyk_kn_cm2)
     gamma_f = dados_viga.get("gamma_f", 1.4)
 
     resultados = []
@@ -141,7 +141,7 @@ def dimensionar_trechos_ftool(
                 fck_mpa=fck_mpa,
                 diam_estribo_mm=diam_estribo_mm,
                 diam_barra_mm=diam_barra_mm,
-                fyk_mpa=fyk_mpa,
+                fyk_kn_cm2=fyk_kn_cm2,
                 momentos=[secao.momento],
                 b1esq_cm=dados_viga.get("b1esq_cm"),
                 b1dir_cm=dados_viga.get("b1dir_cm"),
@@ -159,7 +159,7 @@ def dimensionar_trechos_ftool(
                 fck_mpa=fck_mpa,
                 diam_estribo_mm=diam_estribo_mm,
                 diam_barra_mm=diam_barra_mm,
-                fyk_mpa=fyk_mpa,
+                fyk_kn_cm2=fyk_kn_cm2,
                 momentos=[secao.momento],
                 gamma_f=gamma_f,
             )
@@ -173,7 +173,7 @@ def dimensionar_trechos_ftool(
             diam_estribo_mm=diam_estribo_mm,
             diam_barra_mm=diam_barra_mm,
             fyk_estribo_kn_cm2=fyk_estribo_kn_cm2,
-            fyk_barra_mpa=fyk_barra_mpa,
+            fyk_barra_kn_cm2=fyk_barra_kn_cm2,
             caa=caa,
             forcas_cortantes=[secao.cortante],
             gamma_f=gamma_f,
@@ -202,7 +202,7 @@ def dimensionar_trechos_ftool(
                 h_cm=h_cm,
                 bw_cm=bw_cm,
                 fck_mpa=fck_mpa,
-                fyk_mpa=fyk_mpa,
+                fyk_kn_cm2=fyk_kn_cm2,
                 fyk_estribo_kn_cm2=fyk_estribo_kn_cm2,
                 caa=caa,
                 cortantes=cortantes,
@@ -264,7 +264,7 @@ def dimensionar_trechos_ftool(
                 d_cm=d_cm_els,
                 caa=caa,
                 fck_mpa=fck_mpa,
-                fyk_mpa=fyk_mpa,
+                fyk_kn_cm2=fyk_kn_cm2,
                 as_tracao_cm2=as_tracao,
                 phi_barra_mm=diam_barra_mm,
                 momentos=momentos,

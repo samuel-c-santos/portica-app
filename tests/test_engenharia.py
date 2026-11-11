@@ -76,7 +76,7 @@ class TestFlexaoRetangular:
             fck_mpa=50,
             diam_estribo_mm=5,
             diam_barra_mm=16,
-            fyk_mpa=50,
+            fyk_kn_cm2=50,
             momentos=[100.0],
             gamma_f=1.4,
         )
@@ -95,7 +95,7 @@ class TestFlexaoRetangular:
             fck_mpa=20,
             diam_estribo_mm=5,
             diam_barra_mm=12.5,
-            fyk_mpa=50,
+            fyk_kn_cm2=50,
             momentos=[300.0],
             gamma_f=1.4,
         )
@@ -123,7 +123,7 @@ class TestFlexaoRetangular:
                 fck_mpa=30,
                 diam_estribo_mm=5,
                 diam_barra_mm=16,
-                fyk_mpa=50,
+                fyk_kn_cm2=50,
                 momentos=[100.0],
                 gamma_f=1.4,
             )
@@ -140,7 +140,7 @@ class TestFlexaoRetangular:
                 fck_mpa=35,  # CAA IV -> cob=50mm
                 diam_estribo_mm=5,
                 diam_barra_mm=20,
-                fyk_mpa=50,
+                fyk_kn_cm2=50,
                 momentos=[100.0],
                 gamma_f=1.4,
             )
@@ -155,7 +155,7 @@ class TestFlexaoRetangular:
                 fck_mpa=30,
                 diam_estribo_mm=5,
                 diam_barra_mm=16,
-                fyk_mpa=50,
+                fyk_kn_cm2=50,
                 momentos=[100.0],
                 gamma_f=1.4,
             )
@@ -192,7 +192,7 @@ class TestFlexaoRetangular:
             fck_mpa=30,
             diam_estribo_mm=5,
             diam_barra_mm=16,
-            fyk_mpa=50,
+            fyk_kn_cm2=50,
             momentos=[80.0],
             gamma_f=1.4,
         )

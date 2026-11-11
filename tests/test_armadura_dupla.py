@@ -17,7 +17,7 @@ def test_1_secao_simples_nao_forca_armadura_dupla():
         fck_mpa=30.0,
         diam_estribo_mm=5.0,
         diam_barra_mm=12.5,
-        fyk_mpa=50.0,
+        fyk_kn_cm2=50.0,
         momentos=[40.0],
         gamma_f=1.4,
     )
@@ -42,7 +42,7 @@ def test_2_secao_pequena_forca_armadura_dupla():
         fck_mpa=30.0,
         diam_estribo_mm=5.0,
         diam_barra_mm=16.0,
-        fyk_mpa=50.0,
+        fyk_kn_cm2=50.0,
         momentos=[139.2],
         gamma_f=1.4,
     )
@@ -88,7 +88,7 @@ def test_3_limite_neutral_axis_fck_alto():
         fck_mpa=60.0,
         diam_estribo_mm=5.0,
         diam_barra_mm=16.0,
-        fyk_mpa=50.0,
+        fyk_kn_cm2=50.0,
         momentos=[200.0],
         gamma_f=1.4,
     )
@@ -107,7 +107,7 @@ def test_4_secao_pequena_fck_alto_armadura_dupla():
         fck_mpa=60.0,
         diam_estribo_mm=5.0,
         diam_barra_mm=16.0,
-        fyk_mpa=50.0,
+        fyk_kn_cm2=50.0,
         momentos=[200.0],
         gamma_f=1.4,
     )
@@ -129,7 +129,7 @@ def test_5_armadura_dupla_momento_negativo():
         fck_mpa=30.0,
         diam_estribo_mm=5.0,
         diam_barra_mm=16.0,
-        fyk_mpa=50.0,
+        fyk_kn_cm2=50.0,
         momentos=[-139.2],
         gamma_f=1.4,
     )
@@ -160,7 +160,7 @@ def test_6_balanco_as_linha_maior_que_as2_quando_fs_nao_escoa():
         fck_mpa=30.0,
         diam_estribo_mm=5.0,
         diam_barra_mm=20.0,
-        fyk_mpa=50.0,
+        fyk_kn_cm2=50.0,
         momentos=[160.0 / 1.4],
         gamma_f=1.4,
     )
@@ -186,7 +186,7 @@ def test_7_rho_linha_minima_governa():
         fck_mpa=30.0,
         diam_estribo_mm=5.0,
         diam_barra_mm=16.0,
-        fyk_mpa=50.0,
+        fyk_kn_cm2=50.0,
         momentos=[1350.0],
         gamma_f=1.4,
     )

@@ -86,7 +86,7 @@ def _resultado(idx):
         fck_mpa=caso["fck_mpa"],
         diam_estribo_mm=5.0,
         diam_barra_mm=caso["diam_barra_mm"],
-        fyk_mpa=50.0,
+        fyk_kn_cm2=50.0,
         momentos=[caso["Mk"]],
         gamma_f=1.4,
     )[0]
@@ -134,7 +134,7 @@ class TestAsMin:
             fck_mpa=30.0,
             diam_estribo_mm=5.0,
             diam_barra_mm=16.0,
-            fyk_mpa=50.0,
+            fyk_kn_cm2=50.0,
             momentos=[20.0],
             gamma_f=1.4,
         )[0]

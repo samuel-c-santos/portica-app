@@ -639,7 +639,7 @@ def dimensionar_bitola_iterativa(
     diam_estribo_mm: float,
     diam_barra_mm: float,
     fck_mpa: float,
-    fyk_mpa: float,
+    fyk_kn_cm2: float,
     Md_kNm: float,
     bw_detalhamento_cm: float | None = None,
     d_max_agregado_mm: float = 19.0,
@@ -670,7 +670,7 @@ def dimensionar_bitola_iterativa(
 
         Md_kNcm = abs(Md_kNm) * 100.0
 
-        fyd = fyd_kn_cm2(fyk_mpa)
+        fyd = fyd_kn_cm2(fyk_kn_cm2)
         bx_min = _bx_lim_ductilidade(fck_mpa)
         md_lim_kNcm, x_lim_cm = _momento_limite_ln(fck_mpa, bw_calculo_cm, d_cm, bx_min)
 
@@ -909,7 +909,7 @@ def calcular_flexao_viga_comum(
     fck_mpa: float,
     diam_estribo_mm: float,
     diam_barra_mm: float,
-    fyk_mpa: float,
+    fyk_kn_cm2: float,
     momentos: list[float],
     gamma_f: float = GAMMA_F_RESTO,
     d_max_agregado_mm: float = 19.0,
@@ -959,7 +959,7 @@ def calcular_flexao_viga_comum(
             diam_estribo_mm=diam_estribo_mm,
             diam_barra_mm=diam_barra_mm,
             fck_mpa=fck_mpa,
-            fyk_mpa=fyk_mpa,
+            fyk_kn_cm2=fyk_kn_cm2,
             Md_kNm=Md_kNm,
             bw_detalhamento_cm=bw_cm,
             d_max_agregado_mm=d_max_agregado_mm,
@@ -977,7 +977,7 @@ def calcular_flexao_viga_comum(
                     diam_estribo_mm=diam_estribo_mm,
                     diam_barra_mm=d_cand,
                     fck_mpa=fck_mpa,
-                    fyk_mpa=fyk_mpa,
+                    fyk_kn_cm2=fyk_kn_cm2,
                     Md_kNm=Md_kNm,
                     bw_detalhamento_cm=bw_cm,
                     d_max_agregado_mm=d_max_agregado_mm,
@@ -997,7 +997,7 @@ def calcular_flexao_viga_comum(
         Md_kNcm = abs(Md_kNm) * 100
         kc = (bw_cm * d_cm**2) / Md_kNcm if Md_kNcm != 0 else 0
 
-        fyd = fyd_kn_cm2(fyk_mpa)  # kN/cm² (fyk entra em kN/cm²)
+        fyd = fyd_kn_cm2(fyk_kn_cm2)  # kN/cm² (fyk entra em kN/cm²)
         bx_min = _bx_lim_ductilidade(fck_mpa)
         md_lim_kNcm, x_lim_cm = _momento_limite_ln(fck_mpa, bw_cm, d_cm, bx_min)
 
@@ -1217,7 +1217,7 @@ def calcular_cisalhamento_viga_comum(
     diam_estribo_mm: float,
     diam_barra_mm: float,
     fyk_estribo_kn_cm2: float,
-    fyk_barra_mpa: float,
+    fyk_barra_kn_cm2: float,
     caa: int,
     forcas_cortantes: list[float],
     gamma_f: float = GAMMA_F_RESTO,
@@ -1431,7 +1431,7 @@ def calcular_flexao_viga_t(
     fck_mpa: float,
     diam_estribo_mm: float,
     diam_barra_mm: float,
-    fyk_mpa: float,
+    fyk_kn_cm2: float,
     momentos: list[float],
     b1esq_cm: float | None = None,
     b1dir_cm: float | None = None,
@@ -1478,7 +1478,7 @@ def calcular_flexao_viga_t(
     )
     rho_min_val = rho_min(fck_mpa)
     fck_conv = fck_mpa / 10  # MPa -> kN/cm² (formula empirica)
-    fyd = fyd_kn_cm2(fyk_mpa)  # kN/cm² (fyk entra em kN/cm²)
+    fyd = fyd_kn_cm2(fyk_kn_cm2)  # kN/cm² (fyk entra em kN/cm²)
 
     # Armadura de pele (NBR 6118:17.3.5.2.3) — calculada uma vez (independe do momento)
     pele = calcular_armadura_pele(h_cm, bw_cm, cob_mm, diam_estribo_mm, diam_barra_mm)
@@ -1503,7 +1503,7 @@ def calcular_flexao_viga_t(
             diam_estribo_mm=diam_estribo_mm,
             diam_barra_mm=diam_barra_mm,
             fck_mpa=fck_mpa,
-            fyk_mpa=fyk_mpa,
+            fyk_kn_cm2=fyk_kn_cm2,
             Md_kNm=Md_kNm,
             bw_detalhamento_cm=bw_cm,
             is_t=True,
@@ -1524,7 +1524,7 @@ def calcular_flexao_viga_t(
                     diam_estribo_mm=diam_estribo_mm,
                     diam_barra_mm=d_cand,
                     fck_mpa=fck_mpa,
-                    fyk_mpa=fyk_mpa,
+                    fyk_kn_cm2=fyk_kn_cm2,
                     Md_kNm=Md_kNm,
                     bw_detalhamento_cm=bw_cm,
                     is_t=True,

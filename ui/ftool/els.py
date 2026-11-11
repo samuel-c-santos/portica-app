@@ -138,8 +138,8 @@ def _validar_modelo_biapoiado(momentos: list[tuple[float, float]]) -> str | None
 def _e_modulus(fck_mpa: float) -> float:
     """Módulo de elasticidade secante (Ecs) em GPa. NBR 6118:8.2.8."""
     e_ci = 5600 * math.sqrt(fck_mpa)  # MPa
-    alfa_e = 0.8 + 0.2 * (fck_mpa / 80)
-    return e_ci * alfa_e / 1000  # GPa
+    alpha_i = 0.8 + 0.2 * (fck_mpa / 80)  # NBR 6118:8.2.8 (<= 1,0)
+    return e_ci * alpha_i / 1000  # GPa
 
 
 def _propriedades_secao_t(
@@ -208,7 +208,7 @@ def _estadio_ii_viga(
     bw_cm: float,
     d_cm: float,
     as_cm2: float,
-    alfa_e: float,
+    ratio_modular: float,
     is_t: bool = False,
     bf_cm: float | None = None,
     hf_cm: float | None = None,
@@ -226,8 +226,8 @@ def _estadio_ii_viga(
         # Seção T sob momento positivo (mesa comprimida no topo)
         # 1. Tenta assumir x_ii <= hf_cm
         a = bf_cm / 2.0
-        b = alfa_e * as_cm2
-        c = -alfa_e * as_cm2 * d_cm
+        b = ratio_modular * as_cm2
+        c = -ratio_modular * as_cm2 * d_cm
 
         delta = b**2 - 4 * a * c
         if delta < 0 or a == 0:
@@ -240,13 +240,13 @@ def _estadio_ii_viga(
                 x_ii = 0.001
             if x_ii > h_cm:
                 x_ii = h_cm
-            i_ii = bf_cm * x_ii**3 / 3.0 + alfa_e * as_cm2 * (d_cm - x_ii) ** 2
+            i_ii = bf_cm * x_ii**3 / 3.0 + ratio_modular * as_cm2 * (d_cm - x_ii) ** 2
             return x_ii, i_ii
         else:
             # LN na alma (x_ii > hf_cm)
             a = bw_cm / 2.0
-            b = (bf_cm - bw_cm) * hf_cm + alfa_e * as_cm2
-            c = -((bf_cm - bw_cm) * hf_cm**2 / 2.0 + alfa_e * as_cm2 * d_cm)
+            b = (bf_cm - bw_cm) * hf_cm + ratio_modular * as_cm2
+            c = -((bf_cm - bw_cm) * hf_cm**2 / 2.0 + ratio_modular * as_cm2 * d_cm)
 
             delta = b**2 - 4 * a * c
             if delta < 0 or a == 0:
@@ -263,18 +263,20 @@ def _estadio_ii_viga(
                 bw_cm * x_ii**3 / 3.0
                 + (bf_cm - bw_cm) * hf_cm**3 / 12.0
                 + (bf_cm - bw_cm) * hf_cm * (x_ii - hf_cm / 2.0) ** 2
-                + alfa_e * as_cm2 * (d_cm - x_ii) ** 2
+                + ratio_modular * as_cm2 * (d_cm - x_ii) ** 2
             )
             return x_ii, i_ii
     else:
         # Seção retangular (ou T sob momento negativo, onde a mesa está tracionada)
         rho = as_cm2 / (bw_cm * d_cm) if (bw_cm * d_cm) > 0 else 0
-        x_ii = d_cm * (math.sqrt(alfa_e**2 * rho**2 + 2 * alfa_e * rho) - alfa_e * rho)
+        x_ii = d_cm * (
+            math.sqrt(ratio_modular**2 * rho**2 + 2 * ratio_modular * rho) - ratio_modular * rho
+        )
         if x_ii <= 0:
             x_ii = 0.001
         if x_ii > h_cm:
             x_ii = h_cm
-        i_ii = bw_cm * x_ii**3 / 3.0 + alfa_e * as_cm2 * (d_cm - x_ii) ** 2
+        i_ii = bw_cm * x_ii**3 / 3.0 + ratio_modular * as_cm2 * (d_cm - x_ii) ** 2
         return x_ii, i_ii
 
 
@@ -339,7 +341,7 @@ def calcular_flecha(
     L = max(p[0] for p in deformacoes)
     fctm = fctm_mpa(fck_mpa)
     ecs = _e_modulus(fck_mpa) * 1000 / 10  # GPa → kN/cm² (×1000/10 = ×100)
-    alfa_e = 21000 / ecs  # Es / Ecs (adimensional)
+    ratio_modular = 21000 / ecs  # Es / Ecs (adimensional)
 
     # Identificar o sinal do momento crítico para saber se a mesa está comprimida (momento positivo)
     momento_critico = 0.0
@@ -350,7 +352,7 @@ def calcular_flecha(
     y_cg, ic = _momento_inercia_bruto_viga(bw_cm, h_cm, is_t, bf_cm, hf_cm)
     mr = _momento_fissuracao(bw_cm, h_cm, fctm, is_t, bf_cm, hf_cm, positivo)
     x_ii, i_ii = _estadio_ii_viga(
-        h_cm, bw_cm, d_cm, as_tracao_cm2, alfa_e, is_t, bf_cm, hf_cm, positivo
+        h_cm, bw_cm, d_cm, as_tracao_cm2, ratio_modular, is_t, bf_cm, hf_cm, positivo
     )
 
     # I_eq para o momento máximo em valor absoluto
@@ -473,7 +475,7 @@ def calcular_fissuracao(
     d_cm: float,
     caa: int,
     fck_mpa: float,
-    fyk_mpa: float,
+    fyk_kn_cm2: float,
     as_tracao_cm2: float,
     phi_barra_mm: float,
     momentos: list[tuple[float, float]],
@@ -508,7 +510,7 @@ def calcular_fissuracao(
     # Parâmetros
     fctm = fctm_mpa(fck_mpa)
     ecs = _e_modulus(fck_mpa) * 1000  # GPa → MPa
-    alfa_e = 210000 / ecs  # Es/Ecs
+    ratio_modular = 210000 / ecs  # Es/Ecs
     fct = fctm
 
     # Momento máximo de serviço (sem majoração por gamma_f)
@@ -524,17 +526,17 @@ def calcular_fissuracao(
     # Área de concreto envolvida (Acr)
     phie = phi_barra_mm / 10  # mm → cm
 
-    # Tensão na armadura (estádio II) - corrigido modular ratio alfa_e
+    # Tensão na armadura (estádio II) - razão modular Es/Ecs
     d_util = d_cm
     x_ii, i_ii = _estadio_ii_viga(
-        h_cm, bw_cm, d_util, as_tracao_cm2, alfa_e, is_t, bf_cm, hf_cm, positivo
+        h_cm, bw_cm, d_util, as_tracao_cm2, ratio_modular, is_t, bf_cm, hf_cm, positivo
     )
     if i_ii <= 0:
         i_ii = 0.01
 
-    # σs = αe × M_els × (d - x_ii) / I_ii
+    # σs = αE × M_els × (d - x_ii) / I_ii, αE = Es/Ecs (razão modular)
     # Conversão de kN/cm² para MPa: multiplica por 10
-    sigma_s_mpa = 10.0 * alfa_e * m_els_kncm * (d_util - x_ii) / i_ii
+    sigma_s_mpa = 10.0 * ratio_modular * m_els_kncm * (d_util - x_ii) / i_ii
 
     # Cálculo de wk (item 17.3.3.2 - NBR 6118)
     eta_b = 2.25  # CA-50 (nervurado)

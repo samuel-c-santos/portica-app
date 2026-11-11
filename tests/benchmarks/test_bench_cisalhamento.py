@@ -38,7 +38,7 @@ CASE = dict(
     diam_estribo_mm=5.0,
     diam_barra_mm=16.0,
     fyk_estribo_kn_cm2=50.0,
-    fyk_barra_mpa=50.0,
+    fyk_barra_kn_cm2=50.0,
     caa=2,
 )
 

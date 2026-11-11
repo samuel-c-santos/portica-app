@@ -22,7 +22,7 @@ def test_detailing_tem_zonas():
         h_cm=70,
         bw_cm=20,
         fck_mpa=30,
-        fyk_mpa=50,
+        fyk_kn_cm2=50,
         fyk_estribo_kn_cm2=60,
         caa=2,
         cortantes=cortantes,
@@ -35,7 +35,13 @@ def test_detailing_tem_zonas():
 def test_cobre_toda_viga():
     cortantes = _ler_cortantes()
     regioes = detalhar_estribos(
-        h_cm=70, bw_cm=20, fck_mpa=30, fyk_mpa=50, fyk_estribo_kn_cm2=60, caa=2, cortantes=cortantes
+        h_cm=70,
+        bw_cm=20,
+        fck_mpa=30,
+        fyk_kn_cm2=50,
+        fyk_estribo_kn_cm2=60,
+        caa=2,
+        cortantes=cortantes,
     )
     assert regioes[0]["x_inicio"] == 0.0
     assert abs(regioes[-1]["x_fim"] - 7.5) < 0.1
@@ -50,7 +56,7 @@ def test_espacamento_dentro_limite():
         h_cm=70,
         bw_cm=20,
         fck_mpa=30,
-        fyk_mpa=50,
+        fyk_kn_cm2=50,
         fyk_estribo_kn_cm2=60,
         caa=2,
         cortantes=cortantes,
@@ -69,7 +75,7 @@ def test_espacamento_limitado_pelo_smax_nao_por_30_fixo():
         h_cm=70,
         bw_cm=20,
         fck_mpa=30,
-        fyk_mpa=50,
+        fyk_kn_cm2=50,
         fyk_estribo_kn_cm2=50,
         caa=2,
         cortantes=cortantes,
@@ -88,7 +94,7 @@ def test_espacamento_limitado_pelo_smax_nao_por_30_fixo():
 def test_sem_cortantes():
     assert (
         detalhar_estribos(
-            h_cm=70, bw_cm=20, fck_mpa=30, fyk_mpa=50, fyk_estribo_kn_cm2=60, caa=2, cortantes=[]
+            h_cm=70, bw_cm=20, fck_mpa=30, fyk_kn_cm2=50, fyk_estribo_kn_cm2=60, caa=2, cortantes=[]
         )
         == []
     )
@@ -97,7 +103,13 @@ def test_sem_cortantes():
 def test_gerar_tabela():
     cortantes = _ler_cortantes()
     regioes = detalhar_estribos(
-        h_cm=70, bw_cm=20, fck_mpa=30, fyk_mpa=50, fyk_estribo_kn_cm2=60, caa=2, cortantes=cortantes
+        h_cm=70,
+        bw_cm=20,
+        fck_mpa=30,
+        fyk_kn_cm2=50,
+        fyk_estribo_kn_cm2=60,
+        caa=2,
+        cortantes=cortantes,
     )
     texto = gerar_tabela_detailing(regioes)
     assert "DETALHAMENTO DE ESTRIBOS" in texto

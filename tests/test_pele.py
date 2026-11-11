@@ -107,7 +107,7 @@ class TestArmaduraPele:
             fck_mpa=30,
             diam_estribo_mm=5,
             diam_barra_mm=16,
-            fyk_mpa=50,
+            fyk_kn_cm2=50,
             momentos=[100.0],
             gamma_f=1.4,
         )

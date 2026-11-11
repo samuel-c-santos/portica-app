@@ -56,7 +56,7 @@ def _res_flexao_multi_camada():
         fck_mpa=30.0,
         diam_estribo_mm=5.0,
         diam_barra_mm=12.5,
-        fyk_mpa=50.0,
+        fyk_kn_cm2=50.0,
         momentos=[100.0],
         gamma_f=1.4,
     )
@@ -75,7 +75,7 @@ def test_fywd_impreso_tem_cap_43_5():
         diam_estribo_mm=5.0,
         diam_barra_mm=16.0,
         fyk_estribo_kn_cm2=60.0,  # CA-60 → fywd cru = 52.17 > 43.5
-        fyk_barra_mpa=50.0,
+        fyk_barra_kn_cm2=50.0,
         caa=2,
         forcas_cortantes=[132.0],
     )
@@ -90,7 +90,7 @@ def test_fywd_impreso_tem_cap_43_5():
         bw_cm=20.0,
         cob_mm=30.0,
         fck_mpa=30.0,
-        fyk_mpa=50.0,
+        fyk_kn_cm2=50.0,
         fyk_estribo_kn_cm2=60.0,
         phi_estribo_mm=5.0,
         phi_barra_mm=16.0,
@@ -115,7 +115,7 @@ def test_kc_impreso_usa_d_convergida_do_motor():
         diam_estribo_mm=5.0,
         diam_barra_mm=16.0,
         fyk_estribo_kn_cm2=50.0,
-        fyk_barra_mpa=50.0,
+        fyk_barra_kn_cm2=50.0,
         caa=2,
         forcas_cortantes=[50.0],
     )
@@ -129,7 +129,7 @@ def test_kc_impreso_usa_d_convergida_do_motor():
         bw_cm=20.0,
         cob_mm=30.0,
         fck_mpa=30.0,
-        fyk_mpa=50.0,
+        fyk_kn_cm2=50.0,
         fyk_estribo_kn_cm2=50.0,
         phi_estribo_mm=5.0,
         phi_barra_mm=12.5,
@@ -160,7 +160,7 @@ def test_flecha_de_d_na_memoria_bate_com_motor():
         diam_estribo_mm=5.0,
         diam_barra_mm=12.5,
         fyk_estribo_kn_cm2=50.0,
-        fyk_barra_mpa=50.0,
+        fyk_barra_kn_cm2=50.0,
         caa=2,
         forcas_cortantes=[50.0],
     )
@@ -174,7 +174,7 @@ def test_flecha_de_d_na_memoria_bate_com_motor():
         bw_cm=20.0,
         cob_mm=30.0,
         fck_mpa=30.0,
-        fyk_mpa=50.0,
+        fyk_kn_cm2=50.0,
         fyk_estribo_kn_cm2=50.0,
         phi_estribo_mm=5.0,
         phi_barra_mm=12.5,
