@@ -544,6 +544,8 @@ def calcular_fissuracao(
         wk_final = 0.0
         wk1 = 0.0
         wk2 = 0.0
+        h_cr = 0.0
+        a_cr = 0.0
     else:
         termo1 = phir / (12.5 * eta_b)
         termo2 = sigma_s_mpa / 210000
@@ -585,6 +587,11 @@ def calcular_fissuracao(
         "passa": passa,
         "x_ii_cm": round(x_ii, 2),
         "i_ii_cm4": round(i_ii, 1),
+        # EP-03.1: componentes do cálculo expostos para benchmarks normativos
+        "wk1_mm": round(wk1, 3),
+        "wk2_mm": round(wk2, 3),
+        "acr_cm2": round(a_cr, 2),
+        "h_cr_cm": round(h_cr, 2),
         "dica": _sugerir_correcao_fissuracao(
             wk_final, w_lim, sigma_s_mpa, fck_mpa, as_tracao_cm2, phi_barra_mm
         ),

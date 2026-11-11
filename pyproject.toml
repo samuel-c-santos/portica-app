@@ -55,6 +55,10 @@ addopts = "-q"
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
+# xfails strict: um xfail que passa (XPASS) falha o run — os xfails do
+# benchmark de flexão (calibração empírica) só saem conscientemente, no
+# EP-02.1, quando o equilíbrio NBR entrar.
+xfail_strict = true
 
 # ─── ruff ──────────────────────────────────────────────────────────────────
 [tool.ruff]

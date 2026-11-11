@@ -51,6 +51,12 @@ jobs:
       - name: Roda a suíte de testes
         run: python -m pytest tests -q
 
+      - name: Benchmarks normativos (EP-03.1) — obrigatórios
+        # Os xfails do benchmark de flexão são strict (xfail_strict=true no
+        # pyproject): quando o EP-02.1 implementar o equilíbrio NBR, o XPASS
+        # falha o run — o xfail tem de ser removido conscientemente.
+        run: python -m pytest tests/benchmarks -q
+
       - name: Smoke de importação
         run: python -c "import core.calculos.engenharia, ui.theme"
 
