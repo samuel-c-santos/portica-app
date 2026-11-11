@@ -1,5 +1,7 @@
 """Testes do motor de cisalhamento."""
 
+import pytest
+
 from core.calculos import calcular_cisalhamento_viga_comum
 
 
@@ -14,7 +16,7 @@ class TestCisalhamento:
             fck_mpa=viga_exemplo["fck_mpa"],
             diam_estribo_mm=viga_exemplo["diam_estribo_mm"],
             diam_barra_mm=viga_exemplo["diam_barra_mm"],
-            fyk_estribo_mpa=viga_exemplo["fyk_estribo_mpa"],
+            fyk_estribo_kn_cm2=viga_exemplo["fyk_estribo_mpa"],
             fyk_barra_mpa=viga_exemplo["fyk_mpa"],
             caa=viga_exemplo["caa"],
             forcas_cortantes=cortantes_exemplo,
@@ -33,7 +35,7 @@ class TestCisalhamento:
             fck_mpa=viga_exemplo["fck_mpa"],
             diam_estribo_mm=viga_exemplo["diam_estribo_mm"],
             diam_barra_mm=viga_exemplo["diam_barra_mm"],
-            fyk_estribo_mpa=viga_exemplo["fyk_estribo_mpa"],
+            fyk_estribo_kn_cm2=viga_exemplo["fyk_estribo_mpa"],
             fyk_barra_mpa=viga_exemplo["fyk_mpa"],
             caa=viga_exemplo["caa"],
             forcas_cortantes=[-123.0],
@@ -52,7 +54,7 @@ class TestCisalhamento:
             fck_mpa=viga_exemplo["fck_mpa"],
             diam_estribo_mm=viga_exemplo["diam_estribo_mm"],
             diam_barra_mm=viga_exemplo["diam_barra_mm"],
-            fyk_estribo_mpa=viga_exemplo["fyk_estribo_mpa"],
+            fyk_estribo_kn_cm2=viga_exemplo["fyk_estribo_mpa"],
             fyk_barra_mpa=viga_exemplo["fyk_mpa"],
             caa=viga_exemplo["caa"],
             forcas_cortantes=[50.0],
@@ -70,7 +72,7 @@ class TestCisalhamento:
             fck_mpa=viga_exemplo["fck_mpa"],
             diam_estribo_mm=viga_exemplo["diam_estribo_mm"],
             diam_barra_mm=viga_exemplo["diam_barra_mm"],
-            fyk_estribo_mpa=viga_exemplo["fyk_estribo_mpa"],
+            fyk_estribo_kn_cm2=viga_exemplo["fyk_estribo_mpa"],
             fyk_barra_mpa=viga_exemplo["fyk_mpa"],
             caa=viga_exemplo["caa"],
             forcas_cortantes=cortantes_exemplo,
@@ -90,7 +92,7 @@ class TestCisalhamento:
             fck_mpa=viga_exemplo["fck_mpa"],
             diam_estribo_mm=viga_exemplo["diam_estribo_mm"],
             diam_barra_mm=viga_exemplo["diam_barra_mm"],
-            fyk_estribo_mpa=viga_exemplo["fyk_estribo_mpa"],
+            fyk_estribo_kn_cm2=viga_exemplo["fyk_estribo_mpa"],
             fyk_barra_mpa=viga_exemplo["fyk_mpa"],
             caa=viga_exemplo["caa"],
             forcas_cortantes=[0.0],
@@ -106,7 +108,7 @@ class TestCisalhamento:
             fck_mpa=viga_exemplo["fck_mpa"],
             diam_estribo_mm=viga_exemplo["diam_estribo_mm"],
             diam_barra_mm=viga_exemplo["diam_barra_mm"],
-            fyk_estribo_mpa=viga_exemplo["fyk_estribo_mpa"],
+            fyk_estribo_kn_cm2=viga_exemplo["fyk_estribo_mpa"],
             fyk_barra_mpa=viga_exemplo["fyk_mpa"],
             caa=viga_exemplo["caa"],
             forcas_cortantes=[132.0],
@@ -125,7 +127,7 @@ class TestCisalhamento:
             fck_mpa=viga_exemplo["fck_mpa"],
             diam_estribo_mm=viga_exemplo["diam_estribo_mm"],
             diam_barra_mm=viga_exemplo["diam_barra_mm"],
-            fyk_estribo_mpa=viga_exemplo["fyk_estribo_mpa"],
+            fyk_estribo_kn_cm2=viga_exemplo["fyk_estribo_mpa"],
             fyk_barra_mpa=viga_exemplo["fyk_mpa"],
             caa=viga_exemplo["caa"],
             forcas_cortantes=[132.0],  # Vsd = 184.8 kN (alto)
@@ -159,7 +161,7 @@ class TestCisalhamento:
             fck_mpa=viga_exemplo["fck_mpa"],
             diam_estribo_mm=viga_exemplo["diam_estribo_mm"],
             diam_barra_mm=viga_exemplo["diam_barra_mm"],
-            fyk_estribo_mpa=600.0,  # CA-60 (fyk = 600 MPa)
+            fyk_estribo_kn_cm2=60.0,  # CA-60 (60 kN/cm² = 600 MPa)
             fyk_barra_mpa=viga_exemplo["fyk_mpa"],
             caa=viga_exemplo["caa"],
             forcas_cortantes=[132.0],
@@ -169,3 +171,48 @@ class TestCisalhamento:
         assert r is not None
         assert r.s_max_cm > 0
         assert r.passa_smax in ["SIM", "NÃO"]
+
+
+class TestAswMinCa60:
+    """EP-01.8: a taxa mínima de estribo tem coluna CA-60 viva.
+
+    Bug: o limiar estava em MPa (500) numa API que recebe kN/cm² (50/60),
+    então a condição era sempre verdadeira e a coluna CA-60 nunca era usada.
+    """
+
+    def test_ca60_usa_coluna_ca60(self):
+        from core.calculos.engenharia import ASW_S_TABLE_CA50, asw_min_cm2_m
+
+        _, ca50, ca60 = ASW_S_TABLE_CA50[30]
+        bw = 20.0
+        assert asw_min_cm2_m(30, bw, 50.0) == pytest.approx(ca50 * bw, abs=1e-6)
+        assert asw_min_cm2_m(30, bw, 60.0) == pytest.approx(ca60 * bw, abs=1e-6)
+        # CA-60 exige menos armadura mínima que CA-50
+        assert ca60 < ca50
+
+    def test_motor_cisalhamento_ca60_usa_coluna_ca60(self):
+        """End-to-end: estribo CA-60 no motor obtém a taxa da coluna CA-60."""
+        res50 = calcular_cisalhamento_viga_comum(
+            h_cm=70.0,
+            bw_cm=20.0,
+            fck_mpa=30.0,
+            diam_estribo_mm=5.0,
+            diam_barra_mm=16.0,
+            fyk_estribo_kn_cm2=50.0,
+            fyk_barra_mpa=50.0,
+            caa=2,
+            forcas_cortantes=[132.0],
+        )
+        res60 = calcular_cisalhamento_viga_comum(
+            h_cm=70.0,
+            bw_cm=20.0,
+            fck_mpa=30.0,
+            diam_estribo_mm=5.0,
+            diam_barra_mm=16.0,
+            fyk_estribo_kn_cm2=60.0,
+            fyk_barra_mpa=50.0,
+            caa=2,
+            forcas_cortantes=[132.0],
+        )
+        r50, r60 = res50[0], res60[0]
+        assert r60.asw_s_min_cm2_m < r50.asw_s_min_cm2_m

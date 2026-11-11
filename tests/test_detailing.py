@@ -23,7 +23,7 @@ def test_detailing_tem_zonas():
         bw_cm=20,
         fck_mpa=30,
         fyk_mpa=50,
-        fyk_estribo_mpa=60,
+        fyk_estribo_kn_cm2=60,
         caa=2,
         cortantes=cortantes,
         phi_estribo_mm=5.0,
@@ -35,7 +35,7 @@ def test_detailing_tem_zonas():
 def test_cobre_toda_viga():
     cortantes = _ler_cortantes()
     regioes = detalhar_estribos(
-        h_cm=70, bw_cm=20, fck_mpa=30, fyk_mpa=50, fyk_estribo_mpa=60, caa=2, cortantes=cortantes
+        h_cm=70, bw_cm=20, fck_mpa=30, fyk_mpa=50, fyk_estribo_kn_cm2=60, caa=2, cortantes=cortantes
     )
     assert regioes[0]["x_inicio"] == 0.0
     assert abs(regioes[-1]["x_fim"] - 7.5) < 0.1
@@ -46,7 +46,7 @@ def test_cobre_toda_viga():
 def test_espacamento_dentro_limite():
     cortantes = _ler_cortantes()
     regioes = detalhar_estribos(
-        h_cm=70, bw_cm=20, fck_mpa=30, fyk_mpa=50, fyk_estribo_mpa=60, caa=2, cortantes=cortantes
+        h_cm=70, bw_cm=20, fck_mpa=30, fyk_mpa=50, fyk_estribo_kn_cm2=60, caa=2, cortantes=cortantes
     )
     for r in regioes:
         assert 5.0 <= r["espacamento_cm"] <= 30.0
@@ -55,7 +55,7 @@ def test_espacamento_dentro_limite():
 def test_sem_cortantes():
     assert (
         detalhar_estribos(
-            h_cm=70, bw_cm=20, fck_mpa=30, fyk_mpa=50, fyk_estribo_mpa=60, caa=2, cortantes=[]
+            h_cm=70, bw_cm=20, fck_mpa=30, fyk_mpa=50, fyk_estribo_kn_cm2=60, caa=2, cortantes=[]
         )
         == []
     )
@@ -64,7 +64,7 @@ def test_sem_cortantes():
 def test_gerar_tabela():
     cortantes = _ler_cortantes()
     regioes = detalhar_estribos(
-        h_cm=70, bw_cm=20, fck_mpa=30, fyk_mpa=50, fyk_estribo_mpa=60, caa=2, cortantes=cortantes
+        h_cm=70, bw_cm=20, fck_mpa=30, fyk_mpa=50, fyk_estribo_kn_cm2=60, caa=2, cortantes=cortantes
     )
     texto = gerar_tabela_detailing(regioes)
     assert "DETALHAMENTO DE ESTRIBOS" in texto

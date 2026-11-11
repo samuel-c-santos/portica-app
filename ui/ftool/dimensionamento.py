@@ -100,7 +100,9 @@ def dimensionar_trechos_ftool(
     fyk_mpa = dados_viga["fyk_mpa"]
 
     # Cisalhamento precisa do fyk do estribo e da barra
-    fyk_estribo_mpa = dados_viga.get("fyk_estribo_mpa", 60.0)  # default CA-60 (60 kN/cm² / 600 MPa)
+    fyk_estribo_kn_cm2 = dados_viga.get(
+        "fyk_estribo_mpa", 60.0
+    )  # chave legada .ptc; UNIDADE: kN/cm² (CA-50=50, CA-60=60)
     fyk_barra_mpa = dados_viga.get("fyk_barra_mpa", fyk_mpa)
     gamma_f = dados_viga.get("gamma_f", 1.4)
 
@@ -168,7 +170,7 @@ def dimensionar_trechos_ftool(
             fck_mpa=fck_mpa,
             diam_estribo_mm=diam_estribo_mm,
             diam_barra_mm=diam_barra_mm,
-            fyk_estribo_mpa=fyk_estribo_mpa,
+            fyk_estribo_kn_cm2=fyk_estribo_kn_cm2,
             fyk_barra_mpa=fyk_barra_mpa,
             caa=caa,
             forcas_cortantes=[secao.cortante],
@@ -199,7 +201,7 @@ def dimensionar_trechos_ftool(
                 bw_cm=bw_cm,
                 fck_mpa=fck_mpa,
                 fyk_mpa=fyk_mpa,
-                fyk_estribo_mpa=fyk_estribo_mpa,
+                fyk_estribo_kn_cm2=fyk_estribo_kn_cm2,
                 caa=caa,
                 cortantes=cortantes,
                 phi_estribo_mm=diam_estribo_mm,

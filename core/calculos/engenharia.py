@@ -206,17 +206,22 @@ def rho_min(fck: float) -> float:
     return RHO_MIN_TABLE[closest]
 
 
-def asw_min_cm2_m(fck: float, bw_cm: float, fyk_estribo_mpa: float = 500) -> float:
+def asw_min_cm2_m(fck: float, bw_cm: float, fyk_estribo_kn_cm2: float = 50) -> float:
     """Asw/s mínimo (cm²/m) para estribos.
 
     A tabela ASW_S_TABLE_CA50 armazena:
       [0] = ρ_min em % (apenas referência)
       [1] = Asw_min/s por cm de bw para CA-50 (cm²/m/cm)
       [2] = Asw_min/s por cm de bw para CA-60 (cm²/m/cm)
+
+    EP-01.8: o fyk do estribo entra em kN/cm² (CA-50=50, CA-60=60) e o
+    limiar é coerente com a unidade. Antes o limiar estava em MPa (500)
+    sobre valores em kN/cm² — sempre verdadeiro, a coluna CA-60 nunca era
+    usada.
     """
     fck_key = min(ASW_S_TABLE_CA50.keys(), key=lambda x: abs(x - fck))
     _, ca50, ca60 = ASW_S_TABLE_CA50[fck_key]
-    rho = ca50 if fyk_estribo_mpa <= 500 else ca60
+    rho = ca50 if fyk_estribo_kn_cm2 <= 50 else ca60
     return rho * bw_cm
 
 
@@ -998,7 +1003,7 @@ def calcular_cisalhamento_viga_comum(
     fck_mpa: float,
     diam_estribo_mm: float,
     diam_barra_mm: float,
-    fyk_estribo_mpa: float,
+    fyk_estribo_kn_cm2: float,
     fyk_barra_mpa: float,
     caa: int,
     forcas_cortantes: list[float],
@@ -1032,13 +1037,13 @@ def calcular_cisalhamento_viga_comum(
     lam = lambda_f(fck_mpa)  # fator lambda (NBR 6118:17.4.2.2)
 
     # fywd do estribo em kN/cm² (fyk entra em kN/cm²: CA-60=60). Limite de 43.5 kN/cm² (435 MPa) conf. NBR 6118:17.4.2.3
-    fywd_kn_cm2 = min(fyd_kn_cm2(fyk_estribo_mpa), 43.5)
+    fywd_kn_cm2 = min(fyd_kn_cm2(fyk_estribo_kn_cm2), 43.5)
 
     area_estribo = area_barra(diam_estribo_mm)  # cm² (1 estribo = 2 ramos)
     asw_ramo = area_estribo * 2  # cm² (estribo com 2 ramos)
 
     # Asw/s mínimo
-    asw_min = asw_min_cm2_m(fck_mpa, bw_cm, fyk_estribo_mpa)
+    asw_min = asw_min_cm2_m(fck_mpa, bw_cm, fyk_estribo_kn_cm2)
 
     resultados = []
     for Vk_kn in forcas_cortantes:

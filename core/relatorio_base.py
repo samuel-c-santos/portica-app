@@ -792,7 +792,7 @@ class PorticaPDF(FPDF):
         cob_mm,
         fck_mpa,
         fyk_mpa,
-        fyk_estribo_mpa,
+        fyk_estribo_kn_cm2,
         phi_estribo_mm,
         phi_barra_mm,
         is_t=False,
@@ -1039,7 +1039,7 @@ class PorticaPDF(FPDF):
                 vrd2 = 0.27 * lam * fcd * bw_cm * d_cm / 10
                 vc = 0.6 * fctd * bw_cm * d_cm
                 vsw = r.vsd_kn - vc if r.vsd_kn > vc else 0
-                fywd = fyk_estribo_mpa / 1.15
+                fywd = fyk_estribo_kn_cm2 / 1.15
 
                 if vsw > 0 and fywd > 0 and d_cm > 0:
                     asw_req_m = (vsw / (fywd * d_cm)) * 100
@@ -1072,7 +1072,7 @@ class PorticaPDF(FPDF):
                     "",
                     "4. Calculo da armadura transversal (Asw/s):",
                     "   Asw/s,req = Vsw / (fywd * d)",
-                    f"   fywd = fyk_estribo / 1.15 = {fyk_estribo_mpa:g} / 1.15 = {fywd:.2f} kN/cm^2",
+                    f"   fywd = fyk_estribo / 1.15 = {fyk_estribo_kn_cm2:g} / 1.15 = {fywd:.2f} kN/cm^2",
                     f"   Asw/s,req = {vsw:.2f} / ({fywd:.2f} * {d_cm:.2f}) * 100 = {asw_req_m:.3f} cm^2/m",
                     f"   Asw/s,min = {r.asw_s_min_cm2_m:.3f} cm^2/m",
                     f"   Asw/s,adot = max(Asw/s,req, Asw/s,min) = {r.asw_usado_cm2_m:.3f} cm^2/m",
@@ -1819,7 +1819,7 @@ def gerar_relatorio_viga_comum(
     caa: int,
     fck_mpa: float,
     fyk_mpa: float,
-    fyk_estribo_mpa: float,
+    fyk_estribo_kn_cm2: float,
     phi_estribo_mm: float,
     phi_barra_mm: float,
     resultados_flexao: list[ResultadoFlexao | None],
@@ -2164,7 +2164,7 @@ def gerar_relatorio_viga_comum(
         cob_mm,
         fck_mpa,
         fyk_mpa,
-        fyk_estribo_mpa,
+        fyk_estribo_kn_cm2,
         phi_estribo_mm,
         phi_barra_mm,
         is_t=False,
@@ -2189,7 +2189,7 @@ def gerar_relatorio_viga_t(
     caa: int,
     fck_mpa: float,
     fyk_mpa: float,
-    fyk_estribo_mpa: float,
+    fyk_estribo_kn_cm2: float,
     phi_estribo_mm: float,
     phi_barra_mm: float,
     resultados_flexao: list[ResultadoFlexaoT | None],
@@ -2526,7 +2526,7 @@ def gerar_relatorio_viga_t(
         cob_mm,
         fck_mpa,
         fyk_mpa,
-        fyk_estribo_mpa,
+        fyk_estribo_kn_cm2,
         phi_estribo_mm,
         phi_barra_mm,
         is_t=True,

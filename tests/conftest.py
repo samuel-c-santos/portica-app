@@ -31,7 +31,7 @@ def viga_exemplo():
 
 @pytest.fixture
 def viga_exemplo_flexao(viga_exemplo):
-    """Parametros para calcular_flexao_viga_comum (sem fyk_estribo_mpa)."""
+    """Parametros para calcular_flexao_viga_comum (sem fyk_estribo_kn_cm2)."""
     return {k: v for k, v in viga_exemplo.items() if k != "fyk_estribo_mpa"}
 
 

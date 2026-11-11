@@ -9,14 +9,14 @@ import math
 from core.calculos.engenharia import calcular_cisalhamento_viga_comum
 
 
-def _calc_asw_s(vk_kn, gamma_f, h_cm, bw_cm, fck_mpa, fyk_mpa, fyk_estribo_mpa, caa):
+def _calc_asw_s(vk_kn, gamma_f, h_cm, bw_cm, fck_mpa, fyk_mpa, fyk_estribo_kn_cm2, caa):
     res = calcular_cisalhamento_viga_comum(
         h_cm=h_cm,
         bw_cm=bw_cm,
         fck_mpa=fck_mpa,
         diam_estribo_mm=5.0,
         diam_barra_mm=16.0,
-        fyk_estribo_mpa=fyk_estribo_mpa,
+        fyk_estribo_kn_cm2=fyk_estribo_kn_cm2,
         fyk_barra_mpa=fyk_mpa,
         caa=caa,
         forcas_cortantes=[vk_kn],
@@ -47,7 +47,7 @@ def detalhar_estribos(
     bw_cm,
     fck_mpa,
     fyk_mpa,
-    fyk_estribo_mpa,
+    fyk_estribo_kn_cm2,
     caa,
     cortantes: list[tuple[float, float]],
     phi_estribo_mm=5.0,
@@ -84,7 +84,7 @@ def detalhar_estribos(
         if ze_fim > xi:
             pts = [p for p in pontos if xi <= p[0] <= ze_fim]
             vk = max(abs(p[1]) for p in pts) if pts else 0
-            asw = _calc_asw_s(vk, gamma_f, h_cm, bw_cm, fck_mpa, fyk_mpa, fyk_estribo_mpa, caa)
+            asw = _calc_asw_s(vk, gamma_f, h_cm, bw_cm, fck_mpa, fyk_mpa, fyk_estribo_kn_cm2, caa)
             zonas.append(
                 {
                     "x_inicio": round(xi, 2),
@@ -102,7 +102,7 @@ def detalhar_estribos(
         if zv_fim > zv_ini + 0.1:
             pts = [p for p in pontos if zv_ini <= p[0] <= zv_fim]
             vk = max(abs(p[1]) for p in pts) if pts else 0
-            asw = _calc_asw_s(vk, gamma_f, h_cm, bw_cm, fck_mpa, fyk_mpa, fyk_estribo_mpa, caa)
+            asw = _calc_asw_s(vk, gamma_f, h_cm, bw_cm, fck_mpa, fyk_mpa, fyk_estribo_kn_cm2, caa)
             zonas.append(
                 {
                     "x_inicio": round(zv_ini, 2),
@@ -121,7 +121,7 @@ def detalhar_estribos(
         if xf - zd_ini > 0.1:
             pts = [p for p in pontos if zd_ini <= p[0] <= xf]
             vk = max(abs(p[1]) for p in pts) if pts else 0
-            asw = _calc_asw_s(vk, gamma_f, h_cm, bw_cm, fck_mpa, fyk_mpa, fyk_estribo_mpa, caa)
+            asw = _calc_asw_s(vk, gamma_f, h_cm, bw_cm, fck_mpa, fyk_mpa, fyk_estribo_kn_cm2, caa)
             zonas.append(
                 {
                     "x_inicio": round(zd_ini, 2),
