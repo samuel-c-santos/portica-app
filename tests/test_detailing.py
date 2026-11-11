@@ -44,6 +44,13 @@ def test_cobre_toda_viga():
 
 
 def test_espacamento_dentro_limite():
+    """EP-03.2: espaçamento dentro dos limites CONSTRUTIVOS do módulo.
+
+    O teto de 30 cm é hard-coded em detailing.py (limpa incondicionalmente)
+    e o piso de 5 cm idem. O s_max NORMATIVO min(0,3·d; 20 cm) com regime
+    por Vsd/Vrd2 só entra no EP-02.5 (que também substitui o d e as bitolas
+    hard-coded do módulo).
+    """
     cortantes = _ler_cortantes()
     regioes = detalhar_estribos(
         h_cm=70, bw_cm=20, fck_mpa=30, fyk_mpa=50, fyk_estribo_kn_cm2=60, caa=2, cortantes=cortantes

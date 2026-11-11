@@ -2,6 +2,7 @@ import os
 import tempfile
 
 import ezdxf
+import pytest
 
 from core.detailing.dxf_export import exportar_secao_dxf
 
@@ -45,6 +46,37 @@ def test_exportar_secao_dxf_retangular():
         assert "ESTRIBO" in layer_names
         assert "ARMADURA_LONG" in layer_names
         assert "ARMADURA_PELE" in layer_names
+
+        # EP-03.2: geometria — contorno, estribo e barras conferem com os dados
+        msp = doc.modelspace()
+        contorno = next(e for e in msp if e.dxftype() == "LWPOLYLINE" and e.dxf.layer == "CONCRETO")
+        xs_c = [p[0] for p in contorno.get_points("xy")]
+        ys_c = [p[1] for p in contorno.get_points("xy")]
+        # bbox do contorno = seção 20×70 cm
+        assert min(xs_c) == pytest.approx(0.0, abs=1e-6)
+        assert max(xs_c) == pytest.approx(20.0, abs=1e-6)
+        assert min(ys_c) == pytest.approx(0.0, abs=1e-6)
+        assert max(ys_c) == pytest.approx(70.0, abs=1e-6)
+        assert contorno.closed
+
+        estribo = next(e for e in msp if e.dxftype() == "LWPOLYLINE" and e.dxf.layer == "ESTRIBO")
+        xs_e = [p[0] for p in estribo.get_points("xy")]
+        ys_e = [p[1] for p in estribo.get_points("xy")]
+        # estribo = contorno inset do cobrimento 3 cm
+        assert min(xs_e) == pytest.approx(3.0, abs=1e-6)
+        assert max(xs_e) == pytest.approx(17.0, abs=1e-6)
+        assert min(ys_e) == pytest.approx(3.0, abs=1e-6)
+        assert max(ys_e) == pytest.approx(67.0, abs=1e-6)
+        assert estribo.closed
+        assert len(estribo) == 4
+
+        # barras: eixos dentro do estribo (bar_positions em mm → cm no DXF)
+        barras = [e for e in msp if e.dxftype() == "CIRCLE" and e.dxf.layer == "ARMADURA_LONG"]
+        assert len(barras) == len(bar_positions)
+        for c in barras:
+            assert min(xs_e) <= c.dxf.center.x <= max(xs_e)
+            assert min(ys_e) <= c.dxf.center.y <= max(ys_e)
+            assert c.dxf.radius == pytest.approx(16.0 / 10.0 / 2.0, abs=1e-6)
 
 
 def test_exportar_secao_dxf_t():

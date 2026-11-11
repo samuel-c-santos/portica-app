@@ -112,6 +112,71 @@ def test_2_gerar_relatorio_viga_comum_com_diagramas(ftool_data):
         os.remove(pdf_path)
 
 
+def test_2b_conteudo_relatorio_com_diagramas(monkeypatch, ftool_data):
+    """EP-03.2: o relatório com diagramas contém os valores do motor."""
+    from helpers_pdf import pdf_com_captura
+
+    momentos, cortantes, secoes = ftool_data
+    dados_viga = {
+        "h_cm": 70.0,
+        "bw_cm": 20.0,
+        "caa": 2,
+        "fck_mpa": 30.0,
+        "diam_estribo_mm": 5.0,
+        "diam_barra_mm": 16.0,
+        "fyk_mpa": 50.0,
+        "fyk_estribo_mpa": 60.0,
+        "gamma_f": 1.4,
+    }
+    resultados = dimensionar_trechos_ftool(dados_viga, secoes)
+    sec_results = resultados["secoes"]
+    res_flex = [r["resultado_flexao"] for r in sec_results]
+    res_cis = [r["resultado_cisalhamento"] for r in sec_results]
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+        pdf_path = tmp.name
+
+    try:
+
+        def _gerar():
+            gerar_relatorio_viga_comum_com_diagramas(
+                pdf_path,
+                nome_viga="Viga Teste",
+                h_cm=70.0,
+                bw_cm=20.0,
+                caa=2,
+                fck_mpa=30.0,
+                fyk_mpa=50.0,
+                fyk_estribo_kn_cm2=60.0,
+                phi_estribo_mm=5.0,
+                phi_barra_mm=16.0,
+                resultados_flexao=res_flex,
+                resultados_cisalhamento=res_cis,
+                imagem_ftool=None,
+                gamma_f=1.4,
+                dark_mode=False,
+                nome_engenheiro="Samuel Engenheiro",
+                crea="12345/D",
+                momentos=momentos,
+                cortantes=cortantes,
+                secoes_criticas=secoes,
+            )
+
+        texto = pdf_com_captura(monkeypatch, _gerar)
+
+        assert "Relatório de Dimensionamento" in texto
+        assert "Dimensionamento ao Cisalhamento" in texto
+        assert "Vrd2" in texto
+        # valores do motor presentes: Vrd2 = 516,97 kN (tabela, formato _n)
+        assert "516,97" in texto
+        # fywd sem cap proibido (EP-01.9)
+        assert "52.17" not in texto and "52,17" not in texto
+        # X nunca é sentinela (EP-01.4)
+        assert "999" not in texto
+    finally:
+        os.remove(pdf_path)
+
+
 def test_3_gerar_relatorio_viga_t_com_diagramas(ftool_data):
     """3. Testa o wrapper da viga T com diagramas (PDF completo do fluxo FTOOL)."""
     momentos, cortantes, secoes = ftool_data

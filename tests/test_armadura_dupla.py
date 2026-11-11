@@ -56,11 +56,12 @@ def test_2_secao_pequena_forca_armadura_dupla():
     assert res.md_limite_knm < res.momento_kNm
     assert res.md_excedente_knm > 0.0
 
-    # O momento limite agora é calculado com a d da seção (estimativa
-    # inicial, 45.7 cm). O valor antigo (46.93) derivava de um layout
-    # fantasma de 10 camadas de Ø16 numa alma de 12 cm (d=27.13), que o
-    # detalhador recusa desde EP-01.1 (limite de camadas) — a seção com
-    # Ø16 NÃO CABE e o resultado carrega a recusa em status_bitola.
+    # EP-03.2: o md_limite é derivado da calibração empírica do próprio motor
+    # (kc_lim = 1/(fck_conv·bx_min·(0,48 − 0,192·bx_min)) = 1,88196) — valor
+    # empírico POR DEFINIÇÃO, não validado contra a norma (EP-02.1 trocará a
+    # calibração). A conta à mão reproduz a fórmula do motor:
+    #     kc_lim = 1/(3·0,45·(0,48 − 0,0864)) = 1,88196
+    #     md_lim = 12·45,7²/(1,88196·100) = 133,17 kN·m
     assert res.status_bitola == "NÃO CABE"
     assert res.md_limite_knm == pytest.approx(133.169, abs=1.0)
     # Momento excedente: 194.88 - 46.93 = 147.95

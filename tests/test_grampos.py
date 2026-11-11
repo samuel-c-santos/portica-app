@@ -211,25 +211,39 @@ def test_grampos_2a_camada_superior_fechado_na_1a_camada_sup():
             os.remove(pdf_path)
 
 
-def test_legenda_com_grampo_renderiza_sem_erro():
-    """A legenda com a entrada do grampo deve renderizar sem erro."""
+def test_legenda_com_grampo_renderiza_sem_erro(monkeypatch):
+    """A legenda com a entrada do grampo deve renderizar sem erro.
+
+    EP-03.2: o texto da legenda deve refletir a armadura do desenho.
+    """
+    from helpers_pdf import pdf_com_captura
+
     from core.relatorio_base import _legenda_secao
 
     pdf = _make_pdf()
-    _legenda_secao(
-        pdf,
-        cob_mm=25.0,
-        phi_est=5.0,
-        n_inf=6,
-        phi_inf=16.0,
-        n_sup=2,
-        phi_sup=10.0,
-        lx=10.0,
-        ly=10.0,
-        n_pele=5,
-        phi_pele=6.3,
-        tem_grampo=True,
-    )
+
+    def construir():
+        _legenda_secao(
+            pdf,
+            cob_mm=25.0,
+            phi_est=5.0,
+            n_inf=6,
+            phi_inf=16.0,
+            n_sup=2,
+            phi_sup=10.0,
+            lx=10.0,
+            ly=10.0,
+            n_pele=5,
+            phi_pele=6.3,
+            tem_grampo=True,
+        )
+
+    texto = pdf_com_captura(monkeypatch, construir)
+    assert "Legenda" in texto
+    assert "Barras Inferiores" in texto and "6 x phi 16 mm" in texto
+    assert "Barras Superiores" in texto and "2 x phi 10 mm" in texto
+    assert "Armadura de Pele" in texto and "5 x phi 6,3 mm/face" in texto
+    assert "Grampo Suplementar" in texto and "1 x phi 5 mm" in texto
     fd, pdf_path = tempfile.mkstemp(suffix=".pdf")
     os.close(fd)
     try:
@@ -285,11 +299,18 @@ def test_nota_cavaletes_renderiza_sem_erro():
             os.remove(pdf_path)
 
 
-def test_desenhar_secao_com_2_camadas_gera_pdf_sem_erro():
-    """Viga com phi10 em bw=20 e momento alto -> 2 camadas -> grampos."""
+def test_desenhar_secao_com_2_camadas_gera_pdf_sem_erro(monkeypatch):
+    """Viga com phi10 em bw=20 e momento alto -> 2 camadas -> grampos.
+
+    EP-03.2: além de renderizar, a LEGENDA no texto deve refletir a
+    armadura e o grampo (nº de barras, diâmetros, "Grampo Suplementar").
+    """
+    from helpers_pdf import pdf_com_captura
+
     fd, pdf_path = tempfile.mkstemp(suffix=".pdf")
     os.close(fd)
-    try:
+
+    def construir():
         pdf = FPDF()
         pdf.add_page()
         # bw=20, h=50, cob=25, estribo=5, barra=10, 3 barras inferiores
@@ -306,7 +327,14 @@ def test_desenhar_secao_com_2_camadas_gera_pdf_sem_erro():
             n_barras_sup=2,
         )
         pdf.output(pdf_path)
+
+    try:
+        texto = pdf_com_captura(monkeypatch, construir)
+        assert os.path.exists(pdf_path)
         assert os.path.getsize(pdf_path) > 0
+        # EP-03.2: o desenho puro (sem relatório) imprime as COTAS da seção
+        assert "bw=20 cm" in texto
+        assert "h=50 cm" in texto
     finally:
         if os.path.exists(pdf_path):
             os.remove(pdf_path)

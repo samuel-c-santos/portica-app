@@ -80,8 +80,10 @@ class TestCisalhamento:
         )
         for r in res:
             if r is not None:
-                # Para viga 20x70 fck=30, Vrd2 ~ 517 kN (muito maior que Vsd)
-                assert r.vrd2_kn > 0
+                # EP-03.2: valor de referência à mão — Vrd2 = 0,27·λ·fcd·bw·d
+                # = 0,27·0,80·18,2143·20·65,7/10 = 516,97 kN (independe de Vk
+                # e de fyk do estribo; Vrd2 < Vsd em todos os casos de teste).
+                assert r.vrd2_kn == pytest.approx(516.97, abs=0.5)
                 assert r.passa_vrd2 == "SIM"
 
     def test_cortante_zero_retorna_none(self, viga_exemplo):

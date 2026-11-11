@@ -1,5 +1,7 @@
 """Testes de viga T (flexao com mesa colaborante)."""
 
+import pytest
+
 from core.calculos import bf_efetivo_viga_t, calcular_flexao_viga_t
 
 
@@ -7,7 +9,15 @@ class TestVigaT:
     """Cobertura: calculo de flexao para secao T."""
 
     def test_as_calculo_t(self, viga_exemplo_t, momentos_exemplo):
-        """As para viga T deve ser menor que retangular equivalente (mesa ajuda)."""
+        """As,req = 4,838 cm² para Mk=96,9 em T 20×70 (bf,ef=60).
+
+        EP-03.2: valor de referência à mão (fórmula empírica do motor; a
+        mesa com bf,ef = min(60, 20+20+20) = 60 domina o caso):
+            d = 65,7 ; Kc = 60·65,7²/13566 = 19,09107
+            bx = 0,03692 → 0,8x = 1,94 cm < hf = 12 (LN na mesa)
+            Ks = 1/(43,4783·(1 − 0,01846)) = 0,023431
+            As,req = 0,023431·13566/65,7 = 4,838 cm²
+        """
         res = calcular_flexao_viga_t(
             h_cm=viga_exemplo_t["h_cm"],
             bw_cm=viga_exemplo_t["bw_cm"],
@@ -25,7 +35,8 @@ class TestVigaT:
         )
         r = res[0]
         assert r is not None
-        assert r.as_req_cm2 > 0
+        assert r.linha_neutra_condiz == "SIM"
+        assert r.as_req_cm2 == pytest.approx(4.838, abs=0.02), f"As: {r.as_req_cm2}"
         assert r.as_necessaria_cm2 >= r.asmin_cm2 - 0.01
 
     def test_ln_dentro_mesa(self, viga_exemplo_t):

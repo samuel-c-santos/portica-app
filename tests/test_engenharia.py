@@ -9,13 +9,20 @@ class TestFlexaoRetangular:
     """Cobertura: calculo de flexao para viga retangular."""
 
     def test_as_calculo_correto(self, viga_exemplo_flexao, momentos_exemplo):
-        """As deve ser ~8 cm2 para Md=194.88 kN.m (viga 20x70, fck=30)."""
+        """As,req = 5.037 cm² para Mk=96,9 (Md=135,66; viga 20×70, fck=30).
+
+        EP-03.2: valor de referência à mão (fórmula empírica do motor — a
+        calibração 0,192/0,48 é trocada pelo equilíbrio NBR no EP-02.1):
+            d = 70 − 3 − 0,5 − 0,8 = 65,7 cm
+            Kc = 20·65,7²/13566 = 6,36369
+            bx = 0,11436 (raiz da equação de 2º grau do motor)
+            Ks = 1/(43,4783·(1 − 0,11436/2)) = 0,0243914
+            As,req = 0,0243914·13566/65,7 = 5,037 cm²
+        """
         res = calcular_flexao_viga_comum(momentos=momentos_exemplo, **viga_exemplo_flexao)
         r = res[0]
         assert r is not None
-        # Mk=96.9 * 1.4 = 135.66 kN.m
-        # As deve estar na faixa fisicamente correta (5-15 cm2)
-        assert 3.0 < r.as_req_cm2 < 20.0, f"As fora do esperado: {r.as_req_cm2}"
+        assert r.as_req_cm2 == pytest.approx(5.037, abs=0.02), f"As: {r.as_req_cm2}"
 
     def test_momento_majorado(self, viga_exemplo_flexao):
         """Md no resultado deve ser Mk * gamma_f."""

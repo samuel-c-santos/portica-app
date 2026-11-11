@@ -37,6 +37,16 @@ def test_flecha_com_dados_reais():
     """Flecha com dados bi-apoiados deve retornar valores numéricos.
 
     (O sample FTOOL original não é bi-apoiado e agora é recusado — EP-01.6.)
+
+    EP-03.2: verificação contra limites à mão, independentes da integração:
+        L=7,5 m, carga uniforme com Mmax=200 kN·m → q = 8·200/7,5² = 28,444 kN/m
+        Ecs = 2683,84 kN/cm²; Ic = 571666,67 cm⁴
+        f = 5·q·L⁴/(384·E·I)
+        Com Ic (estádio I puro):   f = 0,764 cm  (I_eq ≥ Ic é falso quando
+            fissurado — I_eq < Ic → a flecha real EXCEDE este valor)
+        Com I_eq no momento crítico (185983 cm⁴, As=7,5): f = 2,348 cm
+            (a integração usa I_eq POR ESTAÇÃO — nos pontos menos carregados
+            I_eq é maior, então a flecha real NÃO EXCEDE este valor)
     """
     momentos, deformacoes = _ler_dados_biapoiados()
     res = calcular_flecha(
@@ -49,8 +59,9 @@ def test_flecha_com_dados_reais():
         deformacoes=deformacoes,
     )
     assert "erro" not in res
-    assert res["flecha_total_cm"] > 0
-    assert res["flecha_imediata_cm"] > 0
+    f = res["flecha_imediata_cm"]
+    # bounds independentes (conta à mão): 0,764 < f < 2,348
+    assert 0.70 < f < 2.40, f"Flecha fora dos bounds à mão: {f}"
 
 
 def test_flecha_sem_deformacoes():
