@@ -156,7 +156,11 @@ def dimensionar_trechos_ftool(
             from ui.ftool.els import calcular_fissuracao, calcular_flecha
 
             as_tracao = max(
-                (r["resultado_flexao"].as_usado_cm2 for r in resultados if r["resultado_flexao"]),
+                (
+                    r["resultado_flexao"].as_necessaria_cm2
+                    for r in resultados
+                    if r["resultado_flexao"]
+                ),
                 default=0,
             )
             is_t = bool(
@@ -213,9 +217,10 @@ def dimensionar_trechos_ftool(
                     if rf is not None:
                         # Calcular área de uma barra
                         area_barra = math.pi * (rf.diametro_mm / 20.0) ** 2  # mm -> cm²
-                        # Atualizar quantidade de barras e área usada
+                        # Atualizar quantidade de barras e áreas (necessária
+                        # não muda com barras extras; adotada cresce)
                         rf.qtd_barras += ajustes_els.barras_extras
-                        rf.as_usado_cm2 = rf.qtd_barras * area_barra
+                        rf.as_adotado_cm2 = round(rf.qtd_barras * area_barra, 3)
 
                         # Recalcular layout_convergido, camadas_adotadas, etc.
                         try:
@@ -313,7 +318,7 @@ def gerar_resumo_dimensionamento(
                 f"    As necessário = {rf.as_req_cm2:.2f} cm² | As mínimo = {rf.asmin_cm2:.2f} cm²"
             )
             lines.append(
-                f"    Armadura Adotada: {rf.qtd_barras} Φ {rf.diametro_mm:.1f} mm (As_adotado = {rf.as_usado_cm2:.2f} cm²)"
+                f"    Armadura Adotada: {rf.qtd_barras} Φ {rf.diametro_mm:.1f} mm (As_adotado = {rf.as_necessaria_cm2:.2f} cm²)"
             )
             if rf.alerta:
                 lines.append(f"    ⚠️ ALERTA: {rf.alerta}")

@@ -26,7 +26,7 @@ class TestVigaT:
         r = res[0]
         assert r is not None
         assert r.as_req_cm2 > 0
-        assert r.as_usado_cm2 >= r.asmin_cm2 - 0.01
+        assert r.as_necessaria_cm2 >= r.asmin_cm2 - 0.01
 
     def test_ln_dentro_mesa(self, viga_exemplo_t):
         """Para momento baixo, LN deve ficar dentro da mesa."""

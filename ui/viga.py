@@ -1402,7 +1402,7 @@ def build_viga_screen(
                                     [
                                         ft.Text("Adotado:", size=10, color=Palette.TEXT_SECONDARY),
                                         ft.Text(
-                                            f"{r.qtd_barras}φ{r.diametro_mm:.1f} ({r.as_usado_cm2:.2f} cm²)",
+                                            f"{r.qtd_barras}φ{r.diametro_mm:.1f} ({r.as_necessaria_cm2:.2f} cm²)",
                                             size=10,
                                         ),
                                     ],
@@ -2641,7 +2641,7 @@ def build_viga_screen(
 
                 for d in displayed_diams:
                     a_bar = area_barra(d)
-                    n_bars = math.ceil(r.as_usado_cm2 / a_bar) if a_bar > 0 else 0
+                    n_bars = math.ceil(r.as_necessaria_cm2 / a_bar) if a_bar > 0 else 0
                     is_chosen = d == r.diametro_mm
                     text_color = Palette.PRIMARY if is_chosen else Palette.TEXT_PRIMARY
                     text_weight = ft.FontWeight.BOLD if is_chosen else ft.FontWeight.NORMAL
@@ -2670,7 +2670,9 @@ def build_viga_screen(
                         val = float(e.control.value)
                         r_obj.diametro_mm = val
                         a_bar = area_barra(val)
-                        r_obj.qtd_barras = math.ceil(r_obj.as_usado_cm2 / a_bar) if a_bar > 0 else 0
+                        r_obj.qtd_barras = (
+                            math.ceil(r_obj.as_necessaria_cm2 / a_bar) if a_bar > 0 else 0
+                        )
                         rebuild_results_ui()
                         page.update()
 
@@ -2780,7 +2782,9 @@ def build_viga_screen(
                                 [
                                     ft.Text("AsUSADO:", size=10, color=Palette.TEXT_SECONDARY),
                                     ft.Text(
-                                        f"{r.as_usado_cm2:.2f}", size=10, weight=ft.FontWeight.BOLD
+                                        f"{r.as_necessaria_cm2:.2f}",
+                                        size=10,
+                                        weight=ft.FontWeight.BOLD,
                                     ),
                                 ],
                                 alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
@@ -3304,7 +3308,7 @@ def build_viga_screen(
                         ks=0,
                         as_req_cm2=0,
                         asmin_cm2=0,
-                        as_usado_cm2=0,
+                        as_necessaria_cm2=0,
                         diametro_mm=float(phi_bar_dd.control.value)
                         if phi_bar_dd.control.value
                         else 10.0,

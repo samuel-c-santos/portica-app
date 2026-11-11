@@ -945,7 +945,7 @@ class PorticaPDF(FPDF):
                         "5. Armadura minima e adotada (NBR 6118):",
                         "   As,min = rho_min * Ac",
                         f"   As,min = {r.asmin_cm2:.2f} cm^2 (rho_min = {r.asmin_cm2 / (bw_cm * h_cm) * 100:.3f}%)",
-                        f"   As,adot = max(As,req, As,min) = {r.as_usado_cm2:.2f} cm^2",
+                        f"   As,adot = max(As,req, As,min) = {r.as_necessaria_cm2:.2f} cm^2",
                         f"   Bitola escolhida: phi = {r.diametro_mm:g} mm (Area = {area_barra(r.diametro_mm):.3f} cm^2)",
                         f"   Quantidade de barras: N = {r.qtd_barras} barras (As = {r.qtd_barras * area_barra(r.diametro_mm):.2f} cm^2)",
                         f"   Espacamento horizontal livre: eh = {eh_suportado_val:.2f} cm (min 2.0 cm - {'CABE' if r.eh_passa == 'SIM' else 'ALERTA'})",

@@ -308,7 +308,7 @@ class ResultadoFlexao:
     ks: float
     as_req_cm2: float
     asmin_cm2: float
-    as_usado_cm2: float
+    as_necessaria_cm2: float
     diametro_mm: float
     qtd_barras: int
     eh_min_real: float
@@ -448,11 +448,11 @@ def dimensionar_bitola_iterativa(
                 as_req = ks * Md_kNcm / d_cm
 
         asmin = rho_min(fck_mpa) * bw_detalhamento_cm * h_cm / 100.0
-        as_usado = max(as_req, asmin)
+        as_necessaria = max(as_req, asmin)
         as_req_final = as_req
 
         a_bar = area_barra(diam_barra_mm)
-        qtd_barras = math.ceil(as_usado / a_bar) if a_bar > 0 else 0
+        qtd_barras = math.ceil(as_necessaria / a_bar) if a_bar > 0 else 0
         qtd_barras = max(1, qtd_barras)
 
         try:
@@ -579,6 +579,57 @@ def _d_sem_oscilacao(valores: list[float]) -> bool:
         return True
     sinais = [1 if d > 0 else -1 for d in diffs]
     return all(s == sinais[0] for s in sinais)
+
+
+def _validar_invariantes_flexao(
+    *,
+    contexto: str,
+    as_req_cm2: float,
+    as_adotado_cm2: float,
+    d_cm: float,
+    qtd_barras: int,
+    area_barra_cm2: float,
+    cabe: bool,
+    status_bitola: str,
+) -> None:
+    """EP-01.3: invariantes de integridade antes de emitir um resultado.
+
+    Garante que as duas fontes (As,req recalculado com a d convergida e
+    qtd_barras/as_adotado do laço de bitola) estão em concordância. Se
+    qualquer invariante falhar em um resultado que fingiria "CABE",
+    levanta ValueError com contexto — nunca um subdimensionamento
+    silencioso.
+
+    Invariantes:
+      - as_req_cm2 ≥ 0
+      - d_cm > 0
+      - qtd_barras ≥ 1 implica as_adotado_cm2 == qtd_barras · A_φ
+      - as_adotado_cm2 ≥ as_req_cm2, salvo status explícito de exceção
+        ("NÃO CABE" / "NÃO CONVERGIU")
+    """
+    erros: list[str] = []
+    if as_req_cm2 < 0:
+        erros.append(f"As,req = {as_req_cm2:.3f} cm² < 0")
+    if d_cm <= 0:
+        erros.append(f"d = {d_cm:.2f} cm ≤ 0")
+    if qtd_barras >= 1 and abs(as_adotado_cm2 - qtd_barras * area_barra_cm2) > 0.011:
+        erros.append(
+            f"qtd_barras: As,adotado = {as_adotado_cm2:.3f} cm² não corresponde a "
+            f"{qtd_barras} barras × {area_barra_cm2:.4f} cm² = "
+            f"{qtd_barras * area_barra_cm2:.3f} cm²"
+        )
+    status_recusado = status_bitola in ("NÃO CABE", "NÃO CONVERGIU")
+    if not status_recusado and as_adotado_cm2 < as_req_cm2 - 1e-6:
+        erros.append(
+            f"subdimensionamento: As,adotado = {as_adotado_cm2:.3f} cm² < "
+            f'As,req = {as_req_cm2:.3f} cm² com status "{status_bitola}"'
+        )
+    if erros:
+        raise ValueError(
+            "Seção recusada pelo motor (invariante de integridade violada): "
+            + "; ".join(erros)
+            + f". Contexto: {contexto}"
+        )
 
 
 def calcular_flexao_viga_comum(
@@ -775,7 +826,7 @@ def calcular_flexao_viga_comum(
         asmin = rho_min_val * bw_cm * h_cm / 100  # cm²
 
         # As utilizado
-        as_usado = max(as_req, asmin)
+        as_necessaria = max(as_req, asmin)
 
         # Número de barras pelo diâmetro escolhido (convergido)
         qtd_barras = res_bitola.qtd_barras
@@ -802,6 +853,22 @@ def calcular_flexao_viga_comum(
             barras_cima = 0
 
         # Armadura de pele (NBR 6118:17.3.5.2.3) — já calculada fora do loop
+        # EP-01.3: invariantes de integridade antes de emitir o resultado
+        _validar_invariantes_flexao(
+            contexto=(
+                f"Mk={Mk_kNm:+.1f} kN·m (Md={Md_kNm:.1f} kN·m, γf={gamma_f}), "
+                f"seção {bw_cm:.0f}×{h_cm:.0f} cm, Ø{diam_barra_mm:g} mm, "
+                f"cob={cob_mm:.0f} mm, CAA {caa}"
+            ),
+            as_req_cm2=round(as_req, 3),
+            as_adotado_cm2=round(res_bitola.as_adotado_cm2, 3),
+            d_cm=round(res_bitola.d_real_cm, 2),
+            qtd_barras=res_bitola.qtd_barras,
+            area_barra_cm2=area_barra_d,
+            cabe=res_bitola.cabe,
+            status_bitola=res_bitola.status_bitola,
+        )
+
         resultados.append(
             ResultadoFlexao(
                 momento_kNm=abs(Md_kNm),
@@ -817,7 +884,7 @@ def calcular_flexao_viga_comum(
                 ks=round(ks, 3),
                 as_req_cm2=round(as_req, 3),
                 asmin_cm2=round(asmin, 3),
-                as_usado_cm2=round(as_usado, 3),
+                as_necessaria_cm2=round(as_necessaria, 3),
                 diametro_mm=diam_barra_mm,
                 qtd_barras=qtd_barras,
                 eh_min_real=round(eh_min, 2),
@@ -1014,7 +1081,7 @@ class ResultadoFlexaoT:
     ks: float
     as_req_cm2: float
     asmin_cm2: float
-    as_usado_cm2: float
+    as_necessaria_cm2: float
     diametro_mm: float
     qtd_barras: int
     eh_min_real: float
@@ -1411,7 +1478,7 @@ def calcular_flexao_viga_t(
                 alerta = ""
 
         asmin = rho_min_val * bw_cm * h_cm / 100.0
-        as_usado = max(as_req, asmin)
+        as_necessaria = max(as_req, asmin)
 
         if as_linha_cm2 > 0:
             area_barra_d = area_barra(diam_barra_mm)
@@ -1422,7 +1489,7 @@ def calcular_flexao_viga_t(
             qtd_barras_linha = 0
 
         area_barra_d = area_barra(diam_barra_mm)
-        qtd_barras = math.ceil(as_usado / area_barra_d) if area_barra_d > 0 else 0
+        qtd_barras = math.ceil(as_necessaria / area_barra_d) if area_barra_d > 0 else 0
         qtd_barras = max(1, qtd_barras)
 
         # Detalha as barras reais para obter o espaçamento e disposição corretos
@@ -1459,6 +1526,23 @@ def calcular_flexao_viga_t(
         espaco_disp = bw_cm - 2 * (cob_mm / 10.0) - 2 * (diam_estribo_mm / 10.0)
         eh_min = max(2.0, diam_barra_mm / 10.0, 1.2 * 1.9)
 
+        # EP-01.3: invariantes de integridade antes de emitir o resultado
+        _validar_invariantes_flexao(
+            contexto=(
+                f"Mk={Mk_kNm:+.1f} kN·m (Md={Md_kNm:.1f} kN·m, γf={gamma_f}), "
+                f"seção T {bw_cm:.0f}×{h_cm:.0f} cm (bf={bf_cm:.0f} cm, "
+                f"hf={hf_cm:.0f} cm), Ø{diam_barra_mm:g} mm, cob={cob_mm:.0f} mm, "
+                f"CAA {caa}"
+            ),
+            as_req_cm2=round(as_req, 3),
+            as_adotado_cm2=round(qtd_barras * area_barra_d, 3),
+            d_cm=round(d_cm, 2),
+            qtd_barras=qtd_barras,
+            area_barra_cm2=area_barra_d,
+            cabe=cabe_status,
+            status_bitola=status_bitola,
+        )
+
         resultados.append(
             ResultadoFlexaoT(
                 momento_kNm=abs(Md_kNm),
@@ -1478,7 +1562,7 @@ def calcular_flexao_viga_t(
                 ks=round(1.0 / (fyd * (1.0 - bx / 2.0)) if bx < 999.0 else 0.0, 3),
                 as_req_cm2=round(as_req, 3),
                 asmin_cm2=round(asmin, 3),
-                as_usado_cm2=round(as_usado, 3),
+                as_necessaria_cm2=round(as_necessaria, 3),
                 diametro_mm=diam_barra_mm,
                 qtd_barras=qtd_barras,
                 eh_min_real=round(eh_min, 2),

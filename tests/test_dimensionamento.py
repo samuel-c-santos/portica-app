@@ -67,7 +67,7 @@ def test_2_secao_momento_maximo(secoes_reais):
     rf = sec_max_m["resultado_flexao"]
     assert rf is not None
     assert rf.as_req_cm2 > 0.0
-    assert rf.as_usado_cm2 >= rf.as_req_cm2
+    assert rf.as_necessaria_cm2 >= rf.as_req_cm2
     assert rf.qtd_barras > 0
 
 

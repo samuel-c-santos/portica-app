@@ -251,7 +251,7 @@ def gerar_relatorio_envelope(
         rf = res["resultado_flexao"]
         if rf:
             lines.append(
-                f"  FLEXÃO (As): As_req = {rf.as_req_cm2:.2f} cm² | Adotado: {rf.qtd_barras} Φ {rf.diametro_mm:.1f} mm (As = {rf.as_usado_cm2:.2f} cm²)"
+                f"  FLEXÃO (As): As_req = {rf.as_req_cm2:.2f} cm² | Adotado: {rf.qtd_barras} Φ {rf.diametro_mm:.1f} mm (As = {rf.as_necessaria_cm2:.2f} cm²)"
             )
             if rf.alerta:
                 lines.append(f"    ⚠️ ALERTA: {rf.alerta}")

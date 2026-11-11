@@ -2,6 +2,7 @@
 Testes para verificar que ajustes manuais de barras extras são aplicados aos resultados de flexão.
 """
 
+import math
 import os
 
 import pytest
@@ -69,9 +70,15 @@ def test_barras_extras_atualizam_qtd_barras():
         f"qtd_barras deve ser {rf_base.qtd_barras + 3}, mas é {rf_ajustado.qtd_barras}"
     )
 
-    # as_usado_cm2 deve ser maior com ajustes
-    assert rf_ajustado.as_usado_cm2 > rf_base.as_usado_cm2, (
-        f"as_usado_cm2 deve ser maior com ajustes: {rf_ajustado.as_usado_cm2} vs {rf_base.as_usado_cm2}"
+    # A área NECESSÁRIA (max(As,req, As,min)) não muda com barras extras —
+    # o que muda é a área ADOTADA (qtd_barras · A_φ)
+    assert rf_ajustado.as_necessaria_cm2 == pytest.approx(rf_base.as_necessaria_cm2, abs=1e-6), (
+        f"as_necessaria_cm2 não deve mudar com barras extras: "
+        f"{rf_ajustado.as_necessaria_cm2} vs {rf_base.as_necessaria_cm2}"
+    )
+    assert rf_ajustado.as_adotado_cm2 == pytest.approx(
+        rf_ajustado.qtd_barras * math.pi * (rf_ajustado.diametro_mm / 20.0) ** 2,
+        abs=0.011,
     )
 
 

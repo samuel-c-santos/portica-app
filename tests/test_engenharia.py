@@ -156,7 +156,7 @@ class TestFlexaoRetangular:
         res = calcular_flexao_viga_comum(momentos=[100.0], **viga_exemplo_flexao)
         r = res[0]
         assert r is not None
-        assert r.as_usado_cm2 >= r.asmin_cm2 - 0.01
+        assert r.as_necessaria_cm2 >= r.asmin_cm2 - 0.01
 
     def test_multiplas_secoes(self, viga_exemplo_flexao, momentos_exemplo):
         """Deve calcular todas as secoes passadas."""
@@ -164,7 +164,7 @@ class TestFlexaoRetangular:
         assert len(res) == len(momentos_exemplo)
         for r in res:
             if r is not None:
-                assert r.as_usado_cm2 > 0
+                assert r.as_necessaria_cm2 > 0
 
     def test_pele_h_maior_60(self, viga_exemplo_flexao):
         """Viga com h=70 deve requerer armadura de pele."""

@@ -73,7 +73,7 @@ portica_app/
 
 | Classe | Linha | Campos principais |
 |--------|-------|-------------------|
-| `ResultadoFlexao` | 282 | `as_usado_cm2`, `qtd_barras`, `phi_barra_inf`, `camadas_adotadas`, `layout_convergido`, `pele_qtd`, `pele_phi` |
+| `ResultadoFlexao` | 282 | `as_necessaria_cm2`, `qtd_barras`, `phi_barra_inf`, `camadas_adotadas`, `layout_convergido`, `pele_qtd`, `pele_phi` |
 | `ResultadoBitola` | 337 | `phi_adotado`, `n_barras`, `as_calc`, `as_usado` |
 | `ResultadoCisalhamento` | 787 | `asw_s_cm2m`, `phi_estribo`, `s_adotado_cm`, `passa_smax` |
 | `ResultadoFlexaoT` | 926 | Herda `ResultadoFlexao` + `bf_efetivo_cm`, `hf_cm`, `ln_mesa` |

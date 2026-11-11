@@ -160,14 +160,14 @@ def test_regressao_els_w_fio_10_bw_20():
         caa=2,
         fck_mpa=30,
         fyk_mpa=50,
-        as_tracao_cm2=r.as_usado_cm2,
+        as_tracao_cm2=r.as_necessaria_cm2,
         phi_barra_mm=10.0,
         momentos=[(1, Mk)],
     )
     assert fiss["passa"] is True, (
         f"φ10 em bw=20 falhou ELS-W: wk={fiss['wk_mm']:.3f} > "
         f"w_lim={fiss['wk_limite_mm']} (σₛ={fiss['sigma_s_mpa']:.0f} MPa, "
-        f"As={r.as_usado_cm2:.2f} cm², d={r.d_cm_real:.2f} cm)"
+        f"As={r.as_necessaria_cm2:.2f} cm², d={r.d_cm_real:.2f} cm)"
     )
     assert fiss["wk_mm"] <= fiss["wk_limite_mm"]
 
