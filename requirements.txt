@@ -1,5 +1,9 @@
 # Dependencias principais (runtime)
-flet>=0.85.0
+# flet travado em 0.85.x: e a linha em que o app e desenvolvido/testado e a
+# que o executavel do PyInstaller usa. O flet 1.x e uma linha nova com
+# mudancas de API - atualizar e trabalho deliberado, nao efeito colateral
+# de um pip install.
+flet>=0.85.0,<0.86
 fpdf2>=2.7.0
 svglib>=2.0.0
 reportlab>=4.0.0

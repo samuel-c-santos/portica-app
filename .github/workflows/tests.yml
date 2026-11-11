@@ -3,6 +3,8 @@
 # - `tests`: pytest na matriz Python 3.10/3.11/3.12 + smoke de importação
 #   + `build/release.py --check` (consistência da versão nos 5 lugares:
 #   version.py, CITATION.cff, RELEASE_NOTES, CHANGELOG e site).
+#   O job instala libcairo2-dev: o pycairo (via rlPyCairo) não publica wheel
+#   para Linux e precisa compilar com os headers de cairo.
 # - `build-smoke`: build do executável em runner Windows; falha se
 #   `dist/portica.exe` não for gerado ou se um PDF normativo (docs/nbr)
 #   acabar no bundle.
@@ -39,6 +41,9 @@ jobs:
 
       - name: Consistência de release
         run: python build/release.py --check
+
+      - name: Headers de cairo (pycairo compila do zero no Linux)
+        run: sudo apt-get update && sudo apt-get install -y pkg-config libcairo2-dev
 
       - name: Instala dependências
         run: pip install -r requirements.txt -r requirements-dev.txt
