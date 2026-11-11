@@ -112,6 +112,11 @@ def nomes_assets(versao: str) -> list[str]:
     return [f"portica-v{versao}-windows-x64.{ext}" for ext in ("exe", "zip")]
 
 
+def urls_assets(versao: str) -> list[str]:
+    """URLs completas de download dos assets na tag imutável vX.Y.Z."""
+    return [f"{REPO_URL}/releases/download/v{versao}/{nome}" for nome in nomes_assets(versao)]
+
+
 def versoes_no_texto(texto: str) -> list[tuple[int, str]]:
     """Todas as menções `v?X.Y.Z` do texto como (linha 1-based, versão)."""
     achados: list[tuple[int, str]] = []
@@ -270,9 +275,14 @@ def check_nao_publicado(rep: Relatorio, linhas: list[str]) -> None:
 
 def check_site(rep: Relatorio, v: str) -> None:
     texto = ler(SITE_FILE)
-    for nome in nomes_assets(v):
-        if nome not in texto:
-            rep.diverge(f"site/index.html: URL do asset '{nome}' não encontrada")
+    if "releases/latest/download/portica-v" in texto:
+        rep.diverge(
+            "site/index.html: proibido usar 'releases/latest/download/portica-v' "
+            "(quebra no próximo release; use '/releases/download/vX.Y.Z/...')"
+        )
+    for url in urls_assets(v):
+        if url not in texto:
+            rep.diverge(f"site/index.html: URL do asset '{url}' não encontrada")
     citacao = f"(versão {v})"
     if citacao not in texto:
         rep.diverge(f"site/index.html: citação '{citacao}' não encontrada")
@@ -435,17 +445,17 @@ def bump_changelog(velho: str, novo: str) -> str:
 
 def bump_site(velho: str, novo: str) -> str:
     texto = ler(SITE_FILE)
-    alvo_url = f"portica-v{velho}-windows-x64"
-    n_url = texto.count(alvo_url)
-    if n_url != 2:
-        die(f"site/index.html: esperava 2 ocorrências de {alvo_url!r}, achei {n_url}")
+    for url_velha in urls_assets(velho):
+        n_url = texto.count(url_velha)
+        if n_url != 1:
+            die(f"site/index.html: esperava 1 ocorrência de {url_velha!r}, achei {n_url}")
     alvo_cit = f"(versão {velho})"
     n_cit = texto.count(alvo_cit)
-    if n_cit != 1:
-        die(f"site/index.html: esperava 1 ocorrência de {alvo_cit!r}, achei {n_cit}")
-    return texto.replace(alvo_url, f"portica-v{novo}-windows-x64").replace(
-        alvo_cit, f"(versão {novo})"
-    )
+    if n_cit < 1:
+        die(f"site/index.html: esperava pelo menos 1 ocorrência de {alvo_cit!r}, achei {n_cit}")
+    texto = re.sub(rf"\bv{re.escape(velho)}\b", f"v{novo}", texto)
+    texto = re.sub(rf"\b{re.escape(velho)}\b", novo, texto)
+    return texto
 
 
 def cmd_bump(args: argparse.Namespace) -> int:
