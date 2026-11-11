@@ -34,12 +34,14 @@ body {
 h1, h2, h3, h4 {
   margin: 0;
   font-family: var(--aipim-font-heading);
-  text-transform: uppercase; /* Antonio em caixa alta */
+}
+h1, h2, h3 {
+  text-transform: uppercase;
 }
 h1 { font-size: var(--aipim-text-h1-size); line-height: var(--aipim-text-h1-line); font-weight: var(--aipim-text-h1-weight); letter-spacing: var(--aipim-text-h1-tracking); }
 h2 { font-size: var(--aipim-text-h2-size); line-height: var(--aipim-text-h2-line); font-weight: var(--aipim-text-h2-weight); letter-spacing: var(--aipim-text-h2-tracking); }
 h3 { font-size: var(--aipim-text-h3-size); line-height: var(--aipim-text-h3-line); font-weight: var(--aipim-text-h3-weight); letter-spacing: var(--aipim-text-h3-tracking); }
-h4 { font-size: var(--aipim-text-h4-size); line-height: var(--aipim-text-h4-line); font-weight: var(--aipim-text-h4-weight); letter-spacing: var(--aipim-text-h4-tracking); }
+h4 { font-size: var(--aipim-text-h4-size); line-height: var(--aipim-text-h4-line); font-weight: var(--aipim-text-h4-weight); letter-spacing: var(--aipim-text-h4-tracking); text-transform: var(--aipim-text-h4-transform); }
 
 /* ── Layout ─────────────────────────────────────────────────────────────── */
 .page {
