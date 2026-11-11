@@ -162,8 +162,10 @@ def ui(monkeypatch):
         base_control.BaseControl, "update", lambda self, *a, **k: None, raising=False
     )
     import ui.viga as viga_mod
+    from ui.viga import actions, viga
 
-    monkeypatch.setattr(viga_mod, "add_recent", lambda *a, **k: None)
+    for modulo in (actions, viga):
+        monkeypatch.setattr(modulo, "add_recent", lambda *a, **k: None, raising=False)
     return viga_mod
 
 

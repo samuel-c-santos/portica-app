@@ -16,6 +16,8 @@ Retrocompatibilidade: projetos .ptc gravados antes da existência do eixo
 `são carregados como "manual"`.
 """
 
+from collections.abc import MutableMapping
+
 # ── Valores do eixo "entrada" ───────────────────────────────────────────────
 ENTRADA_MANUAL = "manual"
 ENTRADA_FTOOL = "ftool"
@@ -54,7 +56,7 @@ def entrada_de_projeto(proj_data):
 
 def entrada_para_salvar(state):
     """Valor da chave "entrada" a ser gravado no .ptc."""
-    if not isinstance(state, dict):
+    if not isinstance(state, MutableMapping):
         return ENTRADA_MANUAL
     return normalizar_entrada(state.get("entrada"))
 
@@ -62,7 +64,7 @@ def entrada_para_salvar(state):
 def aplicar_entrada_projeto(state, proj_data):
     """Aplica no `state` a fonte de entrada contida no .ptc e devolve o valor."""
     entrada = entrada_de_projeto(proj_data)
-    if isinstance(state, dict):
+    if isinstance(state, MutableMapping):
         state["entrada"] = entrada
     return entrada
 
