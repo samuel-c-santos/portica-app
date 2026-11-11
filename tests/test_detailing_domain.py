@@ -12,18 +12,24 @@ Cobre todos os critérios de aceite (DoD):
   ✓ Baricentro = média das posições Y das barras de cálculo
   ✓ Validação de entrada (ValueError para parâmetros ruins)
 """
+
 import pytest
 
 from core.detailing.domain import BeamDetailer, BeamDetailingInput
 
 # ─── Fixture base ────────────────────────────────────────────────────────────
 
+
 def make_input(**kwargs):
     """Retorna um BeamDetailingInput com valores padrão razoáveis."""
     defaults = dict(
-        bw=300.0, h=500.0, c_nom=25.0,
-        phi_estribo=6.3, phi_barra=16.0,
-        d_max_agregado=19.0, total_bars=4,
+        bw=300.0,
+        h=500.0,
+        c_nom=25.0,
+        phi_estribo=6.3,
+        phi_barra=16.0,
+        d_max_agregado=19.0,
+        total_bars=4,
     )
     defaults.update(kwargs)
     return BeamDetailingInput(**defaults)
@@ -35,6 +41,7 @@ detailer = BeamDetailer()
 # ═══════════════════════════════════════════════════════════════════════════════
 # 1. Espaçamento horizontal mínimo (e_h,min)
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 class TestEhMin:
     def test_brita1_phi16(self):
@@ -62,6 +69,7 @@ class TestEhMin:
 # 2. Espaçamento vertical mínimo (e_v,min)
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestEvMin:
     def test_brita1_phi10(self):
         """d_max=19mm, φ=10mm → max(20, 10, 1.33×19≈25.27) = 25.27"""
@@ -70,7 +78,9 @@ class TestEvMin:
 
     def test_phi_domina(self):
         """φ=32mm, d_max=25mm → max(20, 32, 33.25) = 33.25"""
-        data = detailer.detail(make_input(bw=500, h=700, phi_barra=32, d_max_agregado=25, total_bars=4))
+        data = detailer.detail(
+            make_input(bw=500, h=700, phi_barra=32, d_max_agregado=25, total_bars=4)
+        )
         assert abs(data.ev_min - 33.25) < 0.1
 
     def test_piso_normativo(self):
@@ -83,12 +93,18 @@ class TestEvMin:
 # 3. Critério chave DoD: 10 barras φ10 em bw=200mm
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestMultiLayerDistribution:
     """Caso DoD: 10φ10 em bw=200mm deve usar ≥ 2 camadas, sem falha."""
 
     INP = BeamDetailingInput(
-        bw=200, h=500, c_nom=25, phi_estribo=6.3,
-        phi_barra=10, d_max_agregado=19, total_bars=10,
+        bw=200,
+        h=500,
+        c_nom=25,
+        phi_estribo=6.3,
+        phi_barra=10,
+        d_max_agregado=19,
+        total_bars=10,
     )
 
     def test_nao_falha(self):
@@ -102,7 +118,7 @@ class TestMultiLayerDistribution:
         assert data.layer_count >= 2, (
             f"Esperado >= 2 camadas, obtido {data.layer_count}.\n"
             f"  bw={self.INP.bw}, φ={self.INP.phi_barra}, n={self.INP.total_bars}\n"
-            f"  h_space = {self.INP.bw - 2*self.INP.c_nom - 2*self.INP.phi_estribo:.1f} mm\n"
+            f"  h_space = {self.INP.bw - 2 * self.INP.c_nom - 2 * self.INP.phi_estribo:.1f} mm\n"
             f"  eh_min = {data.eh_min:.1f} mm"
         )
 
@@ -139,6 +155,7 @@ class TestMultiLayerDistribution:
 # 4. Uma única camada (caso simples)
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestSingleLayer:
     def test_3_barras_bw300(self):
         data = detailer.detail(make_input(total_bars=3))
@@ -161,6 +178,7 @@ class TestSingleLayer:
 # 5. Grampos suplementares
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestGrampos:
     def test_2_barras_sem_grampo(self):
         data = detailer.detail(make_input(total_bars=2))
@@ -169,8 +187,13 @@ class TestGrampos:
     def test_span_grande_detecta_grampo(self):
         """bw=600mm, 5 barras φ25 → span > 150mm → grampos necessários."""
         inp = BeamDetailingInput(
-            bw=600, h=600, c_nom=30, phi_estribo=8,
-            phi_barra=25, d_max_agregado=25, total_bars=5,
+            bw=600,
+            h=600,
+            c_nom=30,
+            phi_estribo=8,
+            phi_barra=25,
+            d_max_agregado=25,
+            total_bars=5,
         )
         data = detailer.detail(inp)
         if data.layer_count == 1 and data.layers[0].bar_count >= 3:
@@ -183,8 +206,13 @@ class TestGrampos:
     def test_grampos_nao_incluem_barras_extremas(self):
         """Grampos devem ser apenas nas barras centrais, não nas extremas."""
         inp = BeamDetailingInput(
-            bw=600, h=600, c_nom=30, phi_estribo=8,
-            phi_barra=20, d_max_agregado=19, total_bars=5,
+            bw=600,
+            h=600,
+            c_nom=30,
+            phi_estribo=8,
+            phi_barra=20,
+            d_max_agregado=19,
+            total_bars=5,
         )
         data = detailer.detail(inp)
         if not data.requires_supplementary_stirrup:
@@ -200,6 +228,7 @@ class TestGrampos:
 # 6. Baricentro e altura útil efetiva
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestBaricentro:
     def test_1_camada_ycg_igual_centroide(self):
         """Para 1 camada, y_cg deve coincidir com o centróide da camada."""
@@ -208,10 +237,17 @@ class TestBaricentro:
 
     def test_2_camadas_ycg_media(self):
         """Para 2 camadas, y_cg = média das posições Y de todas as barras."""
-        data = detailer.detail(BeamDetailingInput(
-            bw=200, h=500, c_nom=25, phi_estribo=6.3,
-            phi_barra=10, d_max_agregado=19, total_bars=10,
-        ))
+        data = detailer.detail(
+            BeamDetailingInput(
+                bw=200,
+                h=500,
+                c_nom=25,
+                phi_estribo=6.3,
+                phi_barra=10,
+                d_max_agregado=19,
+                total_bars=10,
+            )
+        )
         main_bars = [b for b in data.bar_positions if not b.is_corner_bar]
         expected = sum(b.y for b in main_bars) / len(main_bars)
         assert abs(data.y_cg - expected) < 0.01
@@ -232,6 +268,7 @@ class TestBaricentro:
 # ═══════════════════════════════════════════════════════════════════════════════
 # 7. Validação de entrada
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 class TestValidacao:
     def test_bw_zero(self):
@@ -269,6 +306,7 @@ class TestValidacao:
 # 8. Integridade do layout
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestIntegridade:
     def test_barras_dentro_da_seccao(self):
         """Barras de cálculo (not corner) devem estar dentro do estribo.
@@ -298,10 +336,17 @@ class TestIntegridade:
 
     def test_layer_index_sequencial(self):
         """Camadas devem ter índices 0, 1, 2, ..."""
-        data = detailer.detail(BeamDetailingInput(
-            bw=200, h=700, c_nom=25, phi_estribo=6.3,
-            phi_barra=10, d_max_agregado=19, total_bars=15,
-        ))
+        data = detailer.detail(
+            BeamDetailingInput(
+                bw=200,
+                h=700,
+                c_nom=25,
+                phi_estribo=6.3,
+                phi_barra=10,
+                d_max_agregado=19,
+                total_bars=15,
+            )
+        )
         for i, lyr in enumerate(data.layers):
             assert lyr.index == i
 
@@ -310,20 +355,29 @@ class TestIntegridade:
 # 9. Detalhamento de Viga T
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestVigaTDetailing:
     def test_bottom_bars_in_web(self):
         """Barras inferiores (is_superior=False) em viga T devem estar dentro da alma (bw)."""
         inp = BeamDetailingInput(
-            bw=200.0, h=500.0, c_nom=25.0, phi_estribo=6.3, phi_barra=16.0,
-            d_max_agregado=19.0, total_bars=3, is_t=True, bf_cm=60.0, hf_cm=15.0,
-            is_superior=False
+            bw=200.0,
+            h=500.0,
+            c_nom=25.0,
+            phi_estribo=6.3,
+            phi_barra=16.0,
+            d_max_agregado=19.0,
+            total_bars=3,
+            is_t=True,
+            bf_cm=60.0,
+            hf_cm=15.0,
+            is_superior=False,
         )
         data = detailer.detail(inp)
 
         # Alma centralizada na mesa de largura 600mm. Alma vai de X=200mm a X=400mm.
         # Barras principais (não de canto) devem estar dentro da alma (200 a 400)
         x_web_esq = (600.0 - 200.0) / 2.0  # 200.0
-        x_web_dir = x_web_esq + 200.0       # 400.0
+        x_web_dir = x_web_esq + 200.0  # 400.0
 
         main_bars = [b for b in data.bar_positions if not b.is_corner_bar]
         assert len(main_bars) == 3
@@ -336,9 +390,17 @@ class TestVigaTDetailing:
     def test_top_bars_in_flange(self):
         """Barras superiores (is_superior=True) em viga T devem estar distribuídas sobre a largura da mesa (bf)."""
         inp = BeamDetailingInput(
-            bw=200.0, h=500.0, c_nom=25.0, phi_estribo=6.3, phi_barra=16.0,
-            d_max_agregado=19.0, total_bars=6, is_t=True, bf_cm=60.0, hf_cm=15.0,
-            is_superior=True
+            bw=200.0,
+            h=500.0,
+            c_nom=25.0,
+            phi_estribo=6.3,
+            phi_barra=16.0,
+            d_max_agregado=19.0,
+            total_bars=6,
+            is_t=True,
+            bf_cm=60.0,
+            hf_cm=15.0,
+            is_superior=True,
         )
         data = detailer.detail(inp)
 
@@ -359,9 +421,17 @@ class TestVigaTDetailing:
         """Verifica se o baricentro (y_cg) é calculado corretamente para cima ou para baixo."""
         # Inferior (is_superior=False)
         inp_inf = BeamDetailingInput(
-            bw=200.0, h=500.0, c_nom=25.0, phi_estribo=6.3, phi_barra=16.0,
-            d_max_agregado=19.0, total_bars=3, is_t=True, bf_cm=60.0, hf_cm=15.0,
-            is_superior=False
+            bw=200.0,
+            h=500.0,
+            c_nom=25.0,
+            phi_estribo=6.3,
+            phi_barra=16.0,
+            d_max_agregado=19.0,
+            total_bars=3,
+            is_t=True,
+            bf_cm=60.0,
+            hf_cm=15.0,
+            is_superior=False,
         )
         data_inf = detailer.detail(inp_inf)
         # 1 única camada, y_cg deve ser cob + phi_estribo + phi_barra/2 = 25 + 6.3 + 8 = 39.3
@@ -369,9 +439,17 @@ class TestVigaTDetailing:
 
         # Superior (is_superior=True)
         inp_sup = BeamDetailingInput(
-            bw=200.0, h=500.0, c_nom=25.0, phi_estribo=6.3, phi_barra=16.0,
-            d_max_agregado=19.0, total_bars=3, is_t=True, bf_cm=60.0, hf_cm=15.0,
-            is_superior=True
+            bw=200.0,
+            h=500.0,
+            c_nom=25.0,
+            phi_estribo=6.3,
+            phi_barra=16.0,
+            d_max_agregado=19.0,
+            total_bars=3,
+            is_t=True,
+            bf_cm=60.0,
+            hf_cm=15.0,
+            is_superior=True,
         )
         data_sup = detailer.detail(inp_sup)
         # y_cg medido a partir da face inferior da viga, para barras a 39.3mm do topo

@@ -77,7 +77,9 @@ def calcular_envelope(combinacoes: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
-def detectar_secoes_envelope(combinacoes: list[dict[str, Any]], envelope: dict[str, Any]) -> list[SecaoCritica]:
+def detectar_secoes_envelope(
+    combinacoes: list[dict[str, Any]], envelope: dict[str, Any]
+) -> list[SecaoCritica]:
     """
     Detecta as seções críticas no envelope de esforços, identificando a origem (combinação)
     de cada esforço crítico.
@@ -104,7 +106,9 @@ def detectar_secoes_envelope(combinacoes: list[dict[str, Any]], envelope: dict[s
     x_maximos = [p[0] for p in detectar_maximos_locais(m_max_curve)]
     x_minimos = [p[0] for p in detectar_minimos_locais(m_min_curve)]
     x_apoios = detectar_apoios(m_max_curve, v_max_curve) + detectar_apoios(m_min_curve, v_min_curve)
-    x_nulos = [p[0] for p in detectar_pontos_momento_nulo(m_max_curve)] + [p[0] for p in detectar_pontos_momento_nulo(m_min_curve)]
+    x_nulos = [p[0] for p in detectar_pontos_momento_nulo(m_max_curve)] + [
+        p[0] for p in detectar_pontos_momento_nulo(m_min_curve)
+    ]
     x_extremos = [x_min, L]
 
     # Fundir
@@ -156,53 +160,70 @@ def detectar_secoes_envelope(combinacoes: list[dict[str, Any]], envelope: dict[s
 
         if is_apoio:
             origem_m = encontrar_origem_momento(x, m_min)
-            secoes.append(SecaoCritica(
-                x=round(x, 4),
-                momento=round(m_min, 2),
-                cortante=round(v_pior, 2),
-                tipo="APOIO",
-                descricao="Apoio detectado (mínimo de envelope)" if x != x_min and x != L else ("Apoio esquerdo" if x == x_min else "Apoio direito"),
-                origem=f"M: {origem_m} | V: {origem_v}"
-            ))
+            secoes.append(
+                SecaoCritica(
+                    x=round(x, 4),
+                    momento=round(m_min, 2),
+                    cortante=round(v_pior, 2),
+                    tipo="APOIO",
+                    descricao="Apoio detectado (mínimo de envelope)"
+                    if x != x_min and x != L
+                    else ("Apoio esquerdo" if x == x_min else "Apoio direito"),
+                    origem=f"M: {origem_m} | V: {origem_v}",
+                )
+            )
         elif is_max or (is_extremo and abs(m_max) >= abs(m_min)):
             origem_m = encontrar_origem_momento(x, m_max)
-            secoes.append(SecaoCritica(
-                x=round(x, 4),
-                momento=round(m_max, 2),
-                cortante=round(v_pior, 2),
-                tipo="MÁX" if is_max else "EXTREMO",
-                descricao="Momento máximo de envelope" if is_max else "Extremo de envelope (máximo)",
-                origem=f"M: {origem_m} | V: {origem_v}"
-            ))
+            secoes.append(
+                SecaoCritica(
+                    x=round(x, 4),
+                    momento=round(m_max, 2),
+                    cortante=round(v_pior, 2),
+                    tipo="MÁX" if is_max else "EXTREMO",
+                    descricao="Momento máximo de envelope"
+                    if is_max
+                    else "Extremo de envelope (máximo)",
+                    origem=f"M: {origem_m} | V: {origem_v}",
+                )
+            )
         elif is_min or (is_extremo and abs(m_min) > abs(m_max)):
             origem_m = encontrar_origem_momento(x, m_min)
-            secoes.append(SecaoCritica(
-                x=round(x, 4),
-                momento=round(m_min, 2),
-                cortante=round(v_pior, 2),
-                tipo="MÍN" if is_min else "EXTREMO",
-                descricao="Momento mínimo de envelope" if is_min else "Extremo de envelope (mínimo)",
-                origem=f"M: {origem_m} | V: {origem_v}"
-            ))
+            secoes.append(
+                SecaoCritica(
+                    x=round(x, 4),
+                    momento=round(m_min, 2),
+                    cortante=round(v_pior, 2),
+                    tipo="MÍN" if is_min else "EXTREMO",
+                    descricao="Momento mínimo de envelope"
+                    if is_min
+                    else "Extremo de envelope (mínimo)",
+                    origem=f"M: {origem_m} | V: {origem_v}",
+                )
+            )
         elif is_nulo:
-            secoes.append(SecaoCritica(
-                x=round(x, 4),
-                momento=0.0,
-                cortante=round(v_pior, 2),
-                tipo="M_NULO",
-                descricao="Momento nulo de envelope",
-                origem=f"V: {origem_v}"
-            ))
+            secoes.append(
+                SecaoCritica(
+                    x=round(x, 4),
+                    momento=0.0,
+                    cortante=round(v_pior, 2),
+                    tipo="M_NULO",
+                    descricao="Momento nulo de envelope",
+                    origem=f"V: {origem_v}",
+                )
+            )
 
     return secoes
 
 
-def gerar_relatorio_envelope(dados_viga: dict[str, Any], envelope: dict[str, Any], secoes: list[SecaoCritica]) -> str:
+def gerar_relatorio_envelope(
+    dados_viga: dict[str, Any], envelope: dict[str, Any], secoes: list[SecaoCritica]
+) -> str:
     """
     Gera um relatório textual completo detalhando os resultados do dimensionamento
     com base nas seções críticas do envelope.
     """
     from ui.ftool.dimensionamento import dimensionar_trechos_ftool
+
     resultados = dimensionar_trechos_ftool(dados_viga, secoes)["secoes"]
 
     lines = []
@@ -229,7 +250,9 @@ def gerar_relatorio_envelope(dados_viga: dict[str, Any], envelope: dict[str, Any
 
         rf = res["resultado_flexao"]
         if rf:
-            lines.append(f"  FLEXÃO (As): As_req = {rf.as_req_cm2:.2f} cm² | Adotado: {rf.qtd_barras} Φ {rf.diametro_mm:.1f} mm (As = {rf.as_usado_cm2:.2f} cm²)")
+            lines.append(
+                f"  FLEXÃO (As): As_req = {rf.as_req_cm2:.2f} cm² | Adotado: {rf.qtd_barras} Φ {rf.diametro_mm:.1f} mm (As = {rf.as_usado_cm2:.2f} cm²)"
+            )
             if rf.alerta:
                 lines.append(f"    ⚠️ ALERTA: {rf.alerta}")
         else:
@@ -237,7 +260,9 @@ def gerar_relatorio_envelope(dados_viga: dict[str, Any], envelope: dict[str, Any
 
         rc = res["resultado_cisalhamento"]
         if rc:
-            lines.append(f"  CISALHAMENTO (Asw/s): Asw/s_req = {rc.asw_usado_cm2_m:.2f} cm²/m | Adotado: Φ {rc.diam_estribo_mm:.1f} mm c/ {rc.dist_estribos_cm:.1f} cm")
+            lines.append(
+                f"  CISALHAMENTO (Asw/s): Asw/s_req = {rc.asw_usado_cm2_m:.2f} cm²/m | Adotado: Φ {rc.diam_estribo_mm:.1f} mm c/ {rc.dist_estribos_cm:.1f} cm"
+            )
         else:
             lines.append("  CISALHAMENTO (Asw/s): Esforço nulo.")
 

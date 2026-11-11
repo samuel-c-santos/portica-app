@@ -46,6 +46,7 @@ class FletClientError(RuntimeError):
 # Descoberta do estado do cliente
 # --------------------------------------------------------------------------
 
+
 def _flet_desktop():
     try:
         import flet_desktop
@@ -65,6 +66,7 @@ def _flavor() -> str:
 def _version(flet_desktop) -> str:
     try:
         import flet_desktop.version as version_module
+
         return version_module.version
     except Exception:
         return "0.0.0"
@@ -102,6 +104,7 @@ def client_state() -> str:
 # Download e extracao
 # --------------------------------------------------------------------------
 
+
 def _download_url(flet_desktop) -> str:
     url = os.environ.get("FLET_CLIENT_URL")
     if url:
@@ -115,9 +118,7 @@ def _download_url(flet_desktop) -> str:
 def _extract_archive(archive: Path, target_dir: Path, flet_desktop) -> None:
     """Extrai o cliente no cache local, de forma atomica (dir temporario + rename)."""
     target_dir.parent.mkdir(parents=True, exist_ok=True)
-    temp_dir = Path(
-        tempfile.mkdtemp(prefix=f"{target_dir.name}.", dir=str(target_dir.parent))
-    )
+    temp_dir = Path(tempfile.mkdtemp(prefix=f"{target_dir.name}.", dir=str(target_dir.parent)))
     try:
         safe_extract = getattr(flet_desktop, "safe_zip_extractall", None)
         if safe_extract is not None:
@@ -146,9 +147,7 @@ def _download_and_extract(flet_desktop, progress=None) -> None:
         with urllib.request.urlopen(url, timeout=DOWNLOAD_TIMEOUT_S) as response:
             total = response.headers.get("Content-Length")
             total = int(total) if total else None
-            handle_fd, archive_name = tempfile.mkstemp(
-                prefix="flet-client-", suffix=".zip"
-            )
+            handle_fd, archive_name = tempfile.mkstemp(prefix="flet-client-", suffix=".zip")
             os.close(handle_fd)
             archive = Path(archive_name)
             downloaded = 0
@@ -172,16 +171,14 @@ def _download_and_extract(flet_desktop, progress=None) -> None:
         ) from exc
     except Exception as exc:
         raise FletClientError(
-            "Nao foi possivel baixar o cliente grafico do Flet "
-            f"({url}).\n\nMotivo: {exc}"
+            f"Nao foi possivel baixar o cliente grafico do Flet ({url}).\n\nMotivo: {exc}"
         ) from exc
 
     try:
         _extract_archive(archive, _cache_dir(flet_desktop), flet_desktop)
     except Exception as exc:
         raise FletClientError(
-            "O cliente grafico do Flet foi baixado, mas nao pode ser "
-            f"instalado.\n\nMotivo: {exc}"
+            f"O cliente grafico do Flet foi baixado, mas nao pode ser instalado.\n\nMotivo: {exc}"
         ) from exc
     finally:
         try:
@@ -194,10 +191,12 @@ def _download_and_extract(flet_desktop, progress=None) -> None:
 # Interface de progresso / erro
 # --------------------------------------------------------------------------
 
+
 def _message_box(title: str, text: str, error: bool = False) -> None:
     """Caixa de dialogo nativa do Windows (usada como fallback sem tkinter)."""
     try:
         import ctypes
+
         flags = 0x10 if error else 0x40  # MB_ICONERROR / MB_ICONINFORMATION
         ctypes.windll.user32.MessageBoxW(None, text, title, flags)
     except Exception:
@@ -288,9 +287,8 @@ def _download_with_tkinter(flet_desktop) -> None:
         error = failure[0]
         try:
             from tkinter import messagebox
-            messagebox.showerror(
-                "Portica App - nao foi possivel iniciar", str(error)
-            )
+
+            messagebox.showerror("Portica App - nao foi possivel iniciar", str(error))
         except Exception:
             _message_box("Portica App - nao foi possivel iniciar", str(error), error=True)
         raise error
@@ -307,15 +305,14 @@ def _download_with_message_box(flet_desktop) -> None:
     try:
         _download_and_extract(flet_desktop)
     except FletClientError as exc:
-        _message_box(
-            "Portica App - nao foi possivel iniciar", str(exc), error=True
-        )
+        _message_box("Portica App - nao foi possivel iniciar", str(exc), error=True)
         raise
 
 
 # --------------------------------------------------------------------------
 # API principal
 # --------------------------------------------------------------------------
+
 
 def prepare_desktop_client() -> str:
     """Garante que o cliente desktop do Flet esteja pronto.
@@ -343,8 +340,7 @@ def prepare_desktop_client() -> str:
             raise
         except Exception as exc:
             raise FletClientError(
-                "Nao foi possivel preparar o cliente grafico do Flet.\n\n"
-                f"Motivo: {exc}"
+                f"Nao foi possivel preparar o cliente grafico do Flet.\n\nMotivo: {exc}"
             ) from exc
 
     return client_state()

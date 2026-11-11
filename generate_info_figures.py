@@ -51,10 +51,31 @@ def _apaga_eixo(ax):
     ax.set_yticks([])
 
 
-def _texto(ax, x, y, txt, ha="center", va="center", size=11, estilo="normal",
-           cor=TEXTO, rotacao=0, peso="normal"):
-    ax.text(x, y, txt, ha=ha, va=va, fontsize=size, style=estilo, color=cor,
-            rotation=rotacao, weight=peso)
+def _texto(
+    ax,
+    x,
+    y,
+    txt,
+    ha="center",
+    va="center",
+    size=11,
+    estilo="normal",
+    cor=TEXTO,
+    rotacao=0,
+    peso="normal",
+):
+    ax.text(
+        x,
+        y,
+        txt,
+        ha=ha,
+        va=va,
+        fontsize=size,
+        style=estilo,
+        color=cor,
+        rotation=rotacao,
+        weight=peso,
+    )
 
 
 def _seta(ax, x, y, dx, dy, cor=TEXTO, largura=1.4, ponta=9, zorder=6):
@@ -62,26 +83,34 @@ def _seta(ax, x, y, dx, dy, cor=TEXTO, largura=1.4, ponta=9, zorder=6):
         "",
         xy=(x + dx, y + dy),
         xytext=(x, y),
-        arrowprops=dict(arrowstyle="-|>", color=cor, lw=largura,
-                        mutation_scale=ponta),
+        arrowprops=dict(arrowstyle="-|>", color=cor, lw=largura, mutation_scale=ponta),
         zorder=zorder,
     )
 
 
 def _apoio_triangular(ax, x, y, largura=0.75):
-    ax.add_patch(Polygon(
-        [(x - largura / 2, y), (x + largura / 2, y), (x, y + 0.55)],
-        closed=True, facecolor=CONCRETO, edgecolor=TRACO, lw=1.2, zorder=4,
-    ))
-    ax.plot([x - largura / 2 - 0.12, x + largura / 2 + 0.12], [y - 0.02, y - 0.02],
-            color=TRACO, lw=1.8, zorder=4)
+    ax.add_patch(
+        Polygon(
+            [(x - largura / 2, y), (x + largura / 2, y), (x, y + 0.55)],
+            closed=True,
+            facecolor=CONCRETO,
+            edgecolor=TRACO,
+            lw=1.2,
+            zorder=4,
+        )
+    )
+    ax.plot(
+        [x - largura / 2 - 0.12, x + largura / 2 + 0.12],
+        [y - 0.02, y - 0.02],
+        color=TRACO,
+        lw=1.8,
+        zorder=4,
+    )
 
 
 def _apoio_rolo(ax, x, y, r=0.22):
-    ax.add_patch(Circle((x, y + r), r, facecolor=FUNDO, edgecolor=TRACO,
-                        lw=1.4, zorder=5))
-    ax.plot([x - 0.45, x + 0.45], [y - 0.02, y - 0.02], color=TRACO, lw=1.8,
-            zorder=4)
+    ax.add_patch(Circle((x, y + r), r, facecolor=FUNDO, edgecolor=TRACO, lw=1.4, zorder=5))
+    ax.plot([x - 0.45, x + 0.45], [y - 0.02, y - 0.02], color=TRACO, lw=1.8, zorder=4)
 
 
 # ── 1. Momento fletor e deformação sob flexão ───────────────────────────────
@@ -104,8 +133,9 @@ def figura_momento_fletor():
     ax.plot([x0, x1], [ybase, ybase], color=TRACO_CLARO, lw=1.0, ls=":", zorder=2)
 
     # Viga
-    ax.add_patch(Rectangle((x0, ybase), vao, h, facecolor=CONCRETO,
-                           edgecolor=TRACO, lw=1.6, zorder=3))
+    ax.add_patch(
+        Rectangle((x0, ybase), vao, h, facecolor=CONCRETO, edgecolor=TRACO, lw=1.6, zorder=3)
+    )
     _apoio_triangular(ax, x0, ybase)
     _apoio_rolo(ax, x1, ybase)
 
@@ -126,20 +156,28 @@ def figura_momento_fletor():
 
     # Rótulos
     _texto(ax, (x0 + x1) / 2, 0.15, "M(x)", size=13, estilo="italic")
-    _texto(ax, x1 + 0.15, ybase + 0.62, "deformada", ha="left", size=11,
-           estilo="italic", cor=TRACO)
-    _texto(ax, x1 + 0.15, 0.55, "diagrama de momento", ha="left", size=11,
-           estilo="italic", cor=TRACO)
+    _texto(ax, x1 + 0.15, ybase + 0.62, "deformada", ha="left", size=11, estilo="italic", cor=TRACO)
+    _texto(
+        ax, x1 + 0.15, 0.55, "diagrama de momento", ha="left", size=11, estilo="italic", cor=TRACO
+    )
 
     # Cota do vão
-    ax.annotate("", xy=(x0, -0.45), xytext=(x1, -0.45),
-                arrowprops=dict(arrowstyle="<|-|>", color=TEXTO, lw=1.1))
+    ax.annotate(
+        "",
+        xy=(x0, -0.45),
+        xytext=(x1, -0.45),
+        arrowprops=dict(arrowstyle="<|-|>", color=TEXTO, lw=1.1),
+    )
     _texto(ax, (x0 + x1) / 2, -0.7, "L", size=12, estilo="italic")
 
     _apaga_eixo(ax)
     fig.tight_layout(pad=0.2)
-    fig.savefig(os.path.join(DESTINO, "momento_fletor.jpg"),
-                facecolor=fig.get_facecolor(), format="jpg", dpi=150)
+    fig.savefig(
+        os.path.join(DESTINO, "momento_fletor.jpg"),
+        facecolor=fig.get_facecolor(),
+        format="jpg",
+        dpi=150,
+    )
     plt.close(fig)
 
 
@@ -151,12 +189,21 @@ def figura_bielas_tirantes():
     x0, x1 = 1.0, 8.0
     yb, yt = 0.0, 1.8
 
-    ax.add_patch(Rectangle((x0, yb), x1 - x0, yt - yb, facecolor=CONCRETO,
-                           alpha=0.35, edgecolor=TRACO, lw=1.8, zorder=3))
+    ax.add_patch(
+        Rectangle(
+            (x0, yb),
+            x1 - x0,
+            yt - yb,
+            facecolor=CONCRETO,
+            alpha=0.35,
+            edgecolor=TRACO,
+            lw=1.8,
+            zorder=3,
+        )
+    )
 
     # Bielas diagonais (compressão): zigue-zague continuous
-    bielas = [(1.2, yb), (2.4, yt), (3.6, yb), (4.8, yt), (6.0, yb), (7.2, yt),
-              (7.9, 0.5)]
+    bielas = [(1.2, yb), (2.4, yt), (3.6, yb), (4.8, yt), (6.0, yb), (7.2, yt), (7.9, 0.5)]
     for (xa, ya), (xb, yb_) in zip(bielas[::2], bielas[1::2], strict=False):
         ax.plot([xa, xb], [ya, yb_], color=TRACO, lw=2.2, ls=(0, (6, 3)), zorder=2)
 
@@ -173,8 +220,7 @@ def figura_bielas_tirantes():
     _texto(ax, 8.5, 3.05, "V", size=12, estilo="italic")
 
     # Fissura de flexão (na tração) e fissura inclinada (no cisalhamento)
-    ax.plot([4.8 - 0.22, 4.8 + 0.22], [yb + 0.05, yb], color=ACO_COMPR, lw=1.3,
-            zorder=5)
+    ax.plot([4.8 - 0.22, 4.8 + 0.22], [yb + 0.05, yb], color=ACO_COMPR, lw=1.3, zorder=5)
     ax.plot([6.0, 6.55], [yb + 0.1, yb + 1.1], color=ACO_COMPR, lw=1.4, zorder=5)
 
     # Legendas (rodapé)
@@ -185,15 +231,17 @@ def figura_bielas_tirantes():
     ax.plot([0.2, 0.95], [-2.4, -2.4], color=ACO_COMPR, lw=1.4)
     _texto(ax, 1.05, -2.4, "fissura", ha="left", size=11)
 
-    _texto(ax, (x0 + x1) / 2, yt + 0.25, "banzo comprimido", size=11,
-           estilo="italic")
-    _texto(ax, (x0 + x1) / 2, yb - 0.3, "armadura tracionada", size=11,
-           estilo="italic")
+    _texto(ax, (x0 + x1) / 2, yt + 0.25, "banzo comprimido", size=11, estilo="italic")
+    _texto(ax, (x0 + x1) / 2, yb - 0.3, "armadura tracionada", size=11, estilo="italic")
 
     _apaga_eixo(ax)
     fig.tight_layout(pad=0.2)
-    fig.savefig(os.path.join(DESTINO, "bielas_tirantes.jpg"),
-                facecolor=fig.get_facecolor(), format="jpg", dpi=150)
+    fig.savefig(
+        os.path.join(DESTINO, "bielas_tirantes.jpg"),
+        facecolor=fig.get_facecolor(),
+        format="jpg",
+        dpi=150,
+    )
     plt.close(fig)
 
 
@@ -205,8 +253,9 @@ def figura_cisalhamento():
     x0, x1 = 0.8, 8.2
     yb, yt = -0.5, 1.5
 
-    ax.add_patch(Rectangle((x0, yb), x1 - x0, yt - yb, facecolor="none",
-                           edgecolor=TRACO, lw=1.8, zorder=3))
+    ax.add_patch(
+        Rectangle((x0, yb), x1 - x0, yt - yb, facecolor="none", edgecolor=TRACO, lw=1.8, zorder=3)
+    )
 
     # Estribos (verticais)
     for x in [1.2, 2.4, 3.6, 4.8, 6.0, 7.2]:
@@ -219,8 +268,7 @@ def figura_cisalhamento():
 
     # Fissuras inclinadas a ~45°
     for x in [2.9, 4.1, 5.3, 6.5]:
-        ax.plot([x, x + 0.95], [yb + 0.15, yt - 0.1], color="#7b1fa2", lw=1.8,
-                zorder=5)
+        ax.plot([x, x + 0.95], [yb + 0.15, yt - 0.1], color="#7b1fa2", lw=1.8, zorder=5)
 
     # Resultante de cisalhamento
     _seta(ax, 4.5, yt + 0.85, 0, -0.7, cor=TEXTO, largura=1.5)
@@ -232,15 +280,35 @@ def figura_cisalhamento():
     ax.plot([5.0, 5.7], [-1.85, -1.85], color=ACO_ESTRIBO, lw=1.8)
     _texto(ax, 5.8, -1.85, "estribo", ha="left", size=11)
 
-    _texto(ax, x1 + 0.15, yb + 0.12, "armadura tracionada", ha="left", size=10,
-           estilo="italic", cor=ACO_TRACAO)
-    _texto(ax, x1 + 0.15, yt - 0.12, "armadura comprimida", ha="left", size=10,
-           estilo="italic", cor=ACO_COMPR)
+    _texto(
+        ax,
+        x1 + 0.15,
+        yb + 0.12,
+        "armadura tracionada",
+        ha="left",
+        size=10,
+        estilo="italic",
+        cor=ACO_TRACAO,
+    )
+    _texto(
+        ax,
+        x1 + 0.15,
+        yt - 0.12,
+        "armadura comprimida",
+        ha="left",
+        size=10,
+        estilo="italic",
+        cor=ACO_COMPR,
+    )
 
     _apaga_eixo(ax)
     fig.tight_layout(pad=0.2)
-    fig.savefig(os.path.join(DESTINO, "cisalhamento.png"),
-                facecolor=fig.get_facecolor(), format="png", dpi=150)
+    fig.savefig(
+        os.path.join(DESTINO, "cisalhamento.png"),
+        facecolor=fig.get_facecolor(),
+        format="png",
+        dpi=150,
+    )
     plt.close(fig)
 
 
@@ -253,8 +321,18 @@ def figura_partes_armadura():
     yb, yt = 0.0, 1.8
 
     # Contorno do concreto
-    ax.add_patch(Rectangle((x0, yb), x1 - x0, yt - yb, facecolor=CONCRETO,
-                           alpha=0.45, edgecolor=TRACO, lw=1.8, zorder=2))
+    ax.add_patch(
+        Rectangle(
+            (x0, yb),
+            x1 - x0,
+            yt - yb,
+            facecolor=CONCRETO,
+            alpha=0.45,
+            edgecolor=TRACO,
+            lw=1.8,
+            zorder=2,
+        )
+    )
 
     # Armadura longitudinal inferior (tracionada)
     for y in [yb + 0.18, yb + 0.36]:
@@ -279,13 +357,16 @@ def figura_partes_armadura():
     ax.plot([0.2, 0.95], [2.5, 2.5], color="#c9a227", lw=2.2)
     _texto(ax, 1.05, 2.5, "armadura de pele (costela)", ha="left", size=11)
 
-    _texto(ax, (x0 + x1) / 2, yb - 0.5, "gaiola de armadura", size=11,
-           estilo="italic", cor=TRACO)
+    _texto(ax, (x0 + x1) / 2, yb - 0.5, "gaiola de armadura", size=11, estilo="italic", cor=TRACO)
 
     _apaga_eixo(ax)
     fig.tight_layout(pad=0.2)
-    fig.savefig(os.path.join(DESTINO, "partes_armadura_viga.png"),
-                facecolor=fig.get_facecolor(), format="png", dpi=150)
+    fig.savefig(
+        os.path.join(DESTINO, "partes_armadura_viga.png"),
+        facecolor=fig.get_facecolor(),
+        format="png",
+        dpi=150,
+    )
     plt.close(fig)
 
 
@@ -297,8 +378,12 @@ def main():
     figura_cisalhamento()
     figura_partes_armadura()
     print("Figuras geradas em:", DESTINO)
-    for nome in ("momento_fletor.jpg", "bielas_tirantes.jpg", "cisalhamento.png",
-                 "partes_armadura_viga.png"):
+    for nome in (
+        "momento_fletor.jpg",
+        "bielas_tirantes.jpg",
+        "cisalhamento.png",
+        "partes_armadura_viga.png",
+    ):
         caminho = os.path.join(DESTINO, nome)
         print(f"  {nome}: {os.path.getsize(caminho)} bytes")
 

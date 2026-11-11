@@ -13,11 +13,12 @@ import os
 import sys
 
 # Configura certificados SSL antes de qualquer importacao
-if getattr(sys, 'frozen', False):
+if getattr(sys, "frozen", False):
     # Rodando como executavel PyInstaller
     import certifi
-    os.environ['SSL_CERT_FILE'] = certifi.where()
-    os.environ['REQUESTS_CA_BUNDLE'] = certifi.where()
+
+    os.environ["SSL_CERT_FILE"] = certifi.where()
+    os.environ["REQUESTS_CA_BUNDLE"] = certifi.where()
 
 # Importa e executa o app principal
 if __name__ == "__main__":

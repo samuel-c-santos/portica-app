@@ -11,9 +11,9 @@ from dataclasses import dataclass
 from core.detailing import BeamDetailer, BeamDetailingInput, SectionLayoutData
 
 # ── Constantes ────────────────────────────────────────────────────────────────
-ALPHA_C = 0.85   # NBR 6118
-GAMMA_C = 1.40   # Coeficiente do concreto
-GAMMA_S = 1.15   # Coeficiente do aço
+ALPHA_C = 0.85  # NBR 6118
+GAMMA_C = 1.40  # Coeficiente do concreto
+GAMMA_S = 1.15  # Coeficiente do aço
 GAMMA_F_PP = 1.30  # Peso próprio
 GAMMA_F_RESTO = 1.40  # Demais ações
 
@@ -24,32 +24,45 @@ def lambda_f(fck_mpa: float) -> float:
     """
     return min(0.80, 1.0 - fck_mpa / 250.0)
 
+
 # Tabela 11.1 - NBR 6118:2023 - Coeficientes γf (simplificação por combinação)
 # O app recebe esforços característicos (sem majorar) e aplica γf internamente.
 GAMMA_F_TABLE = {
-    "normais":       {"nome": "Normais",                    "gamma_f": 1.4},
-    "especiais":     {"nome": "Especiais ou de construcao", "gamma_f": 1.2},
-    "excepcionais":  {"nome": "Excepcionais",               "gamma_f": 1.0},
+    "normais": {"nome": "Normais", "gamma_f": 1.4},
+    "especiais": {"nome": "Especiais ou de construcao", "gamma_f": 1.2},
+    "excepcionais": {"nome": "Excepcionais", "gamma_f": 1.0},
 }
 
 # Diâmetros de barra disponíveis (mm)
-DIAM_BARRAS = [5, 6.3, 8, 10, 12.5, 16, 20, 25, 32]      # estribos e pele
-DIAM_BARRAS_LONG = [10, 12.5, 16, 20, 25, 32]                # armadura longitudinal (NBR 6118: φ≥10mm)
+DIAM_BARRAS = [5, 6.3, 8, 10, 12.5, 16, 20, 25, 32]  # estribos e pele
+DIAM_BARRAS_LONG = [10, 12.5, 16, 20, 25, 32]  # armadura longitudinal (NBR 6118: φ≥10mm)
 
 
 # ── Classes de Agressividade Ambiental ───────────────────────────────────────
 CAA_DATA = {
-    1: {"nome": "Fraca",       "cobrimento": 25, "ac_max": 0.65, "fck_min": 20},
-    2: {"nome": "Moderada",    "cobrimento": 30, "ac_max": 0.60, "fck_min": 25},
-    3: {"nome": "Forte",       "cobrimento": 40, "ac_max": 0.55, "fck_min": 30},
+    1: {"nome": "Fraca", "cobrimento": 25, "ac_max": 0.65, "fck_min": 20},
+    2: {"nome": "Moderada", "cobrimento": 30, "ac_max": 0.60, "fck_min": 25},
+    3: {"nome": "Forte", "cobrimento": 40, "ac_max": 0.55, "fck_min": 30},
     4: {"nome": "Muito Forte", "cobrimento": 50, "ac_max": 0.50, "fck_min": 35},
 }
 
 # Tabela de rho_min para flexão (fck em MPa)
 RHO_MIN_TABLE = {
-    20: 0.150, 25: 0.150, 30: 0.150, 35: 0.164, 40: 0.179,
-    45: 0.194, 50: 0.208, 55: 0.211, 60: 0.219, 65: 0.226,
-    70: 0.233, 75: 0.239, 80: 0.245, 85: 0.251, 90: 0.256,
+    20: 0.150,
+    25: 0.150,
+    30: 0.150,
+    35: 0.164,
+    40: 0.179,
+    45: 0.194,
+    50: 0.208,
+    55: 0.211,
+    60: 0.219,
+    65: 0.226,
+    70: 0.233,
+    75: 0.239,
+    80: 0.245,
+    85: 0.251,
+    90: 0.256,
 }
 
 # Tabela de Asw/s (cm²/m) para estribos – CA-50 e CA-60 (fywd em MPa → fywd/1.15)
@@ -143,7 +156,7 @@ def validar_geometria(
     if d_cm <= 0:
         return (
             f"Altura util d={d_cm:.1f} cm invalida. "
-            f"d'={d_lin:.1f} cm (cob={cob_mm}mm + estribo={diam_estribo_mm}mm + barra/2={diam_barra_mm/2:.1f}mm). "
+            f"d'={d_lin:.1f} cm (cob={cob_mm}mm + estribo={diam_estribo_mm}mm + barra/2={diam_barra_mm / 2:.1f}mm). "
             f"Aumente h ou reduza cobrimento/bitola."
         )
     return None
@@ -239,13 +252,15 @@ def calcular_armadura_pele(
         # O diâmetro da barra de pele deve ser menor ou igual ao diâmetro do estribo (NBR 6118:17.3.5.2.3)
         cabe = (s_adot <= s_max if n > 1 else True) and (phi <= phi_estribo_mm)
 
-        tabela_phis.append({
-            "phi_mm": phi,
-            "n_barras_face": n,
-            "s_cm": round(s_adot, 1),
-            "as_cm2": round(as_adot, 3),
-            "cabe": cabe,
-        })
+        tabela_phis.append(
+            {
+                "phi_mm": phi,
+                "n_barras_face": n,
+                "s_cm": round(s_adot, 1),
+                "as_cm2": round(as_adot, 3),
+                "cabe": cabe,
+            }
+        )
 
     # Adotar o menor diametro que atenda a area minima e aos critérios normativos
     melhor = None
@@ -281,14 +296,14 @@ def calcular_armadura_pele(
 @dataclass
 class ResultadoFlexao:
     momento_kNm: float
-    tipo: str           # "POSITIVO" ou "NEGATIVO"
+    tipo: str  # "POSITIVO" ou "NEGATIVO"
     kc: float
     a: float
     b: float
     x1: float
     x2: float
     bx: float
-    bx_passa: str       # "SIM" ou "NÃO"
+    bx_passa: str  # "SIM" ou "NÃO"
     x_cm: float
     ks: float
     as_req_cm2: float
@@ -543,8 +558,8 @@ def calcular_flexao_viga_comum(
         raise ValueError(erro_geo)
 
     # Parametros da CAA
-    d_lin   = cob_mm / 10 + diam_estribo_mm / 10 + diam_barra_mm / 20
-    d_cm    = h_cm - d_lin
+    d_lin = cob_mm / 10 + diam_estribo_mm / 10 + diam_barra_mm / 20
+    d_cm = h_cm - d_lin
 
     rho_min_val = rho_min(fck_mpa)
     as_diametros = [area_barra(d) for d in DIAM_BARRAS]
@@ -604,8 +619,8 @@ def calcular_flexao_viga_comum(
 
         # Coeficientes da equacao do 2º grau: a·x² + b·x + c = 0
         # fck/10 ~ fcd empirico da planilha (em kN/cm²)
-        fck_conv = fck_mpa / 10            # MPa -> kN/cm² (formula empirica)
-        fyd = fyd_kn_cm2(fyk_mpa)          # kN/cm² (fyk entra em kN/cm²)
+        fck_conv = fck_mpa / 10  # MPa -> kN/cm² (formula empirica)
+        fyd = fyd_kn_cm2(fyk_mpa)  # kN/cm² (fyk entra em kN/cm²)
 
         a_coef = -0.192 * fck_conv * kc
         b_coef = 0.48 * fck_conv * kc
@@ -730,52 +745,54 @@ def calcular_flexao_viga_comum(
             barras_cima = 0
 
         # Armadura de pele (NBR 6118:17.3.5.2.3) — já calculada fora do loop
-        resultados.append(ResultadoFlexao(
-            momento_kNm=abs(Md_kNm),
-            tipo=tipo,
-            kc=round(kc, 3),
-            a=round(a_coef, 6),
-            b=round(b_coef, 6),
-            x1=round(x1, 4),
-            x2=round(x2, 4),
-            bx=round(bx, 4),
-            bx_passa=bx_passa,
-            x_cm=round(x_cm, 2),
-            ks=round(ks, 3),
-            as_req_cm2=round(as_req, 3),
-            asmin_cm2=round(asmin, 3),
-            as_usado_cm2=round(as_usado, 3),
-            diametro_mm=diam_barra_mm,
-            qtd_barras=qtd_barras,
-            eh_min_real=round(eh_min, 2),
-            eh_passa=eh_passa,
-            eh_suportado=round(eh_real, 2),
-            barras_suportadas=qtd_barras_1cam,
-            barras_cima=barras_cima,
-            cob_mm=cob_mm,
-            espaco_disp_cm=round(espaco_disp, 2),
-            as_lista_barras=as_diametros,
-            requer_pele=pele["requer"],
-            n_barras_pele_face=pele["n_barras_face"],
-            as_pele_face_cm2=pele["as_pele_adotada_face_cm2"],
-            phi_pele_mm=pele["phi_pele_mm"],
-            s_pele_cm=pele["s_adotado_cm"],
-            as_pele_min_face_cm2=pele["as_pele_min_face_cm2"],
-            s_pele_max_cm=pele["s_max_cm"],
-            tabela_pele=pele.get("tabela_phis", []),
-            alerta=alerta,
-            armadura_dupla=armadura_dupla,
-            as_linha_cm2=round(as_linha_cm2, 3),
-            as_linha_adotada=round(as_linha_adotada, 3),
-            md_limite_knm=round(md_limite_knm, 3),
-            md_excedente_knm=round(md_excedente_knm, 3),
-            as_adotado_cm2=round(res_bitola.as_adotado_cm2, 3),
-            d_cm_real=round(res_bitola.d_real_cm, 2),
-            camadas_adotadas=res_bitola.camadas,
-            status_bitola=res_bitola.status_bitola,
-            layout_convergido=res_bitola.layout,
-            tabela_bitolas=tabela_bitolas,
-        ))
+        resultados.append(
+            ResultadoFlexao(
+                momento_kNm=abs(Md_kNm),
+                tipo=tipo,
+                kc=round(kc, 3),
+                a=round(a_coef, 6),
+                b=round(b_coef, 6),
+                x1=round(x1, 4),
+                x2=round(x2, 4),
+                bx=round(bx, 4),
+                bx_passa=bx_passa,
+                x_cm=round(x_cm, 2),
+                ks=round(ks, 3),
+                as_req_cm2=round(as_req, 3),
+                asmin_cm2=round(asmin, 3),
+                as_usado_cm2=round(as_usado, 3),
+                diametro_mm=diam_barra_mm,
+                qtd_barras=qtd_barras,
+                eh_min_real=round(eh_min, 2),
+                eh_passa=eh_passa,
+                eh_suportado=round(eh_real, 2),
+                barras_suportadas=qtd_barras_1cam,
+                barras_cima=barras_cima,
+                cob_mm=cob_mm,
+                espaco_disp_cm=round(espaco_disp, 2),
+                as_lista_barras=as_diametros,
+                requer_pele=pele["requer"],
+                n_barras_pele_face=pele["n_barras_face"],
+                as_pele_face_cm2=pele["as_pele_adotada_face_cm2"],
+                phi_pele_mm=pele["phi_pele_mm"],
+                s_pele_cm=pele["s_adotado_cm"],
+                as_pele_min_face_cm2=pele["as_pele_min_face_cm2"],
+                s_pele_max_cm=pele["s_max_cm"],
+                tabela_pele=pele.get("tabela_phis", []),
+                alerta=alerta,
+                armadura_dupla=armadura_dupla,
+                as_linha_cm2=round(as_linha_cm2, 3),
+                as_linha_adotada=round(as_linha_adotada, 3),
+                md_limite_knm=round(md_limite_knm, 3),
+                md_excedente_knm=round(md_excedente_knm, 3),
+                as_adotado_cm2=round(res_bitola.as_adotado_cm2, 3),
+                d_cm_real=round(res_bitola.d_real_cm, 2),
+                camadas_adotadas=res_bitola.camadas,
+                status_bitola=res_bitola.status_bitola,
+                layout_convergido=res_bitola.layout,
+                tabela_bitolas=tabela_bitolas,
+            )
+        )
 
     return resultados
 
@@ -831,14 +848,14 @@ def calcular_cisalhamento_viga_comum(
     if erro_geo:
         raise ValueError(erro_geo)
 
-    d_lin   = cob_mm / 10 + diam_estribo_mm / 10 + diam_barra_mm / 20
-    d_cm    = h_cm - d_lin
+    d_lin = cob_mm / 10 + diam_estribo_mm / 10 + diam_barra_mm / 20
+    d_cm = h_cm - d_lin
 
-    fcd = fcd_mpa(fck_mpa)         # MPa
+    fcd = fcd_mpa(fck_mpa)  # MPa
     fctm = fctm_mpa(fck_mpa)
     fctkinf = fctkinf_mpa(fck_mpa)
-    fctd = fctd_kn_cm2(fck_mpa)    # kN/cm²
-    lam = lambda_f(fck_mpa)        # fator lambda (NBR 6118:17.4.2.2)
+    fctd = fctd_kn_cm2(fck_mpa)  # kN/cm²
+    lam = lambda_f(fck_mpa)  # fator lambda (NBR 6118:17.4.2.2)
 
     # fywd do estribo em kN/cm² (fyk entra em kN/cm²: CA-60=60). Limite de 43.5 kN/cm² (435 MPa) conf. NBR 6118:17.4.2.3
     fywd_kn_cm2 = min(fyd_kn_cm2(fyk_estribo_mpa), 43.5)
@@ -895,26 +912,28 @@ def calcular_cisalhamento_viga_comum(
 
         passa_smax = "SIM" if dist_estribos <= s_max + 0.05 else "NÃO"
 
-        resultados.append(ResultadoCisalhamento(
-            vsd_kn=round(Vsd_aplicado, 2),
-            vsd_verdadeiro_kn=Vk_kn,
-            fcd_mpa=round(fcd, 3),
-            vrd2_kn=round(vrd2, 2),
-            passa_vrd2="SIM" if Vsd_aplicado < vrd2 else "NÃO",
-            fctm_mpa=round(fctm, 3),
-            fctkinf_mpa=round(fctkinf, 3),
-            fctd_kn_cm2=round(fctd, 5),
-            vc_kn=round(vc, 2),
-            vsw_kn=round(vsw, 2),
-            positivo_negativo=vsw_pos_neg,
-            verificacao=verificacao,
-            asw_s_min_cm2_m=round(asw_min, 3),
-            asw_usado_cm2_m=round(asw_usado, 3),
-            diam_estribo_mm=diam_estribo_mm,
-            dist_estribos_cm=round(dist_estribos, 1),
-            s_max_cm=round(s_max, 1),
-            passa_smax=passa_smax,
-        ))
+        resultados.append(
+            ResultadoCisalhamento(
+                vsd_kn=round(Vsd_aplicado, 2),
+                vsd_verdadeiro_kn=Vk_kn,
+                fcd_mpa=round(fcd, 3),
+                vrd2_kn=round(vrd2, 2),
+                passa_vrd2="SIM" if Vsd_aplicado < vrd2 else "NÃO",
+                fctm_mpa=round(fctm, 3),
+                fctkinf_mpa=round(fctkinf, 3),
+                fctd_kn_cm2=round(fctd, 5),
+                vc_kn=round(vc, 2),
+                vsw_kn=round(vsw, 2),
+                positivo_negativo=vsw_pos_neg,
+                verificacao=verificacao,
+                asw_s_min_cm2_m=round(asw_min, 3),
+                asw_usado_cm2_m=round(asw_usado, 3),
+                diam_estribo_mm=diam_estribo_mm,
+                dist_estribos_cm=round(dist_estribos, 1),
+                s_max_cm=round(s_max, 1),
+                passa_smax=passa_smax,
+            )
+        )
 
     return resultados
 
@@ -976,17 +995,20 @@ class ResultadoFlexaoT:
 
 
 def bf_efetivo_viga_t(
-    bw_cm: float, bf_cm: float,
-    b1esq_cm: float | None = None, b1dir_cm: float | None = None,
-    lo_esq_cm: float | None = None, lo_dir_cm: float | None = None,
+    bw_cm: float,
+    bf_cm: float,
+    b1esq_cm: float | None = None,
+    b1dir_cm: float | None = None,
+    lo_esq_cm: float | None = None,
+    lo_dir_cm: float | None = None,
 ) -> float:
     """Largura efetiva da mesa (NBR 6118:15.5.2):
-       bf,ef = bw + b1esq + b1dir, limitado por:
-       - b1 <= 0.5*bf1 (largura da mesa adjacente do outro lado, se houver)
-       - b1 <= 0.1*a (a = distância entre faces de apoios)
+    bf,ef = bw + b1esq + b1dir, limitado por:
+    - b1 <= 0.5*bf1 (largura da mesa adjacente do outro lado, se houver)
+    - b1 <= 0.1*a (a = distância entre faces de apoios)
 
-       Para um vão isolado, simplificamos: bf,ef = min(bf, bw + b1esq + b1dir).
-       Se b1esq/b1dir não forem fornecidos, retorna bf integral.
+    Para um vão isolado, simplificamos: bf,ef = min(bf, bw + b1esq + b1dir).
+    Se b1esq/b1dir não forem fornecidos, retorna bf integral.
     """
     if b1esq_cm is None and b1dir_cm is None:
         return bf_cm
@@ -1039,12 +1061,14 @@ def calcular_flexao_viga_t(
     if hf_cm >= h_cm:
         raise ValueError(f"Altura da mesa hf={hf_cm} cm >= h={h_cm} cm (mesa maior que viga).")
 
-    d_lin   = cob_mm / 10 + diam_estribo_mm / 10 + diam_barra_mm / 20
-    d_cm    = h_cm - d_lin
+    d_lin = cob_mm / 10 + diam_estribo_mm / 10 + diam_barra_mm / 20
+    d_cm = h_cm - d_lin
 
-    bf_efetivo = bf_efetivo_viga_t(bw_cm, bf_cm, b1esq_cm, b1dir_cm, lo_esq_cm=lo_esq_cm, lo_dir_cm=lo_dir_cm)
+    bf_efetivo = bf_efetivo_viga_t(
+        bw_cm, bf_cm, b1esq_cm, b1dir_cm, lo_esq_cm=lo_esq_cm, lo_dir_cm=lo_dir_cm
+    )
     rho_min_val = rho_min(fck_mpa)
-    fck_conv = fck_mpa / 10   # MPa -> kN/cm² (formula empirica)
+    fck_conv = fck_mpa / 10  # MPa -> kN/cm² (formula empirica)
     fyd = fyd_kn_cm2(fyk_mpa)  # kN/cm² (fyk entra em kN/cm²)
 
     # Armadura de pele (NBR 6118:17.3.5.2.3) — calculada uma vez (independe do momento)
@@ -1129,7 +1153,11 @@ def calcular_flexao_viga_t(
                     bx = x1 if 0 < x1 < 0.628 else 999.0
                 else:
                     cand = sorted([x1, x2])
-                    bx = cand[0] if 0 < cand[0] < 0.628 else (cand[1] if 0 < cand[1] < 0.628 else 999.0)
+                    bx = (
+                        cand[0]
+                        if 0 < cand[0] < 0.628
+                        else (cand[1] if 0 < cand[1] < 0.628 else 999.0)
+                    )
 
             x_cm = bx * d_cm
 
@@ -1177,7 +1205,7 @@ def calcular_flexao_viga_t(
                 alpha_c = 0.85
                 if fck_mpa > 50:
                     alpha_c = 0.85 * (1.0 - (fck_mpa - 50) / 200.0)
-                stress_block_fcd = alpha_c * (fck_mpa / 1.4) / 10.0 # kN/cm^2
+                stress_block_fcd = alpha_c * (fck_mpa / 1.4) / 10.0  # kN/cm^2
 
                 Md1_kNcm = stress_block_fcd * (bf_efetivo - bw_cm) * hf_cm * (d_cm - hf_cm / 2.0)
 
@@ -1228,11 +1256,15 @@ def calcular_flexao_viga_t(
                                 bx2 = x1_2 if 0 < x1_2 < 0.628 else 999.0
                             else:
                                 cand2 = sorted([x1_2, x2_2])
-                                bx2 = cand2[0] if 0 < cand2[0] < 0.628 else (cand2[1] if 0 < cand2[1] < 0.628 else 999.0)
+                                bx2 = (
+                                    cand2[0]
+                                    if 0 < cand2[0] < 0.628
+                                    else (cand2[1] if 0 < cand2[1] < 0.628 else 999.0)
+                                )
 
                         bx = bx2
                         if bx2 >= 999.0:
-                            alerta = f"Seção insuficiente na alma para o momento Md2={Md2_kNcm/100:.1f} kN·m."
+                            alerta = f"Seção insuficiente na alma para o momento Md2={Md2_kNcm / 100:.1f} kN·m."
                             as_req = 0.0
                             as_linha_cm2 = 0.0
                         elif bx2 >= 0.628:
@@ -1272,7 +1304,11 @@ def calcular_flexao_viga_t(
                     bx = x1 if 0 < x1 < 0.628 else 999.0
                 else:
                     cand = sorted([x1, x2])
-                    bx = cand[0] if 0 < cand[0] < 0.628 else (cand[1] if 0 < cand[1] < 0.628 else 999.0)
+                    bx = (
+                        cand[0]
+                        if 0 < cand[0] < 0.628
+                        else (cand[1] if 0 < cand[1] < 0.628 else 999.0)
+                    )
 
             if bx >= 999.0:
                 alerta = (
@@ -1355,50 +1391,54 @@ def calcular_flexao_viga_t(
         espaco_disp = bw_cm - 2 * (cob_mm / 10.0) - 2 * (diam_estribo_mm / 10.0)
         eh_min = max(2.0, diam_barra_mm / 10.0, 1.2 * 1.9)
 
-        resultados.append(ResultadoFlexaoT(
-            momento_kNm=abs(Md_kNm),
-            tipo=tipo,
-            kc=round(kc if Mk_kNm > 0 else (bw_cm * d_cm**2 / Md_kNcm if Md_kNcm != 0 else 0), 3),
-            a=round(a_coef if Mk_kNm > 0 else (a_coef if 'a_coef' in locals() else 0.0), 4),
-            b=round(b_coef if Mk_kNm > 0 else (b_coef if 'b_coef' in locals() else 0.0), 4),
-            x1=round(x1 if 'x1' in locals() else 0.0, 4),
-            x2=round(x2 if 'x2' in locals() else 0.0, 4),
-            bx=round(bx, 4),
-            bx_passa=bx_passa,
-            x_cm=round(x_cm, 2),
-            linha_neutra_condiz=ln_condiz,
-            bf_efetivo_cm=round(bf_efetivo, 2),
-            ks=round(1.0 / (fyd * (1.0 - bx / 2.0)) if bx < 999.0 else 0.0, 3),
-            as_req_cm2=round(as_req, 3),
-            asmin_cm2=round(asmin, 3),
-            as_usado_cm2=round(as_usado, 3),
-            diametro_mm=diam_barra_mm,
-            qtd_barras=qtd_barras,
-            eh_min_real=round(eh_min, 2),
-            eh_passa=eh_passa,
-            barras_suportadas=qtd_barras_1cam,
-            eh_suportado=round(eh_real, 2),
-            barras_cima=barras_cima,
-            cob_mm=cob_mm,
-            espaco_disp_cm=round(espaco_disp, 2),
-            as_lista_barras=[area_barra(d) for d in DIAM_BARRAS],
-            requer_pele=pele["requer"],
-            n_barras_pele_face=pele["n_barras_face"],
-            as_pele_face_cm2=pele["as_pele_adotada_face_cm2"],
-            phi_pele_mm=pele["phi_pele_mm"],
-            s_pele_cm=pele["s_adotado_cm"],
-            as_pele_min_face_cm2=pele["as_pele_min_face_cm2"],
-            s_pele_max_cm=pele["s_max_cm"],
-            tabela_pele=pele.get("tabela_phis", []),
-            alerta=alerta,
-            as_adotado_cm2=round(qtd_barras * area_barra_d, 3),
-            d_cm_real=round(d_cm, 2),
-            camadas_adotadas=camadas,
-            status_bitola=status_bitola,
-            layout_convergido=layout,
-            tabela_bitolas=tabela_bitolas,
-            as_linha_cm2=round(as_linha_cm2, 3),
-            as_linha_adotada=round(as_linha_adotada, 3),
-        ))
+        resultados.append(
+            ResultadoFlexaoT(
+                momento_kNm=abs(Md_kNm),
+                tipo=tipo,
+                kc=round(
+                    kc if Mk_kNm > 0 else (bw_cm * d_cm**2 / Md_kNcm if Md_kNcm != 0 else 0), 3
+                ),
+                a=round(a_coef if Mk_kNm > 0 else (a_coef if "a_coef" in locals() else 0.0), 4),
+                b=round(b_coef if Mk_kNm > 0 else (b_coef if "b_coef" in locals() else 0.0), 4),
+                x1=round(x1 if "x1" in locals() else 0.0, 4),
+                x2=round(x2 if "x2" in locals() else 0.0, 4),
+                bx=round(bx, 4),
+                bx_passa=bx_passa,
+                x_cm=round(x_cm, 2),
+                linha_neutra_condiz=ln_condiz,
+                bf_efetivo_cm=round(bf_efetivo, 2),
+                ks=round(1.0 / (fyd * (1.0 - bx / 2.0)) if bx < 999.0 else 0.0, 3),
+                as_req_cm2=round(as_req, 3),
+                asmin_cm2=round(asmin, 3),
+                as_usado_cm2=round(as_usado, 3),
+                diametro_mm=diam_barra_mm,
+                qtd_barras=qtd_barras,
+                eh_min_real=round(eh_min, 2),
+                eh_passa=eh_passa,
+                barras_suportadas=qtd_barras_1cam,
+                eh_suportado=round(eh_real, 2),
+                barras_cima=barras_cima,
+                cob_mm=cob_mm,
+                espaco_disp_cm=round(espaco_disp, 2),
+                as_lista_barras=[area_barra(d) for d in DIAM_BARRAS],
+                requer_pele=pele["requer"],
+                n_barras_pele_face=pele["n_barras_face"],
+                as_pele_face_cm2=pele["as_pele_adotada_face_cm2"],
+                phi_pele_mm=pele["phi_pele_mm"],
+                s_pele_cm=pele["s_adotado_cm"],
+                as_pele_min_face_cm2=pele["as_pele_min_face_cm2"],
+                s_pele_max_cm=pele["s_max_cm"],
+                tabela_pele=pele.get("tabela_phis", []),
+                alerta=alerta,
+                as_adotado_cm2=round(qtd_barras * area_barra_d, 3),
+                d_cm_real=round(d_cm, 2),
+                camadas_adotadas=camadas,
+                status_bitola=status_bitola,
+                layout_convergido=layout,
+                tabela_bitolas=tabela_bitolas,
+                as_linha_cm2=round(as_linha_cm2, 3),
+                as_linha_adotada=round(as_linha_adotada, 3),
+            )
+        )
 
     return resultados

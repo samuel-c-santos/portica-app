@@ -56,8 +56,7 @@ def main(argv: list[str]) -> int:
         for erro in erros:
             print(f"  - {erro}", file=sys.stderr)
         print(
-            "\nPDFs normativos (docs/nbr/) nunca entram no repo; textos devem"
-            " ser UTF-8 sem BOM.",
+            "\nPDFs normativos (docs/nbr/) nunca entram no repo; textos devem ser UTF-8 sem BOM.",
             file=sys.stderr,
         )
         return 1

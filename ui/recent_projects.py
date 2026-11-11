@@ -8,9 +8,7 @@ import os
 from datetime import datetime
 
 MAX_RECENT = 10
-_RECENT_FILE = os.path.join(
-    os.path.expanduser("~"), ".portica_recent.json"
-)
+_RECENT_FILE = os.path.join(os.path.expanduser("~"), ".portica_recent.json")
 
 
 def _load_raw() -> list[dict]:

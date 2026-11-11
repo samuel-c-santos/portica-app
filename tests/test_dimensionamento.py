@@ -116,6 +116,14 @@ def test_5_gerar_relatorio_premium(secoes_reais):
 
 def test_secoes_vazias():
     """Garante retorno limpo para uma lista de seções vazia."""
-    dados_viga = {"h_cm": 70.0, "bw_cm": 20.0, "caa": 2, "fck_mpa": 30.0, "diam_estribo_mm": 5.0, "diam_barra_mm": 16.0, "fyk_mpa": 50.0}
+    dados_viga = {
+        "h_cm": 70.0,
+        "bw_cm": 20.0,
+        "caa": 2,
+        "fck_mpa": 30.0,
+        "diam_estribo_mm": 5.0,
+        "diam_barra_mm": 16.0,
+        "fyk_mpa": 50.0,
+    }
     res = dimensionar_trechos_ftool(dados_viga, [])
     assert res["secoes"] == []

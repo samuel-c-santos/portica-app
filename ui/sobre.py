@@ -73,7 +73,8 @@ def build_sobre(page, on_back):
                     "Flexao e cisalhamento para vigas de secao retangular e secao T, com verificacao automatica dos dominios de deformacao, espaçamentos minimos e taxas de armadura.",
                     Palette.PRIMARY,
                 ),
-                col={"xs": 12, "md": 6, "lg": 6}, padding=Spacing.MD,
+                col={"xs": 12, "md": 6, "lg": 6},
+                padding=Spacing.MD,
             ),
             ft.Container(
                 info_card(
@@ -82,7 +83,8 @@ def build_sobre(page, on_back):
                     "Geracao automatica de relatorio tecnico em PDF, com capa personalizada, tabelas de dimensionamento, esquema da secao e validacoes visuais.",
                     Palette.SECONDARY,
                 ),
-                col={"xs": 12, "md": 6, "lg": 6}, padding=Spacing.MD,
+                col={"xs": 12, "md": 6, "lg": 6},
+                padding=Spacing.MD,
             ),
             ft.Container(
                 info_card(
@@ -91,7 +93,8 @@ def build_sobre(page, on_back):
                     "Design Material 3 com suporte a tema claro e escuro, navegacao por sidebar e componentes responsivos.",
                     Palette.SUCCESS,
                 ),
-                col={"xs": 12, "md": 6, "lg": 6}, padding=Spacing.MD,
+                col={"xs": 12, "md": 6, "lg": 6},
+                padding=Spacing.MD,
             ),
             ft.Container(
                 info_card(
@@ -100,7 +103,8 @@ def build_sobre(page, on_back):
                     "Este software e uma ferramenta auxiliar. NAO substitui o julgamento tecnico de engenheiro civil habilitado. Sempre valide os resultados com o projeto estrutural completo e as normas vigentes.",
                     Palette.WARNING,
                 ),
-                col={"xs": 12, "md": 6, "lg": 6}, padding=Spacing.MD,
+                col={"xs": 12, "md": 6, "lg": 6},
+                padding=Spacing.MD,
             ),
         ],
         run_spacing=0,
@@ -124,7 +128,8 @@ def build_sobre(page, on_back):
                                     overline("NORMA", color=Palette.TEXT_SECONDARY),
                                     body_medium("ABNT NBR 6118:2023", color=Palette.TEXT_PRIMARY),
                                 ],
-                                spacing=2, expand=True,
+                                spacing=2,
+                                expand=True,
                             ),
                             expand=True,
                         ),
@@ -134,7 +139,8 @@ def build_sobre(page, on_back):
                                     overline("TIPOS DE SECAO", color=Palette.TEXT_SECONDARY),
                                     body_medium("Retangular e T", color=Palette.TEXT_PRIMARY),
                                 ],
-                                spacing=2, expand=True,
+                                spacing=2,
+                                expand=True,
                             ),
                             expand=True,
                         ),
@@ -144,7 +150,8 @@ def build_sobre(page, on_back):
                                     overline("VERSAO", color=Palette.TEXT_SECONDARY),
                                     body_medium(APP_VERSION, color=Palette.TEXT_PRIMARY),
                                 ],
-                                spacing=2, expand=True,
+                                spacing=2,
+                                expand=True,
                             ),
                             expand=True,
                         ),
@@ -172,13 +179,16 @@ def build_sobre(page, on_back):
                         ft.Container(width=Spacing.MD),
                         ft.Column(
                             controls=[
-                                title_medium("Aviso de responsabilidade", color=Palette.TEXT_PRIMARY),
+                                title_medium(
+                                    "Aviso de responsabilidade", color=Palette.TEXT_PRIMARY
+                                ),
                                 caption(
                                     "Ferramenta de apoio — não substitui verificação de engenheiro",
                                     color=Palette.TEXT_SECONDARY,
                                 ),
                             ],
-                            spacing=2, expand=True,
+                            spacing=2,
+                            expand=True,
                         ),
                     ],
                     vertical_alignment=ft.CrossAxisAlignment.CENTER,
@@ -188,7 +198,7 @@ def build_sobre(page, on_back):
                     "O Pórtica App é uma ferramenta de apoio ao dimensionamento de vigas de concreto armado "
                     "conforme a ABNT NBR 6118. Os resultados devem ser verificados por engenheiro civil "
                     "habilitado, com ART/RRT, antes de qualquer uso em projeto executivo. O software é "
-                    "fornecido \"como está\", sem garantia de adequação a um caso concreto. Os autores não "
+                    'fornecido "como está", sem garantia de adequação a um caso concreto. Os autores não '
                     "respondem por decisões de projeto tomadas com base nas saídas do programa.",
                     color=Palette.TEXT_SECONDARY,
                 ),

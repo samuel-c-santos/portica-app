@@ -18,7 +18,7 @@ def _read_and_clean_lines(filepath: str) -> list[str]:
     if os.path.getsize(filepath) == 0:
         raise ValueError("Arquivo vazio")
 
-    encodings = ['utf-8', 'cp1252', 'latin-1']
+    encodings = ["utf-8", "cp1252", "latin-1"]
     content = None
 
     for enc in encodings:
@@ -35,7 +35,9 @@ def _read_and_clean_lines(filepath: str) -> list[str]:
             with open(filepath) as f:
                 content = f.read()
         except Exception as e:
-            raise ValueError(f"Não foi possível ler o arquivo com os encodings suportados: {e}") from e
+            raise ValueError(
+                f"Não foi possível ler o arquivo com os encodings suportados: {e}"
+            ) from e
 
     lines = [line.strip() for line in content.splitlines()]
     # Filtrar linhas vazias
@@ -55,7 +57,9 @@ def _parse_first_line_as_n(lines: list[str]) -> int:
     try:
         N = int(first_line)
     except ValueError:
-        raise ValueError(f"A primeira linha do arquivo deve ser o número de pontos (inteiro válido). Encontrado: '{first_line}'") from None
+        raise ValueError(
+            f"A primeira linha do arquivo deve ser o número de pontos (inteiro válido). Encontrado: '{first_line}'"
+        ) from None
 
     if N <= 0:
         raise ValueError(f"O número de pontos declarado deve ser maior que zero. Encontrado: {N}")
@@ -76,23 +80,29 @@ def parse_momento(filepath: str) -> list[tuple[float, float]]:
     # O total de linhas de dados deve ser igual a N
     data_lines = lines[1:]
     if len(data_lines) != N:
-        raise ValueError(f"O número de pontos declarado ({N}) não corresponde ao número de linhas de dados encontradas ({len(data_lines)})")
+        raise ValueError(
+            f"O número de pontos declarado ({N}) não corresponde ao número de linhas de dados encontradas ({len(data_lines)})"
+        )
 
     resultados = []
     for idx, line in enumerate(data_lines, start=1):
         # Tenta separar por tabulação primeiro, senão por qualquer espaço em branco
-        parts = line.split('\t')
+        parts = line.split("\t")
         if len(parts) < 2:
             parts = line.split()
 
         if len(parts) < 2:
-            raise ValueError(f"Linha {idx + 1} possui menos colunas que o esperado (mínimo 2). Encontrado: '{line}'")
+            raise ValueError(
+                f"Linha {idx + 1} possui menos colunas que o esperado (mínimo 2). Encontrado: '{line}'"
+            )
 
         try:
             x = float(parts[0])
             M = float(parts[1])
         except ValueError:
-            raise ValueError(f"Linha {idx + 1} contém valores numéricos inválidos: '{line}'") from None
+            raise ValueError(
+                f"Linha {idx + 1} contém valores numéricos inválidos: '{line}'"
+            ) from None
 
         resultados.append((x, M))
 
@@ -111,22 +121,28 @@ def parse_cortante(filepath: str) -> list[tuple[float, float]]:
 
     data_lines = lines[1:]
     if len(data_lines) != N:
-        raise ValueError(f"O número de pontos declarado ({N}) não corresponde ao número de linhas de dados encontradas ({len(data_lines)})")
+        raise ValueError(
+            f"O número de pontos declarado ({N}) não corresponde ao número de linhas de dados encontradas ({len(data_lines)})"
+        )
 
     resultados = []
     for idx, line in enumerate(data_lines, start=1):
-        parts = line.split('\t')
+        parts = line.split("\t")
         if len(parts) < 2:
             parts = line.split()
 
         if len(parts) < 2:
-            raise ValueError(f"Linha {idx + 1} possui menos colunas que o esperado (mínimo 2). Encontrado: '{line}'")
+            raise ValueError(
+                f"Linha {idx + 1} possui menos colunas que o esperado (mínimo 2). Encontrado: '{line}'"
+            )
 
         try:
             x = float(parts[0])
             V = float(parts[1])
         except ValueError:
-            raise ValueError(f"Linha {idx + 1} contém valores numéricos inválidos: '{line}'") from None
+            raise ValueError(
+                f"Linha {idx + 1} contém valores numéricos inválidos: '{line}'"
+            ) from None
 
         resultados.append((x, V))
 
@@ -147,16 +163,20 @@ def parse_deformacao(filepath: str) -> list[tuple[float, float, float, float]]:
 
     data_lines = lines[1:]
     if len(data_lines) != N:
-        raise ValueError(f"O número de pontos declarado ({N}) não corresponde ao número de linhas de dados encontradas ({len(data_lines)})")
+        raise ValueError(
+            f"O número de pontos declarado ({N}) não corresponde ao número de linhas de dados encontradas ({len(data_lines)})"
+        )
 
     resultados = []
     for idx, line in enumerate(data_lines, start=1):
-        parts = line.split('\t')
+        parts = line.split("\t")
         if len(parts) < 4:
             parts = line.split()
 
         if len(parts) < 4:
-            raise ValueError(f"Linha {idx + 1} possui menos colunas que o esperado (mínimo 4). Encontrado: '{line}'")
+            raise ValueError(
+                f"Linha {idx + 1} possui menos colunas que o esperado (mínimo 4). Encontrado: '{line}'"
+            )
 
         try:
             x = float(parts[0])
@@ -164,7 +184,9 @@ def parse_deformacao(filepath: str) -> list[tuple[float, float, float, float]]:
             theta = float(parts[2])
             kappa = float(parts[3])
         except ValueError:
-            raise ValueError(f"Linha {idx + 1} contém valores numéricos inválidos: '{line}'") from None
+            raise ValueError(
+                f"Linha {idx + 1} contém valores numéricos inválidos: '{line}'"
+            ) from None
 
         resultados.append((x, d, theta, kappa))
 
@@ -199,20 +221,28 @@ def parse_tudo(pasta: str) -> dict[str, Any]:
                 deformacao_file = os.path.join(pasta, arq)
 
     if not momento_file:
-        raise FileNotFoundError(f"Arquivo de momentos não encontrado na pasta '{pasta}' (deve conter 'momento' no nome e extensão '.txt')")
+        raise FileNotFoundError(
+            f"Arquivo de momentos não encontrado na pasta '{pasta}' (deve conter 'momento' no nome e extensão '.txt')"
+        )
     if not cortante_file:
-        raise FileNotFoundError(f"Arquivo de cortantes não encontrado na pasta '{pasta}' (deve conter 'cortante' no nome e extensão '.txt')")
+        raise FileNotFoundError(
+            f"Arquivo de cortantes não encontrado na pasta '{pasta}' (deve conter 'cortante' no nome e extensão '.txt')"
+        )
     if not deformacao_file:
-        raise FileNotFoundError(f"Arquivo de deformações não encontrado na pasta '{pasta}' (deve conter 'deformac' ou 'deformaç' no nome e extensão '.txt')")
+        raise FileNotFoundError(
+            f"Arquivo de deformações não encontrado na pasta '{pasta}' (deve conter 'deformac' ou 'deformaç' no nome e extensão '.txt')"
+        )
 
     return {
         "momentos": parse_momento(momento_file),
         "cortantes": parse_cortante(cortante_file),
-        "deformacoes": parse_deformacao(deformacao_file)
+        "deformacoes": parse_deformacao(deformacao_file),
     }
 
 
-def validate_file_type(filepath: str, tipo_esperado: Literal["momento", "cortante", "deformacao"]) -> tuple[bool, str]:
+def validate_file_type(
+    filepath: str, tipo_esperado: Literal["momento", "cortante", "deformacao"]
+) -> tuple[bool, str]:
     """
     Valida se o arquivo FTOOL TXT corresponde ao tipo esperado.
 
@@ -235,25 +265,34 @@ def validate_file_type(filepath: str, tipo_esperado: Literal["momento", "cortant
 
     data_lines = lines[1:]
     if len(data_lines) != N:
-        return False, f"O número de pontos declarado ({N}) não corresponde ao número de linhas encontradas ({len(data_lines)})."
+        return (
+            False,
+            f"O número de pontos declarado ({N}) não corresponde ao número de linhas encontradas ({len(data_lines)}).",
+        )
 
     colunas_esperadas = 4 if tipo_esperado == "deformacao" else 2
     pontos = []
 
     for idx, line in enumerate(data_lines, start=1):
-        parts = line.split('\t')
+        parts = line.split("\t")
         if len(parts) < colunas_esperadas:
             parts = line.split()
 
         if len(parts) < colunas_esperadas:
-            return False, f"Linha {idx + 1} possui menos colunas que o esperado ({colunas_esperadas}). Linha: '{line}'"
+            return (
+                False,
+                f"Linha {idx + 1} possui menos colunas que o esperado ({colunas_esperadas}). Linha: '{line}'",
+            )
 
         # Se tipo esperado é momento ou cortante, mas o arquivo tem mais colunas, rejeita
         if tipo_esperado in ("momento", "cortante") and len(parts) >= 4:
-            return False, f"O arquivo possui {len(parts)} colunas (característico de Deformação), mas esperava-se 2 colunas."
+            return (
+                False,
+                f"O arquivo possui {len(parts)} colunas (característico de Deformação), mas esperava-se 2 colunas.",
+            )
 
         try:
-            row_vals = [float(p.replace(',', '.')) for p in parts[:colunas_esperadas]]
+            row_vals = [float(p.replace(",", ".")) for p in parts[:colunas_esperadas]]
         except ValueError:
             return False, f"Linha {idx + 1} contém valores numéricos inválidos: '{line}'"
 
@@ -281,7 +320,10 @@ def validate_file_type(filepath: str, tipo_esperado: Literal["momento", "cortant
 
     if tem_descontinuidade:
         if tipo_esperado == "momento":
-            return False, "O arquivo contém descontinuidades verticais (típico de Esforço Cortante), mas o campo selecionado é Momento Fletor."
+            return (
+                False,
+                "O arquivo contém descontinuidades verticais (típico de Esforço Cortante), mas o campo selecionado é Momento Fletor.",
+            )
         return True, ""
 
     # Heurística 2: Curvatura via Segunda Derivada
@@ -289,7 +331,7 @@ def validate_file_type(filepath: str, tipo_esperado: Literal["momento", "cortant
     if len(sorted_x) >= 3:
         derivadas_2 = []
         for i in range(1, len(sorted_x) - 1):
-            x0, x1, x2 = sorted_x[i-1], sorted_x[i], sorted_x[i+1]
+            x0, x1, x2 = sorted_x[i - 1], sorted_x[i], sorted_x[i + 1]
             y0 = x_to_y[x0][0]
             y1 = x_to_y[x1][0]
             y2 = x_to_y[x2][0]
@@ -308,10 +350,15 @@ def validate_file_type(filepath: str, tipo_esperado: Literal["momento", "cortant
         is_momento = True
 
     if is_momento and tipo_esperado == "cortante":
-        return False, "O arquivo apresenta curvatura contínua (típico de Momento Fletor), mas o campo selecionado é Esforço Cortante."
+        return (
+            False,
+            "O arquivo apresenta curvatura contínua (típico de Momento Fletor), mas o campo selecionado é Esforço Cortante.",
+        )
 
     if not is_momento and tipo_esperado == "momento":
-        return False, "O diagrama é linear/nulo (típico de Esforço Cortante), mas o campo selecionado é Momento Fletor."
+        return (
+            False,
+            "O diagrama é linear/nulo (típico de Esforço Cortante), mas o campo selecionado é Momento Fletor.",
+        )
 
     return True, ""
-

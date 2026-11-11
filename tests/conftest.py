@@ -1,4 +1,5 @@
 """Fixtures compartilhadas para os testes do Pórtica App."""
+
 import os
 import sys
 
@@ -8,6 +9,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import pytest
 
 # ── Fixtures de viga exemplo (caso real test/) ────────────────────────────────
+
 
 @pytest.fixture
 def viga_exemplo():
@@ -83,9 +85,9 @@ def cortantes_exemplo():
 # ── Valores de referencia (calculados/manual) ─────────────────────────────────
 
 VALORES_REFERENCIA = {
-    "Md_194_88": 194.88,   # 139.2 * 1.4
-    "As_esperado_8": 8.0,   # As para Md=194.88, viga 20x70, fck=30
-    "Vsd_184_8": 184.8,     # 132.0 * 1.4
-    "Vsd_172_2": 172.2,     # |-123.0| * 1.4
-    "Vsd_60": 60.0,         # 50.0 * 1.2 (especiais)
+    "Md_194_88": 194.88,  # 139.2 * 1.4
+    "As_esperado_8": 8.0,  # As para Md=194.88, viga 20x70, fck=30
+    "Vsd_184_8": 184.8,  # 132.0 * 1.4
+    "Vsd_172_2": 172.2,  # |-123.0| * 1.4
+    "Vsd_60": 60.0,  # 50.0 * 1.2 (especiais)
 }

@@ -22,37 +22,38 @@ from core.calculos.engenharia import (
 from core.utils_tempfile import temp_path
 
 # Cores oficiais do design HTML do usuário
-C_PORTICA  = (0, 0, 205)      # #0000CD - Azul Portica
-C_GRAY900  = (31, 41, 55)     # #1f2937 - Cinza Escuro Textos
-C_GRAY800  = (31, 41, 55)     # #1f2937
-C_GRAY700  = (55, 65, 81)     # #374151 - Subtítulos
-C_GRAY600  = (75, 85, 99)     # #4b5563
-C_GRAY500  = (107, 114, 128)  # #6b7280 - Muted
-C_GRAY400  = (156, 163, 175)  # #9ca3af
-C_GRAY300  = (209, 213, 219)  # #d1d5db - Linhas de grade
-C_GRAY200  = (229, 231, 235)  # #e5e7eb - Bordas leves
-C_GRAY100  = (243, 244, 246)  # #f3f4f6 - Fundos
-C_GRAY50   = (249, 250, 251)  # #f9fafb
-C_WHITE    = (255, 255, 255)
+C_PORTICA = (0, 0, 205)  # #0000CD - Azul Portica
+C_GRAY900 = (31, 41, 55)  # #1f2937 - Cinza Escuro Textos
+C_GRAY800 = (31, 41, 55)  # #1f2937
+C_GRAY700 = (55, 65, 81)  # #374151 - Subtítulos
+C_GRAY600 = (75, 85, 99)  # #4b5563
+C_GRAY500 = (107, 114, 128)  # #6b7280 - Muted
+C_GRAY400 = (156, 163, 175)  # #9ca3af
+C_GRAY300 = (209, 213, 219)  # #d1d5db - Linhas de grade
+C_GRAY200 = (229, 231, 235)  # #e5e7eb - Bordas leves
+C_GRAY100 = (243, 244, 246)  # #f3f4f6 - Fundos
+C_GRAY50 = (249, 250, 251)  # #f9fafb
+C_WHITE = (255, 255, 255)
 
-C_GREEN800 = (22, 101, 52)    # Text OK
-C_GREEN100 = (220, 252, 231)   # Bg OK
-C_RED700   = (185, 28, 28)     # Text ALERTA
-C_RED100   = (254, 226, 226)    # Bg ALERTA
+C_GREEN800 = (22, 101, 52)  # Text OK
+C_GREEN100 = (220, 252, 231)  # Bg OK
+C_RED700 = (185, 28, 28)  # Text ALERTA
+C_RED100 = (254, 226, 226)  # Bg ALERTA
 
-C_AMBER800 = (146, 64, 14)    # Text Aviso
-C_AMBER50  = (255, 251, 235)   # Bg Aviso
-C_AMBER500 = (245, 158, 11)   # Border Aviso
+C_AMBER800 = (146, 64, 14)  # Text Aviso
+C_AMBER50 = (255, 251, 235)  # Bg Aviso
+C_AMBER500 = (245, 158, 11)  # Border Aviso
 
-C_BLUE50   = (239, 246, 255)   # Bg Destaque Adoptada
+C_BLUE50 = (239, 246, 255)  # Bg Destaque Adoptada
 
 # Margens da página A4
 ML = 20  # Margem Esquerda de 20mm do HTML
 MR = 20  # Margem Direita de 20mm do HTML
 MT = 20  # Margem Superior
 MB = 20  # Margem Inferior
-PW = 210 # Largura da Página A4
-IW = PW - ML - MR # Largura Útil = 170mm
+PW = 210  # Largura da Página A4
+IW = PW - ML - MR  # Largura Útil = 170mm
+
 
 def _n(valor, casas: int = 2, fallback: str = "—") -> str:
     if valor is None:
@@ -63,13 +64,16 @@ def _n(valor, casas: int = 2, fallback: str = "—") -> str:
     except (TypeError, ValueError):
         return str(valor)
 
+
 def _diam(d_mm) -> str:
     if d_mm is None:
         return "—"
     return f"{d_mm:g}".replace(".", ",")
 
+
 def _caa_nome(caa: int) -> str:
     from core.calculos import CAA_DATA
+
     romanos = {1: "I", 2: "II", 3: "III", 4: "IV"}
     if caa in CAA_DATA:
         return f"{romanos.get(caa, str(caa))} ({CAA_DATA[caa]['nome']})"
@@ -77,8 +81,17 @@ def _caa_nome(caa: int) -> str:
 
 
 class PorticaPDF(FPDF):
-    def __init__(self, nome_viga: str = "Viga V1", subtitulo: str = "Viga de Seção Retangular", dark_mode: bool = False, nome_engenheiro: str = "", crea: str = "",
-                 profissao: str = "Engenheiro Civil", responsavel_nome: str = "", responsavel_registro: str = ""):
+    def __init__(
+        self,
+        nome_viga: str = "Viga V1",
+        subtitulo: str = "Viga de Seção Retangular",
+        dark_mode: bool = False,
+        nome_engenheiro: str = "",
+        crea: str = "",
+        profissao: str = "Engenheiro Civil",
+        responsavel_nome: str = "",
+        responsavel_registro: str = "",
+    ):
         super().__init__(orientation="P", unit="mm", format="A4")
         # Fontes core (Helvetica/Courier) em cp1252: permite o travessao (—) e
         # demais caracteres do Windows-1252 no rodape de aviso de responsabilidade.
@@ -171,11 +184,23 @@ class PorticaPDF(FPDF):
         self.set_font("Helvetica", "", 8)
         # Truncar nome para caber antes do timestamp
         max_len = 60
-        nome_exib = self._nome_viga if len(self._nome_viga) <= max_len else self._nome_viga[:max_len - 3] + "..."
+        nome_exib = (
+            self._nome_viga
+            if len(self._nome_viga) <= max_len
+            else self._nome_viga[: max_len - 3] + "..."
+        )
         self.cell(0, 5, f" | {nome_exib}", border=0, new_x="LMARGIN", new_y="NEXT")
 
         self.set_font("Helvetica", "", 8)
-        self.cell(0, 5, f"{self._ts_data} - {self._ts_hora[:5]}", border=0, align="R", new_x="LMARGIN", new_y="NEXT")
+        self.cell(
+            0,
+            5,
+            f"{self._ts_data} - {self._ts_hora[:5]}",
+            border=0,
+            align="R",
+            new_x="LMARGIN",
+            new_y="NEXT",
+        )
 
         self.set_draw_color(*C_GRAY200)
         self.set_line_width(0.3)
@@ -193,7 +218,13 @@ class PorticaPDF(FPDF):
         self.ln(2)
         self.set_font("Helvetica", "", 7.5)
         self.set_text_color(*C_GRAY400)
-        self.cell(IW - 40, 4, "Gerado pelo Portica App - Válido apenas com assinatura do Eng. Responsável.", border=0, align="L")
+        self.cell(
+            IW - 40,
+            4,
+            "Gerado pelo Portica App - Válido apenas com assinatura do Eng. Responsável.",
+            border=0,
+            align="L",
+        )
 
         # Paginação coerente com o HTML
         self.cell(40, 4, f"Pág. {self.page_no()} / {{nb}}", border=0, align="R")
@@ -204,7 +235,13 @@ class PorticaPDF(FPDF):
         self.ln(4.2)
         self.set_font("Helvetica", "I", 7)
         self.set_text_color(*C_GRAY400)
-        self.cell(IW, 4, "Uso sob responsabilidade do usuário — ver README do projeto", border=0, align="L")
+        self.cell(
+            IW,
+            4,
+            "Uso sob responsabilidade do usuário — ver README do projeto",
+            border=0,
+            align="L",
+        )
 
     def section_title(self, numero: int, texto: str):
         # Evita órfãos de títulos de seção
@@ -259,10 +296,22 @@ class PorticaPDF(FPDF):
         # Linha de meta: Engenheiro | CREA/CAU | Data
         parts = []
         if self._nome_engenheiro:
-            rotulo = "Eng." if self._profissao == "Engenheiro Civil" else "Arq." if self._profissao == "Arquiteto" else "Resp."
+            rotulo = (
+                "Eng."
+                if self._profissao == "Engenheiro Civil"
+                else "Arq."
+                if self._profissao == "Arquiteto"
+                else "Resp."
+            )
             parts.append(f"{rotulo}: {self._nome_engenheiro}")
         if self._crea:
-            rotulo_reg = "CREA/UF:" if self._profissao == "Engenheiro Civil" else "CAU/UF:" if self._profissao == "Arquiteto" else "Registro:"
+            rotulo_reg = (
+                "CREA/UF:"
+                if self._profissao == "Engenheiro Civil"
+                else "CAU/UF:"
+                if self._profissao == "Arquiteto"
+                else "Registro:"
+            )
             parts.append(f"{rotulo_reg} {self._crea}")
         parts.append(f"Data: {self._ts_data}")
 
@@ -513,11 +562,14 @@ class PorticaPDF(FPDF):
         self.set_xy(ML + 12, y0 + 5)
         self.set_font("Helvetica", "", 7)
         self.set_text_color(*C_AMBER800)
-        self.multi_cell(IW - 16, 2.8,
+        self.multi_cell(
+            IW - 16,
+            2.8,
             "As informações contidas neste relatório são geradas automaticamente para fins de "
             "pré-dimensionamento e apoio. Cabe exclusivamente ao engenheiro responsável a "
             "verificação manual, interpretação e validação dos resultados apresentados, "
-            "garantindo a conformidade com a ABNT NBR 6118:2023 e as peculiaridades específicas do projeto estrutural.")
+            "garantindo a conformidade com a ABNT NBR 6118:2023 e as peculiaridades específicas do projeto estrutural.",
+        )
 
         self.set_y(y0 + bh + 3)
 
@@ -544,7 +596,7 @@ class PorticaPDF(FPDF):
 
         cx = ML
         for i, text in enumerate(headers):
-            is_last = (i == len(headers) - 1)
+            is_last = i == len(headers) - 1
 
             # Se for a coluna adotada (última), destacar em azul suave conforme o HTML
             if is_last:
@@ -596,7 +648,7 @@ class PorticaPDF(FPDF):
 
             cx = ML
             for ci, cell in enumerate(row):
-                is_last = (ci == len(row) - 1)
+                is_last = ci == len(row) - 1
 
                 self.set_xy(cx, ry + 1.5)
                 if ci == 0:
@@ -703,13 +755,29 @@ class PorticaPDF(FPDF):
         self.set_xy(cx, y + 1)
         self.set_font("Helvetica", "B", 9)
         self.set_text_color(*C_GRAY900)
-        self.cell(100, 5, self.normalize_text(f"{self._profissao}: {self._nome_engenheiro}"), border=0, align="C", new_x="LMARGIN", new_y="NEXT")
+        self.cell(
+            100,
+            5,
+            self.normalize_text(f"{self._profissao}: {self._nome_engenheiro}"),
+            border=0,
+            align="C",
+            new_x="LMARGIN",
+            new_y="NEXT",
+        )
 
         if self._crea:
             self.set_x(cx)
             self.set_font("Helvetica", "", 8)
             self.set_text_color(*C_GRAY500)
-            self.cell(100, 4, self.normalize_text(f"CREA/UF: {self._crea}"), border=0, align="C", new_x="LMARGIN", new_y="NEXT")
+            self.cell(
+                100,
+                4,
+                self.normalize_text(f"CREA/UF: {self._crea}"),
+                border=0,
+                align="C",
+                new_x="LMARGIN",
+                new_y="NEXT",
+            )
         self.ln(5)
 
     def add_memoria_calculo(
@@ -717,28 +785,45 @@ class PorticaPDF(FPDF):
         resultados_flexao,
         resultados_cisalhamento,
         section_num,
-        h_cm, bw_cm, cob_mm,
-        fck_mpa, fyk_mpa, fyk_estribo_mpa,
-        phi_estribo_mm, phi_barra_mm,
+        h_cm,
+        bw_cm,
+        cob_mm,
+        fck_mpa,
+        fyk_mpa,
+        fyk_estribo_mpa,
+        phi_estribo_mm,
+        phi_barra_mm,
         is_t=False,
-        bf_cm=None, hf_cm=None,
+        bf_cm=None,
+        hf_cm=None,
     ):
         self.add_page()
         self.section_title(section_num, "Memória de Cálculo Detalhada (Apêndice)")
 
         self.set_font("Helvetica", "", 9.5)
         self.set_text_color(*C_GRAY700)
-        self.multi_cell(0, 5, self.normalize_text(
-            "Esta seção apresenta o detalhamento passo-a-passo dos cálculos efetuados para o dimensionamento "
-            "das armaduras longitudinais (flexão) e transversais (cisalhamento) sob as diretrizes da ABNT NBR 6118:2023."
-        ))
+        self.multi_cell(
+            0,
+            5,
+            self.normalize_text(
+                "Esta seção apresenta o detalhamento passo-a-passo dos cálculos efetuados para o dimensionamento "
+                "das armaduras longitudinais (flexão) e transversais (cisalhamento) sob as diretrizes da ABNT NBR 6118:2023."
+            ),
+        )
         self.ln(4)
 
         # ── MEMÓRIA DE FLEXÃO ──
         if resultados_flexao:
             self.set_font("Helvetica", "B", 10.5)
             self.set_text_color(*C_PORTICA)
-            self.cell(0, 6, self.normalize_text("A. Dimensionamento à Flexão"), border=0, new_x="LMARGIN", new_y="NEXT")
+            self.cell(
+                0,
+                6,
+                self.normalize_text("A. Dimensionamento à Flexão"),
+                border=0,
+                new_x="LMARGIN",
+                new_y="NEXT",
+            )
             self.ln(2)
 
             for i, r in enumerate(resultados_flexao):
@@ -752,7 +837,16 @@ class PorticaPDF(FPDF):
                 self.set_x(ML + 3)
                 self.set_font("Helvetica", "B", 9)
                 self.set_text_color(*C_GRAY900)
-                self.cell(0, 7, self.normalize_text(f"Trecho {i+1} — Momento Fletor Md = {r.momento_kNm:.2f} kN.m ({r.tipo})"), border=0, new_x="LMARGIN", new_y="NEXT")
+                self.cell(
+                    0,
+                    7,
+                    self.normalize_text(
+                        f"Trecho {i + 1} — Momento Fletor Md = {r.momento_kNm:.2f} kN.m ({r.tipo})"
+                    ),
+                    border=0,
+                    new_x="LMARGIN",
+                    new_y="NEXT",
+                )
                 self.ln(2)
 
                 # Vamos escrever as equações com Courier
@@ -765,9 +859,9 @@ class PorticaPDF(FPDF):
                 lines = [
                     "1. Altura util (d):",
                     "   d' = cobrimento + phi_estribo + phi_barra/2",
-                    f"   d' = {cob_mm/10:.2f} + {phi_estribo_mm/10:.2f} + {r.diametro_mm/20:.2f} = {d_lin:.2f} cm",
+                    f"   d' = {cob_mm / 10:.2f} + {phi_estribo_mm / 10:.2f} + {r.diametro_mm / 20:.2f} = {d_lin:.2f} cm",
                     f"   d  = h - d' = {h_cm:.1f} - {d_lin:.2f} = {d_cm:.2f} cm",
-                    ""
+                    "",
                 ]
 
                 b_calc = bw_cm
@@ -782,36 +876,42 @@ class PorticaPDF(FPDF):
 
                 Md_kNcm = r.momento_kNm * 100
 
-                lines.extend([
-                    "2. Parametro Kc (NBR 6118):",
-                    f"   Kc = ({b_label} * d^2) / Md",
-                    f"   Kc = ({b_calc:.1f} * {d_cm:.2f}^2) / {Md_kNcm:.1f} = {r.kc:.3f}",
-                    ""
-                ])
+                lines.extend(
+                    [
+                        "2. Parametro Kc (NBR 6118):",
+                        f"   Kc = ({b_label} * d^2) / Md",
+                        f"   Kc = ({b_calc:.1f} * {d_cm:.2f}^2) / {Md_kNcm:.1f} = {r.kc:.3f}",
+                        "",
+                    ]
+                )
 
                 fck_conv = fck_mpa / 10
-                lines.extend([
-                    "3. Relacao da linha neutra (beta_x = x/d):",
-                    "   Equacao: -0.192 * fck_conv * Kc * beta_x^2 + 0.48 * fck_conv * Kc * beta_x - 1 = 0",
-                    f"   Onde fck_conv = fck/10 = {fck_conv:.1f} kN/cm^2",
-                    "   Substituindo os valores:",
-                    f"   {r.a:.4f} * beta_x^2 + {r.b:.4f} * beta_x - 1 = 0",
-                    "   Resolvendo a equacao quadratica:",
-                    f"   beta_x = {r.bx:.3f}",
-                    f"   x = beta_x * d = {r.bx:.3f} * {d_cm:.2f} = {r.x_cm:.2f} cm",
-                    f"   Verificacao de dominio: beta_x = {r.bx:.3f} <= beta_x_lim = {0.45 if fck_mpa <= 50 else 0.35:.2f} ({'PASSA' if r.bx_passa == 'SIM' else 'ALERTA'})",
-                    ""
-                ])
+                lines.extend(
+                    [
+                        "3. Relacao da linha neutra (beta_x = x/d):",
+                        "   Equacao: -0.192 * fck_conv * Kc * beta_x^2 + 0.48 * fck_conv * Kc * beta_x - 1 = 0",
+                        f"   Onde fck_conv = fck/10 = {fck_conv:.1f} kN/cm^2",
+                        "   Substituindo os valores:",
+                        f"   {r.a:.4f} * beta_x^2 + {r.b:.4f} * beta_x - 1 = 0",
+                        "   Resolvendo a equacao quadratica:",
+                        f"   beta_x = {r.bx:.3f}",
+                        f"   x = beta_x * d = {r.bx:.3f} * {d_cm:.2f} = {r.x_cm:.2f} cm",
+                        f"   Verificacao de dominio: beta_x = {r.bx:.3f} <= beta_x_lim = {0.45 if fck_mpa <= 50 else 0.35:.2f} ({'PASSA' if r.bx_passa == 'SIM' else 'ALERTA'})",
+                        "",
+                    ]
+                )
 
                 fyd = fyk_mpa / 1.15
-                lines.extend([
-                    "4. Area de aco necessaria (As,req):",
-                    "   Ks = 1 / (fyd * (1 - 0.5 * beta_x))",
-                    f"   Ks = 1 / ({fyd:.3f} * (1 - 0.5 * {r.bx:.3f})) = {r.ks:.3f} cm^2/kN",
-                    "   As,req = Ks * Md / d",
-                    f"   As,req = {r.ks:.3f} * {Md_kNcm:.1f} / {d_cm:.2f} = {r.as_req_cm2:.2f} cm^2",
-                    ""
-                ])
+                lines.extend(
+                    [
+                        "4. Area de aco necessaria (As,req):",
+                        "   Ks = 1 / (fyd * (1 - 0.5 * beta_x))",
+                        f"   Ks = 1 / ({fyd:.3f} * (1 - 0.5 * {r.bx:.3f})) = {r.ks:.3f} cm^2/kN",
+                        "   As,req = Ks * Md / d",
+                        f"   As,req = {r.ks:.3f} * {Md_kNcm:.1f} / {d_cm:.2f} = {r.as_req_cm2:.2f} cm^2",
+                        "",
+                    ]
+                )
 
                 c_cm = cob_mm / 10
                 est_cm = phi_estribo_mm / 10
@@ -824,7 +924,9 @@ class PorticaPDF(FPDF):
                 if r.qtd_barras <= 1:
                     eh_val = espaco_disp_local - (r.diametro_mm / 10)
                 else:
-                    eh_1 = (espaco_disp_local - r.qtd_barras * (r.diametro_mm / 10)) / (r.qtd_barras - 1)
+                    eh_1 = (espaco_disp_local - r.qtd_barras * (r.diametro_mm / 10)) / (
+                        r.qtd_barras - 1
+                    )
                     if eh_1 >= 1.95:
                         eh_val = eh_1
                     else:
@@ -832,35 +934,43 @@ class PorticaPDF(FPDF):
                         if n_max_layer <= 1:
                             eh_val = espaco_disp_local - (r.diametro_mm / 10)
                         else:
-                            eh_val = (espaco_disp_local - n_max_layer * (r.diametro_mm / 10)) / (n_max_layer - 1)
+                            eh_val = (espaco_disp_local - n_max_layer * (r.diametro_mm / 10)) / (
+                                n_max_layer - 1
+                            )
 
                 eh_suportado_val = getattr(r, "eh_suportado", eh_val)
 
-                lines.extend([
-                    "5. Armadura minima e adotada (NBR 6118):",
-                    "   As,min = rho_min * Ac",
-                    f"   As,min = {r.asmin_cm2:.2f} cm^2 (rho_min = {r.asmin_cm2 / (bw_cm * h_cm) * 100:.3f}%)",
-                    f"   As,adot = max(As,req, As,min) = {r.as_usado_cm2:.2f} cm^2",
-                    f"   Bitola escolhida: phi = {r.diametro_mm:g} mm (Area = {area_barra(r.diametro_mm):.3f} cm^2)",
-                    f"   Quantidade de barras: N = {r.qtd_barras} barras (As = {r.qtd_barras * area_barra(r.diametro_mm):.2f} cm^2)",
-                    f"   Espacamento horizontal livre: eh = {eh_suportado_val:.2f} cm (min 2.0 cm - {'CABE' if r.eh_passa == 'SIM' else 'ALERTA'})",
-                ])
+                lines.extend(
+                    [
+                        "5. Armadura minima e adotada (NBR 6118):",
+                        "   As,min = rho_min * Ac",
+                        f"   As,min = {r.asmin_cm2:.2f} cm^2 (rho_min = {r.asmin_cm2 / (bw_cm * h_cm) * 100:.3f}%)",
+                        f"   As,adot = max(As,req, As,min) = {r.as_usado_cm2:.2f} cm^2",
+                        f"   Bitola escolhida: phi = {r.diametro_mm:g} mm (Area = {area_barra(r.diametro_mm):.3f} cm^2)",
+                        f"   Quantidade de barras: N = {r.qtd_barras} barras (As = {r.qtd_barras * area_barra(r.diametro_mm):.2f} cm^2)",
+                        f"   Espacamento horizontal livre: eh = {eh_suportado_val:.2f} cm (min 2.0 cm - {'CABE' if r.eh_passa == 'SIM' else 'ALERTA'})",
+                    ]
+                )
 
                 if r.requer_pele:
-                    lines.extend([
-                        "",
-                        "6. Armadura de pele lateral (h >= 60 cm):",
-                        "   As,pele,min/face = 0.10% * Ac,alma (limitado a 5.0 cm^2/m por face)",
-                        f"   As,pele,min/face = {r.as_pele_min_face_cm2:.2f} cm^2 (por face lateral)",
-                        f"   Adotado: {r.n_barras_pele_face}x phi {r.phi_pele_mm:g} mm por face (As = {r.as_pele_face_cm2:.2f} cm^2/face)",
-                        f"   Espacamento maximo vertical: s_max = min(20 cm, d/3) = {r.s_pele_max_cm:.1f} cm",
-                        f"   Espacamento adotado: s = {r.s_pele_cm:.1f} cm <= {r.s_pele_max_cm:.1f} cm (OK)",
-                    ])
+                    lines.extend(
+                        [
+                            "",
+                            "6. Armadura de pele lateral (h >= 60 cm):",
+                            "   As,pele,min/face = 0.10% * Ac,alma (limitado a 5.0 cm^2/m por face)",
+                            f"   As,pele,min/face = {r.as_pele_min_face_cm2:.2f} cm^2 (por face lateral)",
+                            f"   Adotado: {r.n_barras_pele_face}x phi {r.phi_pele_mm:g} mm por face (As = {r.as_pele_face_cm2:.2f} cm^2/face)",
+                            f"   Espacamento maximo vertical: s_max = min(20 cm, d/3) = {r.s_pele_max_cm:.1f} cm",
+                            f"   Espacamento adotado: s = {r.s_pele_cm:.1f} cm <= {r.s_pele_max_cm:.1f} cm (OK)",
+                        ]
+                    )
 
                 for line in lines:
                     if self.get_y() + 4.5 > self.h - MB:
                         self.add_page()
-                    self.cell(0, 4.2, self.normalize_text(line), border=0, new_x="LMARGIN", new_y="NEXT")
+                    self.cell(
+                        0, 4.2, self.normalize_text(line), border=0, new_x="LMARGIN", new_y="NEXT"
+                    )
 
                 self.ln(6)
 
@@ -873,7 +983,14 @@ class PorticaPDF(FPDF):
 
             self.set_font("Helvetica", "B", 10.5)
             self.set_text_color(*C_PORTICA)
-            self.cell(0, 6, self.normalize_text("B. Dimensionamento ao Cisalhamento (Modelo I - NBR 6118)"), border=0, new_x="LMARGIN", new_y="NEXT")
+            self.cell(
+                0,
+                6,
+                self.normalize_text("B. Dimensionamento ao Cisalhamento (Modelo I - NBR 6118)"),
+                border=0,
+                new_x="LMARGIN",
+                new_y="NEXT",
+            )
             self.ln(2)
 
             for i, r in enumerate(resultados_cisalhamento):
@@ -886,7 +1003,16 @@ class PorticaPDF(FPDF):
                 self.set_x(ML + 3)
                 self.set_font("Helvetica", "B", 9)
                 self.set_text_color(*C_GRAY900)
-                self.cell(0, 7, self.normalize_text(f"Trecho {i+1} — Força Cortante Vk = {r.vsd_verdadeiro_kn:.2f} kN (Majorada Vsd = {r.vsd_kn:.2f} kN)"), border=0, new_x="LMARGIN", new_y="NEXT")
+                self.cell(
+                    0,
+                    7,
+                    self.normalize_text(
+                        f"Trecho {i + 1} — Força Cortante Vk = {r.vsd_verdadeiro_kn:.2f} kN (Majorada Vsd = {r.vsd_kn:.2f} kN)"
+                    ),
+                    border=0,
+                    new_x="LMARGIN",
+                    new_y="NEXT",
+                )
                 self.ln(2)
 
                 self.set_font("Courier", "", 8.5)
@@ -919,13 +1045,13 @@ class PorticaPDF(FPDF):
                     "1. Resistencia do concreto comprimido (Vrd2):",
                     "   Vrd2 = 0.27 * lambda * fcd * bw * d",
                     f"   lambda = 1 - fck/250 (max 0.80) = {lam:.2f}",
-                    f"   fcd = 0.85 * {fck_mpa:g} / 1.4 = {fcd:.2f} MPa = {fcd/10:.3f} kN/cm^2",
-                    f"   Vrd2 = 0.27 * {lam:.2f} * {fcd/10:.3f} * {bw_cm:.1f} * {d_cm:.2f} = {vrd2:.2f} kN",
+                    f"   fcd = 0.85 * {fck_mpa:g} / 1.4 = {fcd:.2f} MPa = {fcd / 10:.3f} kN/cm^2",
+                    f"   Vrd2 = 0.27 * {lam:.2f} * {fcd / 10:.3f} * {bw_cm:.1f} * {d_cm:.2f} = {vrd2:.2f} kN",
                     f"   Verificacao da biela de compressao: Vsd = {r.vsd_kn:.2f} kN < Vrd2 = {vrd2:.2f} kN ({'PASSA' if r.passa_vrd2 == 'SIM' else 'ALERTA'})",
                     "",
                     "2. Parcela resistida pelo concreto (Vc):",
                     "   Vc = 0.6 * fctd * bw * d",
-                    f"   fctkinf = 0.7 * 0.3 * fck^(2/3) = {fctkinf:.2f} MPa = {fctkinf/10:.3f} kN/cm^2",
+                    f"   fctkinf = 0.7 * 0.3 * fck^(2/3) = {fctkinf:.2f} MPa = {fctkinf / 10:.3f} kN/cm^2",
                     f"   fctd = fctkinf / 1.4 = {fctd:.5f} kN/cm^2",
                     f"   Vc = 0.6 * {fctd:.5f} * {bw_cm:.1f} * {d_cm:.2f} = {vc:.2f} kN",
                     "",
@@ -946,7 +1072,9 @@ class PorticaPDF(FPDF):
                 for line in lines:
                     if self.get_y() + 4.5 > self.h - MB:
                         self.add_page()
-                    self.cell(0, 4.2, self.normalize_text(line), border=0, new_x="LMARGIN", new_y="NEXT")
+                    self.cell(
+                        0, 4.2, self.normalize_text(line), border=0, new_x="LMARGIN", new_y="NEXT"
+                    )
 
                 self.ln(6)
 
@@ -1005,25 +1133,25 @@ def _desenhar_grampos_segunda_camada(
     # de modo que a barra fique exatamente no meio do U (wrapped).
     y_step = 2 * grampo_off
 
-    pdf.set_draw_color(197, 90, 17)   # laranja (Orange800), igual à armadura de pele
+    pdf.set_draw_color(197, 90, 17)  # laranja (Orange800), igual à armadura de pele
     pdf.set_line_width(0.5)
 
     if fechado_para_cima:
         # ∩ : fechado em cima (menor Y, lado da 1ª camada superior),
         # aberto embaixo (lado da face do concreto).
         y_closed = y_bar - grampo_off
-        y_open = y_closed + y_step   # = y_bar + grampo_off (passa pela barra)
-        pdf.line(x_left, y_closed, x_right, y_closed)   # topo (fechado)
-        pdf.line(x_left, y_closed, x_left, y_open)      # lateral esq (passa pela barra)
-        pdf.line(x_right, y_closed, x_right, y_open)    # lateral dir (passa pela barra)
+        y_open = y_closed + y_step  # = y_bar + grampo_off (passa pela barra)
+        pdf.line(x_left, y_closed, x_right, y_closed)  # topo (fechado)
+        pdf.line(x_left, y_closed, x_left, y_open)  # lateral esq (passa pela barra)
+        pdf.line(x_right, y_closed, x_right, y_open)  # lateral dir (passa pela barra)
     else:
         # ∪ : fechado embaixo (maior Y, lado da 1ª camada inferior),
         # aberto em cima (lado da face do concreto).
         y_closed = y_bar + grampo_off
-        y_open = y_closed - y_step   # = y_bar - grampo_off (passa pela barra)
-        pdf.line(x_left, y_closed, x_right, y_closed)   # base (fechada)
-        pdf.line(x_left, y_closed, x_left, y_open)      # lateral esq (passa pela barra)
-        pdf.line(x_right, y_closed, x_right, y_open)    # lateral dir (passa pela barra)
+        y_open = y_closed - y_step  # = y_bar - grampo_off (passa pela barra)
+        pdf.line(x_left, y_closed, x_right, y_closed)  # base (fechada)
+        pdf.line(x_left, y_closed, x_left, y_open)  # lateral esq (passa pela barra)
+        pdf.line(x_right, y_closed, x_right, y_open)  # lateral dir (passa pela barra)
 
     return 1
 
@@ -1050,13 +1178,22 @@ def _desenhar_nota_cavaletes(pdf: PorticaPDF, x: float, y: float, largura: float
     pdf.cell(12, 4, "NOTA:", border=0)
     pdf.set_font("Helvetica", "I", 8.5)
     pdf.set_text_color(*C_GRAY700)
-    pdf.cell(largura - 18, 4, " O desenho esquemático omite os espaçadores verticais.",
-             border=0, new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(
+        largura - 18,
+        4,
+        " O desenho esquemático omite os espaçadores verticais.",
+        border=0,
+        new_x="LMARGIN",
+        new_y="NEXT",
+    )
     pdf.set_x(x + 3)
-    pdf.cell(largura - 6, 4,
-             "Utilizar cavaletes de aço a cada 1,0 m para garantir o espaçamento "
-             "vertical (e_v) normativo entre as camadas.",
-             border=0)
+    pdf.cell(
+        largura - 6,
+        4,
+        "Utilizar cavaletes de aço a cada 1,0 m para garantir o espaçamento "
+        "vertical (e_v) normativo entre as camadas.",
+        border=0,
+    )
 
 
 def _split_layers(n_barras, phi_mm, bw_cm, cob_mm, phi_est_mm, d_max_agregado_mm=19.0):
@@ -1094,11 +1231,20 @@ def _split_layers(n_barras, phi_mm, bw_cm, cob_mm, phi_est_mm, d_max_agregado_mm
     return c1, c2
 
 
-def desenhar_secao_retangular(pdf: PorticaPDF, h_cm: float, bw_cm: float, cob_mm: float, phi_estribo: float,
-                               phi_barra_inf: float, n_barras_inf: int,
-                               phi_barra_sup: float, n_barras_sup: int,
-                               n_barras_pele: int = 0, phi_pele: float = 0,
-                               layout_convergido=None):
+def desenhar_secao_retangular(
+    pdf: PorticaPDF,
+    h_cm: float,
+    bw_cm: float,
+    cob_mm: float,
+    phi_estribo: float,
+    phi_barra_inf: float,
+    n_barras_inf: int,
+    phi_barra_sup: float,
+    n_barras_sup: int,
+    n_barras_pele: int = 0,
+    phi_pele: float = 0,
+    layout_convergido=None,
+):
     max_h_mm, max_w_mm = 80, 50
     s = min(max_h_mm / (h_cm * 10), max_w_mm / (bw_cm * 10), 0.5)
     dw = bw_cm * 10 * s
@@ -1151,9 +1297,15 @@ def desenhar_secao_retangular(pdf: PorticaPDF, h_cm: float, bw_cm: float, cob_mm
     if n_sc2 > 0:
         _bars(n_sc2, phi_barra_sup, dy_s + gap, px, dw)
         _desenhar_grampos_segunda_camada(
-            pdf, n_sc2, phi_barra_sup, phi_estribo,
-            x_estribo_left, x_estribo_right,
-            dy_s + gap, s, fechado_para_cima=True,
+            pdf,
+            n_sc2,
+            phi_barra_sup,
+            phi_estribo,
+            x_estribo_left,
+            x_estribo_right,
+            dy_s + gap,
+            s,
+            fechado_para_cima=True,
         )
 
     if layout_convergido:
@@ -1173,18 +1325,30 @@ def desenhar_secao_retangular(pdf: PorticaPDF, h_cm: float, bw_cm: float, cob_mm
             if layer.index >= 1 and layer.bar_count >= 3:
                 y_layer_c = py + dh - layer.y_centroid * s
                 _desenhar_grampos_segunda_camada(
-                    pdf, layer.bar_count, phi_barra_inf, phi_estribo,
-                    x_estribo_left, x_estribo_right,
-                    y_layer_c, s, fechado_para_cima=False,
+                    pdf,
+                    layer.bar_count,
+                    phi_barra_inf,
+                    phi_estribo,
+                    x_estribo_left,
+                    x_estribo_right,
+                    y_layer_c,
+                    s,
+                    fechado_para_cima=False,
                 )
     else:
         _bars(n_ic1, phi_barra_inf, dy_i, px, dw)
         if n_ic2 > 0:
             _bars(n_ic2, phi_barra_inf, dy_i - gap, px, dw)
             _desenhar_grampos_segunda_camada(
-                pdf, n_ic2, phi_barra_inf, phi_estribo,
-                x_estribo_left, x_estribo_right,
-                dy_i - gap, s, fechado_para_cima=False,
+                pdf,
+                n_ic2,
+                phi_barra_inf,
+                phi_estribo,
+                x_estribo_left,
+                x_estribo_right,
+                dy_i - gap,
+                s,
+                fechado_para_cima=False,
             )
 
     if n_barras_pele > 0 and phi_pele > 0:
@@ -1196,14 +1360,24 @@ def desenhar_secao_retangular(pdf: PorticaPDF, h_cm: float, bw_cm: float, cob_mm
         x_face_dir = px + dw - e_off - (phi_estribo / 2 + phi_pele / 2) * s
 
         # Determinar limites brutos (sem gaps) medidos em cm a partir do topo da viga
-        layer_count_inf = layout_convergido.layer_count if layout_convergido else (2 if n_ic2 > 0 else 1 if n_barras_inf > 0 else 0)
+        layer_count_inf = (
+            layout_convergido.layer_count
+            if layout_convergido
+            else (2 if n_ic2 > 0 else 1 if n_barras_inf > 0 else 0)
+        )
         layer_count_sup = 2 if n_sc2 > 0 else 1 if n_barras_sup > 0 else 0
-        ev_min_inf_mm = layout_convergido.ev_min if (layout_convergido and hasattr(layout_convergido, 'ev_min')) else max(20.0, phi_barra_inf, 22.8)
+        ev_min_inf_mm = (
+            layout_convergido.ev_min
+            if (layout_convergido and hasattr(layout_convergido, "ev_min"))
+            else max(20.0, phi_barra_inf, 22.8)
+        )
         ev_min_sup_mm = max(20.0, phi_barra_sup, 22.8)
 
         y_top_raw_cm = cob_mm / 10.0 + phi_estribo / 10.0
         if layer_count_sup > 0:
-            y_top_raw_cm += layer_count_sup * (phi_barra_sup / 10.0) + (layer_count_sup - 1) * (ev_min_sup_mm / 10.0)
+            y_top_raw_cm += layer_count_sup * (phi_barra_sup / 10.0) + (layer_count_sup - 1) * (
+                ev_min_sup_mm / 10.0
+            )
 
         y_bottom_raw_cm = h_cm - (cob_mm / 10.0 + phi_estribo / 10.0)
         if layout_convergido:
@@ -1214,7 +1388,9 @@ def desenhar_secao_retangular(pdf: PorticaPDF, h_cm: float, bw_cm: float, cob_mm
             if bottom_bars_tops:
                 y_bottom_raw_cm = min(bottom_bars_tops)
         elif layer_count_inf > 0:
-            y_bottom_raw_cm -= layer_count_inf * (phi_barra_inf / 10.0) + (layer_count_inf - 1) * (ev_min_inf_mm / 10.0)
+            y_bottom_raw_cm -= layer_count_inf * (phi_barra_inf / 10.0) + (layer_count_inf - 1) * (
+                ev_min_inf_mm / 10.0
+            )
 
         ev_min_cm = ev_min_inf_mm / 10.0
         h_free_cm = y_bottom_raw_cm - y_top_raw_cm
@@ -1222,7 +1398,10 @@ def desenhar_secao_retangular(pdf: PorticaPDF, h_cm: float, bw_cm: float, cob_mm
         d_livre_cm = (h_free_cm - n_barras_pele * phi_pele_cm) / (n_barras_pele + 1.0)
 
         if d_livre_cm >= ev_min_cm:
-            ys_cm = [y_top_raw_cm + (i + 1) * d_livre_cm + (i + 0.5) * phi_pele_cm for i in range(n_barras_pele)]
+            ys_cm = [
+                y_top_raw_cm + (i + 1) * d_livre_cm + (i + 0.5) * phi_pele_cm
+                for i in range(n_barras_pele)
+            ]
         else:
             # Fallback
             y_top_estribo = cob_mm / 10.0 + phi_estribo / 10.0
@@ -1255,9 +1434,22 @@ def desenhar_secao_retangular(pdf: PorticaPDF, h_cm: float, bw_cm: float, cob_mm
     pdf.cell(14, 4, f"h={h_cm:g} cm", border=0, align="L")
 
 
-def desenhar_secao_t(pdf: PorticaPDF, h_cm: float, bw_cm: float, bf_cm: float, hf_cm: float, cob_mm: float, phi_estribo: float,
-                      phi_barra_inf: float, n_barras_inf: int, phi_barra_sup: float, n_barras_sup: int,
-                      n_barras_pele: int = 0, phi_pele: float = 0, layout_convergido=None):
+def desenhar_secao_t(
+    pdf: PorticaPDF,
+    h_cm: float,
+    bw_cm: float,
+    bf_cm: float,
+    hf_cm: float,
+    cob_mm: float,
+    phi_estribo: float,
+    phi_barra_inf: float,
+    n_barras_inf: int,
+    phi_barra_sup: float,
+    n_barras_sup: int,
+    n_barras_pele: int = 0,
+    phi_pele: float = 0,
+    layout_convergido=None,
+):
     s = min(80.0 / (h_cm * 10.0), 60.0 / (bf_cm * 10.0), 0.5)
     h = h_cm * 10.0
     bw = bw_cm * 10.0
@@ -1267,46 +1459,60 @@ def desenhar_secao_t(pdf: PorticaPDF, h_cm: float, bw_cm: float, bf_cm: float, h
     ox = ML + 30.0
     py = pdf.get_y() + 6
     oy = py + h * s
-    def sx(x): return ox + x * s
-    def sy(y): return oy - y * s
+
+    def sx(x):
+        return ox + x * s
+
+    def sy(y):
+        return oy - y * s
 
     # 1. Contorno concreto (polígono 8 vértices)
     pdf.set_fill_color(243, 244, 246)
-    pdf.rect(sx(-bf/2), sy(h), bf*s, hf*s, style='F')
-    pdf.rect(sx(-bw/2), sy(h-hf), bw*s, (h-hf)*s, style='F')
+    pdf.rect(sx(-bf / 2), sy(h), bf * s, hf * s, style="F")
+    pdf.rect(sx(-bw / 2), sy(h - hf), bw * s, (h - hf) * s, style="F")
     pdf.set_draw_color(*C_GRAY300)
     pdf.set_line_width(0.4)
-    pts = [(-bw/2, 0), (bw/2, 0), (bw/2, h-hf), (bf/2, h-hf), (bf/2, h), (-bf/2, h), (-bf/2, h-hf), (-bw/2, h-hf)]
+    pts = [
+        (-bw / 2, 0),
+        (bw / 2, 0),
+        (bw / 2, h - hf),
+        (bf / 2, h - hf),
+        (bf / 2, h),
+        (-bf / 2, h),
+        (-bf / 2, h - hf),
+        (-bw / 2, h - hf),
+    ]
     for i in range(len(pts)):
         x1, y1 = pts[i]
-        x2, y2 = pts[(i+1) % len(pts)]
+        x2, y2 = pts[(i + 1) % len(pts)]
         pdf.line(sx(x1), sy(y1), sx(x2), sy(y2))
 
     # 2. Estribo (usando convenção do sample: ex_start = -bw/2 + c, cover to centerline)
-    ex_start = -bw/2 + c
-    estribo_w = bw - 2*c
-    estribo_h = h - 2*c
+    ex_start = -bw / 2 + c
+    estribo_w = bw - 2 * c
+    estribo_h = h - 2 * c
     pdf.set_draw_color(*C_PORTICA)
     pdf.set_line_width(0.6)
-    pdf.rect(sx(ex_start), sy(c + estribo_h), estribo_w*s, estribo_h*s, style="D")
+    pdf.rect(sx(ex_start), sy(c + estribo_h), estribo_w * s, estribo_h * s, style="D")
 
     # 3. Barras principais
     pdf.set_fill_color(31, 41, 55)
     pdf.set_draw_color(255, 255, 255)
     pdf.set_line_width(0.15)
+
     def _circle(xc, yc, r):
-        pdf.ellipse(xc-r, yc-r, r*2, r*2, style="FD")
+        pdf.ellipse(xc - r, yc - r, r * 2, r * 2, style="FD")
 
     n_i1, n_i2 = _split_layers(n_barras_inf, phi_barra_inf, bw_cm, cob_mm, phi_estribo)
     n_s1, n_s2 = _split_layers(n_barras_sup, phi_barra_sup, bw_cm, cob_mm, phi_estribo)
 
     gap = (max(phi_barra_inf, phi_barra_sup) + 20) * s
-    r_inf = max(phi_barra_inf*s*0.65, 0.5)
-    r_sup = max(phi_barra_sup*s*0.65, 0.5)
+    r_inf = max(phi_barra_inf * s * 0.65, 0.5)
+    r_sup = max(phi_barra_sup * s * 0.65, 0.5)
 
     # Y das barras (convenção sample: c + phi_est + phi/2)
-    y_inf = sy(c + phi_estribo + phi_barra_inf/2)
-    y_sup = sy(h - c - phi_estribo - phi_barra_sup/2)
+    y_inf = sy(c + phi_estribo + phi_barra_inf / 2)
+    y_sup = sy(h - c - phi_estribo - phi_barra_sup / 2)
 
     # X: barras distribuídas dentro do estribo
     x_left = sx(ex_start)
@@ -1318,8 +1524,8 @@ def desenhar_secao_t(pdf: PorticaPDF, h_cm: float, bw_cm: float, bf_cm: float, h
             return []
         if n == 1:
             return [sx(0.0)]
-        first = x_left + (phi_estribo + phi/2) * s
-        last = x_right - (phi_estribo + phi/2) * s
+        first = x_left + (phi_estribo + phi / 2) * s
+        last = x_right - (phi_estribo + phi / 2) * s
         return [first + i * (last - first) / (n - 1) for i in range(n)]
 
     # Draw top bars
@@ -1331,7 +1537,9 @@ def desenhar_secao_t(pdf: PorticaPDF, h_cm: float, bw_cm: float, bf_cm: float, h
             _circle(x, yc, r)
 
     if n_s2 > 0:
-        _desenhar_grampos_segunda_camada(pdf, n_s2, phi_barra_sup, phi_estribo, x_left, x_right, y_sup + gap, s, True)
+        _desenhar_grampos_segunda_camada(
+            pdf, n_s2, phi_barra_sup, phi_estribo, x_left, x_right, y_sup + gap, s, True
+        )
 
     # Draw bottom bars
     if layout_convergido:
@@ -1350,8 +1558,15 @@ def desenhar_secao_t(pdf: PorticaPDF, h_cm: float, bw_cm: float, bf_cm: float, h
             if layer.index >= 1 and layer.bar_count >= 3:
                 y_layer_c = sy(layer.y_centroid)
                 _desenhar_grampos_segunda_camada(
-                    pdf, layer.bar_count, phi_barra_inf, phi_estribo,
-                    x_left, x_right, y_layer_c, s, False
+                    pdf,
+                    layer.bar_count,
+                    phi_barra_inf,
+                    phi_estribo,
+                    x_left,
+                    x_right,
+                    y_layer_c,
+                    s,
+                    False,
                 )
     else:
         for xs, yc, r in [
@@ -1362,20 +1577,30 @@ def desenhar_secao_t(pdf: PorticaPDF, h_cm: float, bw_cm: float, bf_cm: float, h
                 _circle(x, yc, r)
 
         if n_i2 > 0:
-            _desenhar_grampos_segunda_camada(pdf, n_i2, phi_barra_inf, phi_estribo, x_left, x_right, y_inf - gap, s, False)
+            _desenhar_grampos_segunda_camada(
+                pdf, n_i2, phi_barra_inf, phi_estribo, x_left, x_right, y_inf - gap, s, False
+            )
 
     # 4. Armadura de pele (na alma)
     if n_barras_pele > 0 and phi_pele > 0:
         pdf.set_fill_color(197, 90, 17)
         pdf.set_draw_color(255, 255, 255)
         pdf.set_line_width(0.15)
-        r_p = max(phi_pele*s*0.65, 0.5)
-        x_pe = x_left + (phi_estribo + phi_pele/2)*s
-        x_pd = x_right - (phi_estribo + phi_pele/2)*s
+        r_p = max(phi_pele * s * 0.65, 0.5)
+        x_pe = x_left + (phi_estribo + phi_pele / 2) * s
+        x_pd = x_right - (phi_estribo + phi_pele / 2) * s
 
         # Determinar limites brutos (sem gaps) medidos em mm a partir do fundo da viga
-        layer_count_inf = layout_convergido.layer_count if layout_convergido else (2 if n_i2 > 0 else 1 if n_barras_inf > 0 else 0)
-        ev_min_inf_mm = layout_convergido.ev_min if (layout_convergido and hasattr(layout_convergido, 'ev_min')) else max(20.0, phi_barra_inf, 22.8)
+        layer_count_inf = (
+            layout_convergido.layer_count
+            if layout_convergido
+            else (2 if n_i2 > 0 else 1 if n_barras_inf > 0 else 0)
+        )
+        ev_min_inf_mm = (
+            layout_convergido.ev_min
+            if (layout_convergido and hasattr(layout_convergido, "ev_min"))
+            else max(20.0, phi_barra_inf, 22.8)
+        )
 
         y_bottom_raw_mm = cob_mm + phi_estribo
         if layout_convergido:
@@ -1386,7 +1611,9 @@ def desenhar_secao_t(pdf: PorticaPDF, h_cm: float, bw_cm: float, bf_cm: float, h
             if bottom_bars_tops:
                 y_bottom_raw_mm = max(bottom_bars_tops)
         elif layer_count_inf > 0:
-            y_bottom_raw_mm += layer_count_inf * phi_barra_inf + (layer_count_inf - 1) * ev_min_inf_mm
+            y_bottom_raw_mm += (
+                layer_count_inf * phi_barra_inf + (layer_count_inf - 1) * ev_min_inf_mm
+            )
 
         y_top_raw_mm = (h_cm - hf_cm) * 10.0 - (cob_mm + phi_estribo)
 
@@ -1396,7 +1623,10 @@ def desenhar_secao_t(pdf: PorticaPDF, h_cm: float, bw_cm: float, bf_cm: float, h
         d_livre_mm = (h_free_mm - n_barras_pele * phi_pele_mm) / (n_barras_pele + 1.0)
 
         if d_livre_mm >= ev_min_mm:
-            ys_mm = [y_bottom_raw_mm + (i + 1) * d_livre_mm + (i + 0.5) * phi_pele_mm for i in range(n_barras_pele)]
+            ys_mm = [
+                y_bottom_raw_mm + (i + 1) * d_livre_mm + (i + 0.5) * phi_pele_mm
+                for i in range(n_barras_pele)
+            ]
         else:
             # Fallback
             y_top_estribo = (h_cm - hf_cm) * 10.0 - (cob_mm + phi_estribo)
@@ -1411,8 +1641,8 @@ def desenhar_secao_t(pdf: PorticaPDF, h_cm: float, bw_cm: float, bf_cm: float, h
     # 5. Armadura de costura (mesa)
     y_cs = sy(h - c)
     y_ci = sy(h - hf + c)
-    x_me = sx(-bf/2 + c)
-    x_md = sx(bf/2 - c)
+    x_me = sx(-bf / 2 + c)
+    x_md = sx(bf / 2 - c)
     pdf.set_draw_color(44, 160, 44)
     pdf.set_line_width(0.5)
     pdf.set_dash_pattern(dash=2, gap=2)
@@ -1426,30 +1656,42 @@ def desenhar_secao_t(pdf: PorticaPDF, h_cm: float, bw_cm: float, bf_cm: float, h
     pdf.set_font("Courier", "", 7.5)
     pdf.set_text_color(*C_GRAY600)
     y_cota = oy + 4
-    pdf.line(sx(-bw/2), y_cota, sx(bw/2), y_cota)
-    pdf.set_xy(sx(-bw/2), y_cota + 1.2)
-    pdf.cell(bw*s, 4, f"bw={bw_cm:g} cm", border=0, align="C")
-    x_ch = sx(bf/2) + 4
+    pdf.line(sx(-bw / 2), y_cota, sx(bw / 2), y_cota)
+    pdf.set_xy(sx(-bw / 2), y_cota + 1.2)
+    pdf.cell(bw * s, 4, f"bw={bw_cm:g} cm", border=0, align="C")
+    x_ch = sx(bf / 2) + 4
     pdf.line(x_ch, sy(h), x_ch, sy(0))
-    pdf.set_xy(x_ch + 1.5, sy(h/2) - 2)
+    pdf.set_xy(x_ch + 1.5, sy(h / 2) - 2)
     pdf.cell(15, 4, f"h={h_cm:g} cm", border=0, align="L")
-    cx_hf = sx(-bf/2) - 4
+    cx_hf = sx(-bf / 2) - 4
     pdf.line(cx_hf, sy(h), cx_hf, sy(h - hf))
-    pdf.set_xy(cx_hf - 15.5, sy(h - hf/2) - 2)
+    pdf.set_xy(cx_hf - 15.5, sy(h - hf / 2) - 2)
     pdf.cell(15, 4, f"hf={hf_cm:g} cm", border=0, align="R")
     cy_bf = py - 4
-    pdf.line(sx(-bf/2), cy_bf, sx(bf/2), cy_bf)
-    pdf.set_xy(sx(-bf/2), cy_bf - 4.5)
-    pdf.cell(bf*s, 4, f"bf={bf_cm:g} cm", border=0, align="C")
-    cx_c = sx(-bw/2) - 4
+    pdf.line(sx(-bf / 2), cy_bf, sx(bf / 2), cy_bf)
+    pdf.set_xy(sx(-bf / 2), cy_bf - 4.5)
+    pdf.cell(bf * s, 4, f"bf={bf_cm:g} cm", border=0, align="C")
+    cx_c = sx(-bw / 2) - 4
     pdf.line(cx_c, sy(0), cx_c, sy(c))
-    pdf.set_xy(cx_c - 15.5, sy(c/2) - 2)
-    pdf.cell(15, 4, f"c={c/10:.1f} cm", border=0, align="R")
+    pdf.set_xy(cx_c - 15.5, sy(c / 2) - 2)
+    pdf.cell(15, 4, f"c={c / 10:.1f} cm", border=0, align="R")
     return None
 
 
-def _legenda_secao(pdf: PorticaPDF, cob_mm: float, phi_est: float, n_inf: int, phi_inf: float, n_sup: int, phi_sup: float, lx: float, ly: float,
-                   n_pele: int = 0, phi_pele: float = 0, tem_grampo: bool = False):
+def _legenda_secao(
+    pdf: PorticaPDF,
+    cob_mm: float,
+    phi_est: float,
+    n_inf: int,
+    phi_inf: float,
+    n_sup: int,
+    phi_sup: float,
+    lx: float,
+    ly: float,
+    n_pele: int = 0,
+    phi_pele: float = 0,
+    tem_grampo: bool = False,
+):
     pdf.set_xy(lx, ly)
     pdf.set_font("Helvetica", "B", 9)
     pdf.set_text_color(*C_GRAY700)
@@ -1466,9 +1708,25 @@ def _legenda_secao(pdf: PorticaPDF, cob_mm: float, phi_est: float, n_inf: int, p
         ("Barras Superiores", f"{n_sup} x phi {_diam(phi_sup)} mm", (31, 41, 55), C_PORTICA, False),
     ]
     if n_pele > 0 and phi_pele > 0:
-        itens.append(("Armadura de Pele", f"{n_pele} x phi {_diam(phi_pele)} mm/face", (197, 90, 17), C_PORTICA, False))
+        itens.append(
+            (
+                "Armadura de Pele",
+                f"{n_pele} x phi {_diam(phi_pele)} mm/face",
+                (197, 90, 17),
+                C_PORTICA,
+                False,
+            )
+        )
     if tem_grampo:
-        itens.append(("Grampo Suplementar", f"1 x phi {_diam(phi_est)} mm", (197, 90, 17), (197, 90, 17), True))
+        itens.append(
+            (
+                "Grampo Suplementar",
+                f"1 x phi {_diam(phi_est)} mm",
+                (197, 90, 17),
+                (197, 90, 17),
+                True,
+            )
+        )
 
     for label, detail, fill, color_detail, is_line in itens:
         cy = pdf.get_y()
@@ -1519,7 +1777,7 @@ def _converter_svg_para_png(svg_path: str) -> str | None:
         svg_clean = re.sub(r'stroke-dasharray\s*=\s*"[^"]*"', 'stroke-dasharray="1"', svg_clean)
         svg_clean = re.sub(r"stroke-dasharray\s*=\s*'[^']*'", "stroke-dasharray='1'", svg_clean)
         # CSS inline: stroke-dasharray:...
-        svg_clean = re.sub(r'stroke-dasharray\s*:\s*[^;"\']+', 'stroke-dasharray:1', svg_clean)
+        svg_clean = re.sub(r'stroke-dasharray\s*:\s*[^;"\']+', "stroke-dasharray:1", svg_clean)
 
         temp_svg = temp_path(suffix=".svg")
         with open(temp_svg, "w", encoding="utf-8") as f:
@@ -1544,7 +1802,8 @@ def gerar_relatorio_viga_comum(
     filepath: str,
     *,
     nome_viga: str = "Viga V1",
-    h_cm: float, bw_cm: float,
+    h_cm: float,
+    bw_cm: float,
     caa: int,
     fck_mpa: float,
     fyk_mpa: float,
@@ -1562,8 +1821,14 @@ def gerar_relatorio_viga_comum(
     on_add_diagrams: Any | None = None,
 ) -> str:
     cob_mm = CAA_DATA[caa]["cobrimento"]
-    pdf = PorticaPDF(nome_viga=nome_viga, subtitulo="Viga de Seção Retangular", dark_mode=dark_mode,
-                     nome_engenheiro=nome_engenheiro, crea=crea, profissao=profissao)
+    pdf = PorticaPDF(
+        nome_viga=nome_viga,
+        subtitulo="Viga de Seção Retangular",
+        dark_mode=dark_mode,
+        nome_engenheiro=nome_engenheiro,
+        crea=crea,
+        profissao=profissao,
+    )
     pdf.alias_nb_pages()
 
     # ── PÁGINA 1 ──
@@ -1575,23 +1840,34 @@ def gerar_relatorio_viga_comum(
     # em linha separada ACIMA dos cards, com quebra de linha automatica
     # e largura total (ML a MR), para acomodar nomes longos
     pdf.meta_header()
-    pdf.data_cards([
-        {"title": "Geometria", "rows": [
-            ("Altura (h)", f"{_n(h_cm, 1)} cm"),
-            ("Largura (bw)", f"{_n(bw_cm, 1)} cm"),
-            ("Cobrimento (c)", f"{cob_mm:g} mm"),
-        ]},
-        {"title": "Materiais", "rows": [
-            ("Classe (CAA)", _caa_nome(caa)),
-            ("Concreto (fck)", f"{fck_mpa:g} MPa"),
-            ("Aço Long. (fyk)", f"{fyk_mpa:g} kN/cm²"),
-            ("Coef. gf", f"{gamma_f:g}"),
-        ]},
-        {"title": "Bitolas Base", "rows": [
-            ("phi Long. Est.", f"{_diam(phi_barra_mm)} mm"),
-            ("phi Estribo", f"{_diam(phi_estribo_mm)} mm"),
-        ]},
-    ])
+    pdf.data_cards(
+        [
+            {
+                "title": "Geometria",
+                "rows": [
+                    ("Altura (h)", f"{_n(h_cm, 1)} cm"),
+                    ("Largura (bw)", f"{_n(bw_cm, 1)} cm"),
+                    ("Cobrimento (c)", f"{cob_mm:g} mm"),
+                ],
+            },
+            {
+                "title": "Materiais",
+                "rows": [
+                    ("Classe (CAA)", _caa_nome(caa)),
+                    ("Concreto (fck)", f"{fck_mpa:g} MPa"),
+                    ("Aço Long. (fyk)", f"{fyk_mpa:g} kN/cm²"),
+                    ("Coef. gf", f"{gamma_f:g}"),
+                ],
+            },
+            {
+                "title": "Bitolas Base",
+                "rows": [
+                    ("phi Long. Est.", f"{_diam(phi_barra_mm)} mm"),
+                    ("phi Estribo", f"{_diam(phi_estribo_mm)} mm"),
+                ],
+            },
+        ]
+    )
 
     # 2. Solicitações de Cálculo
     pdf.section_title(2, "Solicitações de Cálculo")
@@ -1601,13 +1877,15 @@ def gerar_relatorio_viga_comum(
         if r is None:
             continue
         sinal = "+" if r.tipo == "POSITIVO" else "-"
-        rows_m.append((f"Trecho {i+1}", f"{sinal}{_n(abs(r.momento_kNm), 2)}", r.bx_passa == "SIM"))
+        rows_m.append(
+            (f"Trecho {i + 1}", f"{sinal}{_n(abs(r.momento_kNm), 2)}", r.bx_passa == "SIM")
+        )
 
     rows_v = []
     for i, r in enumerate(resultados_cisalhamento):
         if r is None:
             continue
-        rows_v.append((f"Trecho {i+1}", f"{_n(r.vsd_kn, 2)}", r.passa_vrd2 == "SIM"))
+        rows_v.append((f"Trecho {i + 1}", f"{_n(r.vsd_kn, 2)}", r.passa_vrd2 == "SIM"))
 
     pdf.solicitacoes_2col(rows_m, rows_v)
 
@@ -1659,7 +1937,7 @@ def gerar_relatorio_viga_comum(
     if tem_premium:
         # Premium usa secoes 3, 4, 5 (Diagramas, Detalhamento, ELS)
         on_add_diagrams(pdf, sec_num_inicial=3)
-        sec_comum = 6   # Flexao, Secao Transversal, Cisalhamento, Memoria
+        sec_comum = 6  # Flexao, Secao Transversal, Cisalhamento, Memoria
     else:
         # Sem Premium, secoes comuns comecam em 3
         sec_comum = 3
@@ -1668,7 +1946,17 @@ def gerar_relatorio_viga_comum(
     pdf.section_title(sec_comum, "Dimensionamento à Flexão")
     sec_comum += 1
 
-    headers_flex = ["Trecho", "Tipo", "Md (kN.m)", "Kc", "\u03b2x", "X (cm)", "As,req (cm²)", "As,min (cm²)", "Armadura Adotada"]
+    headers_flex = [
+        "Trecho",
+        "Tipo",
+        "Md (kN.m)",
+        "Kc",
+        "\u03b2x",
+        "X (cm)",
+        "As,req (cm²)",
+        "As,min (cm²)",
+        "Armadura Adotada",
+    ]
     col_w_flex = [15, 20, 22, 14, 14, 15, 22, 22, 26]
 
     rows_flex = []
@@ -1681,17 +1969,19 @@ def gerar_relatorio_viga_comum(
         if r is None:
             continue
 
-        rows_flex.append([
-            f"T{i+1}",
-            r.tipo,
-            f"{_n(r.momento_kNm, 2)}",
-            f"{_n(r.kc, 3)}",
-            f"{_n(r.bx, 3)}",
-            f"{_n(r.x_cm, 2)}",
-            f"{_n(r.as_req_cm2, 2)}",
-            f"{_n(r.asmin_cm2, 2)}",
-            f"{r.qtd_barras} phi {_diam(r.diametro_mm)}"
-        ])
+        rows_flex.append(
+            [
+                f"T{i + 1}",
+                r.tipo,
+                f"{_n(r.momento_kNm, 2)}",
+                f"{_n(r.kc, 3)}",
+                f"{_n(r.bx, 3)}",
+                f"{_n(r.x_cm, 2)}",
+                f"{_n(r.as_req_cm2, 2)}",
+                f"{_n(r.asmin_cm2, 2)}",
+                f"{r.qtd_barras} phi {_diam(r.diametro_mm)}",
+            ]
+        )
 
         # Encontrar armadura máxima para o desenho da seção transversal representativa
         if r.tipo == "POSITIVO":
@@ -1712,20 +2002,28 @@ def gerar_relatorio_viga_comum(
     for i, r in enumerate(resultados_flexao):
         if r is None:
             continue
-        val_items.append((f"Trecho {i+1} - Domínio (\u03b2x \u2264 {lim_bx})", r.bx_passa == "SIM"))
-        val_items.append((f"Trecho {i+1} - Espaçamento Horiz. (eh \u2265 2cm)", r.eh_passa == "SIM"))
+        val_items.append(
+            (f"Trecho {i + 1} - Domínio (\u03b2x \u2264 {lim_bx})", r.bx_passa == "SIM")
+        )
+        val_items.append(
+            (f"Trecho {i + 1} - Espaçamento Horiz. (eh \u2265 2cm)", r.eh_passa == "SIM")
+        )
         # A2: alerta explicito quando bx nao passa
         if getattr(r, "alerta", ""):
-            val_items.append((f"ALERTA Trecho {i+1}: {r.alerta}", False))
+            val_items.append((f"ALERTA Trecho {i + 1}: {r.alerta}", False))
 
     # Validacao armadura de pele (NBR 6118:17.3.5.2.3)
-    pele_item = next((r for r in resultados_flexao if r is not None and hasattr(r, "requer_pele")), None)
+    pele_item = next(
+        (r for r in resultados_flexao if r is not None and hasattr(r, "requer_pele")), None
+    )
     if pele_item is not None:
         if pele_item.requer_pele:
-            val_items.append((
-                f"Armadura de pele (h \u2265 60cm): {pele_item.n_barras_pele_face}x \u03d5{pele_item.phi_pele_mm:g}mm/face (s={pele_item.s_pele_cm:.0f}cm)",
-                True
-            ))
+            val_items.append(
+                (
+                    f"Armadura de pele (h \u2265 60cm): {pele_item.n_barras_pele_face}x \u03d5{pele_item.phi_pele_mm:g}mm/face (s={pele_item.s_pele_cm:.0f}cm)",
+                    True,
+                )
+            )
         else:
             val_items.append(("Armadura de pele (h < 60cm): não exigida", True))
 
@@ -1756,21 +2054,28 @@ def gerar_relatorio_viga_comum(
     layout_c = None
     for r in resultados_flexao:
         if r is not None and r.tipo == "POSITIVO" and r.qtd_barras == n_inf_desenho:
-            if getattr(r, 'layout_convergido', None) is not None:
+            if getattr(r, "layout_convergido", None) is not None:
                 layout_c = r.layout_convergido
                 break
     if layout_c is None:
         for r in resultados_flexao:
-            if r is not None and getattr(r, 'layout_convergido', None) is not None:
+            if r is not None and getattr(r, "layout_convergido", None) is not None:
                 layout_c = r.layout_convergido
                 break
 
     desenhar_secao_retangular(
-        pdf, h_cm, bw_cm, cob_mm, phi_estribo_mm,
-        phi_barra_inf=phi_inf_adot, n_barras_inf=n_inf_desenho,
-        phi_barra_sup=phi_sup_adot, n_barras_sup=n_sup_desenho,
-        n_barras_pele=n_pele, phi_pele=phi_pele,
-        layout_convergido=layout_c
+        pdf,
+        h_cm,
+        bw_cm,
+        cob_mm,
+        phi_estribo_mm,
+        phi_barra_inf=phi_inf_adot,
+        n_barras_inf=n_inf_desenho,
+        phi_barra_sup=phi_sup_adot,
+        n_barras_sup=n_sup_desenho,
+        n_barras_pele=n_pele,
+        phi_pele=phi_pele,
+        layout_convergido=layout_c,
     )
 
     # Legenda ao lado do desenho
@@ -1779,11 +2084,17 @@ def gerar_relatorio_viga_comum(
     n_sc1_leg, n_sc2_leg = _split_layers(n_sup_desenho, phi_sup_adot, bw_cm, cob_mm, phi_estribo_mm)
     tem_grampo = (n_ic2_leg >= 3) or (n_sc2_leg >= 3)
     _legenda_secao(
-        pdf, cob_mm, phi_estribo_mm,
-        n_inf=n_inf_desenho, phi_inf=phi_inf_adot,
-        n_sup=n_sup_desenho, phi_sup=phi_sup_adot,
-        lx=ML + 78, ly=y_sec + 4,
-        n_pele=n_pele, phi_pele=phi_pele,
+        pdf,
+        cob_mm,
+        phi_estribo_mm,
+        n_inf=n_inf_desenho,
+        phi_inf=phi_inf_adot,
+        n_sup=n_sup_desenho,
+        phi_sup=phi_sup_adot,
+        lx=ML + 78,
+        ly=y_sec + 4,
+        n_pele=n_pele,
+        phi_pele=phi_pele,
         tem_grampo=tem_grampo,
     )
 
@@ -1800,23 +2111,34 @@ def gerar_relatorio_viga_comum(
         pdf.section_title(sec_comum, "Dimensionamento ao Cisalhamento")
         sec_comum += 1
 
-        headers_cis = ["Trecho", "Vsd (kN)", "Vrd2 (kN)", "Verif. Vrd2", "Vc (kN)", "Vsw (kN)", "Asw/s,min (cm²/m)", "s (cm)"]
+        headers_cis = [
+            "Trecho",
+            "Vsd (kN)",
+            "Vrd2 (kN)",
+            "Verif. Vrd2",
+            "Vc (kN)",
+            "Vsw (kN)",
+            "Asw/s,min (cm²/m)",
+            "s (cm)",
+        ]
         col_w_cis = [18, 22, 22, 22, 20, 20, 26, 20]
 
         rows_cis = []
         for i, r in enumerate(resultados_cisalhamento):
             if r is None:
                 continue
-            rows_cis.append([
-                f"V{i+1}",
-                f"{_n(r.vsd_kn, 2)}",
-                f"{_n(r.vrd2_kn, 2)}",
-                "OK" if r.passa_vrd2 == "SIM" else "ALERTA",
-                f"{_n(r.vc_kn, 2)}",
-                f"{_n(r.vsw_kn, 2)}",
-                f"{_n(r.asw_s_min_cm2_m, 3)}",
-                f"{_n(r.dist_estribos_cm, 1)}"
-            ])
+            rows_cis.append(
+                [
+                    f"V{i + 1}",
+                    f"{_n(r.vsd_kn, 2)}",
+                    f"{_n(r.vrd2_kn, 2)}",
+                    "OK" if r.passa_vrd2 == "SIM" else "ALERTA",
+                    f"{_n(r.vc_kn, 2)}",
+                    f"{_n(r.vsw_kn, 2)}",
+                    f"{_n(r.asw_s_min_cm2_m, 3)}",
+                    f"{_n(r.dist_estribos_cm, 1)}",
+                ]
+            )
 
         if rows_cis:
             pdf.tabela_flexao(headers_cis, rows_cis, col_w_cis)
@@ -1826,9 +2148,14 @@ def gerar_relatorio_viga_comum(
         resultados_flexao,
         resultados_cisalhamento,
         sec_comum,
-        h_cm, bw_cm, cob_mm,
-        fck_mpa, fyk_mpa, fyk_estribo_mpa,
-        phi_estribo_mm, phi_barra_mm,
+        h_cm,
+        bw_cm,
+        cob_mm,
+        fck_mpa,
+        fyk_mpa,
+        fyk_estribo_mpa,
+        phi_estribo_mm,
+        phi_barra_mm,
         is_t=False,
     )
 
@@ -1844,7 +2171,10 @@ def gerar_relatorio_viga_t(
     filepath: str,
     *,
     nome_viga: str = "Viga V1",
-    h_cm: float, bw_cm: float, bf_cm: float, hf_cm: float,
+    h_cm: float,
+    bw_cm: float,
+    bf_cm: float,
+    hf_cm: float,
     caa: int,
     fck_mpa: float,
     fyk_mpa: float,
@@ -1862,8 +2192,14 @@ def gerar_relatorio_viga_t(
     on_add_diagrams: Any | None = None,
 ) -> str:
     cob_mm = CAA_DATA[caa]["cobrimento"]
-    pdf = PorticaPDF(nome_viga=nome_viga, subtitulo="Viga de Seção T", dark_mode=dark_mode,
-                     nome_engenheiro=nome_engenheiro, crea=crea, profissao=profissao)
+    pdf = PorticaPDF(
+        nome_viga=nome_viga,
+        subtitulo="Viga de Seção T",
+        dark_mode=dark_mode,
+        nome_engenheiro=nome_engenheiro,
+        crea=crea,
+        profissao=profissao,
+    )
     pdf.alias_nb_pages()
 
     # ── PÁGINA 1 ──
@@ -1875,25 +2211,36 @@ def gerar_relatorio_viga_t(
     # em linha separada ACIMA dos cards, com quebra de linha automatica
     # e largura total (ML a MR), para acomodar nomes longos
     pdf.meta_header()
-    pdf.data_cards([
-        {"title": "Geometria T", "rows": [
-            ("Altura (h)", f"{_n(h_cm, 1)} cm"),
-            ("Largura Alma (bw)", f"{_n(bw_cm, 1)} cm"),
-            ("Largura Mesa (bf)", f"{_n(bf_cm, 1)} cm"),
-            ("Altura Mesa (hf)", f"{_n(hf_cm, 1)} cm"),
-            ("Cobrimento (c)", f"{cob_mm:g} mm"),
-        ]},
-        {"title": "Materiais", "rows": [
-            ("Classe (CAA)", _caa_nome(caa)),
-            ("Concreto (fck)", f"{fck_mpa:g} MPa"),
-            ("Aço Long. (fyk)", f"{fyk_mpa:g} kN/cm²"),
-            ("Coef. gf", f"{gamma_f:g}"),
-        ]},
-        {"title": "Bitolas Base", "rows": [
-            ("phi Long. Est.", f"{_diam(phi_barra_mm)} mm"),
-            ("phi Estribo", f"{_diam(phi_estribo_mm)} mm"),
-        ]},
-    ])
+    pdf.data_cards(
+        [
+            {
+                "title": "Geometria T",
+                "rows": [
+                    ("Altura (h)", f"{_n(h_cm, 1)} cm"),
+                    ("Largura Alma (bw)", f"{_n(bw_cm, 1)} cm"),
+                    ("Largura Mesa (bf)", f"{_n(bf_cm, 1)} cm"),
+                    ("Altura Mesa (hf)", f"{_n(hf_cm, 1)} cm"),
+                    ("Cobrimento (c)", f"{cob_mm:g} mm"),
+                ],
+            },
+            {
+                "title": "Materiais",
+                "rows": [
+                    ("Classe (CAA)", _caa_nome(caa)),
+                    ("Concreto (fck)", f"{fck_mpa:g} MPa"),
+                    ("Aço Long. (fyk)", f"{fyk_mpa:g} kN/cm²"),
+                    ("Coef. gf", f"{gamma_f:g}"),
+                ],
+            },
+            {
+                "title": "Bitolas Base",
+                "rows": [
+                    ("phi Long. Est.", f"{_diam(phi_barra_mm)} mm"),
+                    ("phi Estribo", f"{_diam(phi_estribo_mm)} mm"),
+                ],
+            },
+        ]
+    )
 
     # 2. Solicitações de Cálculo
     pdf.section_title(2, "Solicitações de Cálculo")
@@ -1903,13 +2250,15 @@ def gerar_relatorio_viga_t(
         if r is None:
             continue
         sinal = "+" if r.tipo == "POSITIVO" else "-"
-        rows_m.append((f"Trecho {i+1}", f"{sinal}{_n(abs(r.momento_kNm), 2)}", r.bx_passa == "SIM"))
+        rows_m.append(
+            (f"Trecho {i + 1}", f"{sinal}{_n(abs(r.momento_kNm), 2)}", r.bx_passa == "SIM")
+        )
 
     rows_v = []
     for i, r in enumerate(resultados_cisalhamento):
         if r is None:
             continue
-        rows_v.append((f"Trecho {i+1}", f"{_n(r.vsd_kn, 2)}", r.passa_vrd2 == "SIM"))
+        rows_v.append((f"Trecho {i + 1}", f"{_n(r.vsd_kn, 2)}", r.passa_vrd2 == "SIM"))
 
     pdf.solicitacoes_2col(rows_m, rows_v)
 
@@ -1963,7 +2312,17 @@ def gerar_relatorio_viga_t(
     pdf.section_title(sec_comum, "Dimensionamento à Flexão (Seção T)")
     sec_comum += 1
 
-    headers_flex = ["Trecho", "Tipo", "Md (kN.m)", "Kc", "\u03b2x", "X (cm)", "As,req (cm²)", "As,min (cm²)", "Armadura Adotada"]
+    headers_flex = [
+        "Trecho",
+        "Tipo",
+        "Md (kN.m)",
+        "Kc",
+        "\u03b2x",
+        "X (cm)",
+        "As,req (cm²)",
+        "As,min (cm²)",
+        "Armadura Adotada",
+    ]
     col_w_flex = [15, 20, 22, 14, 14, 15, 22, 22, 26]
 
     rows_flex = []
@@ -1976,17 +2335,19 @@ def gerar_relatorio_viga_t(
         if r is None:
             continue
 
-        rows_flex.append([
-            f"T{i+1}",
-            r.tipo,
-            f"{_n(r.momento_kNm, 2)}",
-            f"{_n(r.kc, 3)}",
-            f"{_n(r.bx, 3)}",
-            f"{_n(r.x_cm, 2)}",
-            f"{_n(r.as_req_cm2, 2)}",
-            f"{_n(r.asmin_cm2, 2)}",
-            f"{r.qtd_barras} phi {_diam(r.diametro_mm)}"
-        ])
+        rows_flex.append(
+            [
+                f"T{i + 1}",
+                r.tipo,
+                f"{_n(r.momento_kNm, 2)}",
+                f"{_n(r.kc, 3)}",
+                f"{_n(r.bx, 3)}",
+                f"{_n(r.x_cm, 2)}",
+                f"{_n(r.as_req_cm2, 2)}",
+                f"{_n(r.asmin_cm2, 2)}",
+                f"{r.qtd_barras} phi {_diam(r.diametro_mm)}",
+            ]
+        )
 
         if r.tipo == "POSITIVO":
             if r.qtd_barras > max_bars_inf:
@@ -2006,21 +2367,29 @@ def gerar_relatorio_viga_t(
     for i, r in enumerate(resultados_flexao):
         if r is None:
             continue
-        val_items.append((f"Trecho {i+1} - Domínio (\u03b2x \u2264 {lim_bx})", r.bx_passa == "SIM"))
-        val_items.append((f"Trecho {i+1} - Linha Neutra na Mesa", r.linha_neutra_condiz == "SIM"))
-        val_items.append((f"Trecho {i+1} - Espaçamento Horiz. (eh \u2265 2cm)", r.eh_passa == "SIM"))
+        val_items.append(
+            (f"Trecho {i + 1} - Domínio (\u03b2x \u2264 {lim_bx})", r.bx_passa == "SIM")
+        )
+        val_items.append((f"Trecho {i + 1} - Linha Neutra na Mesa", r.linha_neutra_condiz == "SIM"))
+        val_items.append(
+            (f"Trecho {i + 1} - Espaçamento Horiz. (eh \u2265 2cm)", r.eh_passa == "SIM")
+        )
         # A2: alerta explicito quando bx nao passa
         if getattr(r, "alerta", ""):
-            val_items.append((f"ALERTA Trecho {i+1}: {r.alerta}", False))
+            val_items.append((f"ALERTA Trecho {i + 1}: {r.alerta}", False))
 
     # Validacao armadura de pele (NBR 6118:17.3.5.2.3)
-    pele_item = next((r for r in resultados_flexao if r is not None and hasattr(r, "requer_pele")), None)
+    pele_item = next(
+        (r for r in resultados_flexao if r is not None and hasattr(r, "requer_pele")), None
+    )
     if pele_item is not None:
         if pele_item.requer_pele:
-            val_items.append((
-                f"Armadura de pele (h \u2265 60cm): {pele_item.n_barras_pele_face}x \u03d5{pele_item.phi_pele_mm:g}mm/face (s={pele_item.s_pele_cm:.0f}cm)",
-                True
-            ))
+            val_items.append(
+                (
+                    f"Armadura de pele (h \u2265 60cm): {pele_item.n_barras_pele_face}x \u03d5{pele_item.phi_pele_mm:g}mm/face (s={pele_item.s_pele_cm:.0f}cm)",
+                    True,
+                )
+            )
         else:
             val_items.append(("Armadura de pele (h < 60cm): não exigida", True))
 
@@ -2049,21 +2418,30 @@ def gerar_relatorio_viga_t(
     layout_c = None
     for r in resultados_flexao:
         if r is not None and r.tipo == "POSITIVO" and r.qtd_barras == n_inf_desenho:
-            if getattr(r, 'layout_convergido', None) is not None:
+            if getattr(r, "layout_convergido", None) is not None:
                 layout_c = r.layout_convergido
                 break
     if layout_c is None:
         for r in resultados_flexao:
-            if r is not None and getattr(r, 'layout_convergido', None) is not None:
+            if r is not None and getattr(r, "layout_convergido", None) is not None:
                 layout_c = r.layout_convergido
                 break
 
     desenhar_secao_t(
-        pdf, h_cm, bw_cm, bf_cm, hf_cm, cob_mm, phi_estribo_mm,
-        phi_barra_inf=phi_inf_adot, n_barras_inf=n_inf_desenho,
-        phi_barra_sup=phi_sup_adot, n_barras_sup=n_sup_desenho,
-        n_barras_pele=n_pele, phi_pele=phi_pele,
-        layout_convergido=layout_c
+        pdf,
+        h_cm,
+        bw_cm,
+        bf_cm,
+        hf_cm,
+        cob_mm,
+        phi_estribo_mm,
+        phi_barra_inf=phi_inf_adot,
+        n_barras_inf=n_inf_desenho,
+        phi_barra_sup=phi_sup_adot,
+        n_barras_sup=n_sup_desenho,
+        n_barras_pele=n_pele,
+        phi_pele=phi_pele,
+        layout_convergido=layout_c,
     )
 
     n_ic1_leg, n_ic2_leg = _split_layers(n_inf_desenho, phi_inf_adot, bw_cm, cob_mm, phi_estribo_mm)
@@ -2071,11 +2449,17 @@ def gerar_relatorio_viga_t(
     tem_grampo = (n_ic2_leg >= 3) or (n_sc2_leg >= 3)
 
     _legenda_secao(
-        pdf, cob_mm, phi_estribo_mm,
-        n_inf=n_inf_desenho, phi_inf=phi_inf_adot,
-        n_sup=n_sup_desenho, phi_sup=phi_sup_adot,
-        lx=ML + 78, ly=y_sec + 4,
-        n_pele=n_pele, phi_pele=phi_pele,
+        pdf,
+        cob_mm,
+        phi_estribo_mm,
+        n_inf=n_inf_desenho,
+        phi_inf=phi_inf_adot,
+        n_sup=n_sup_desenho,
+        phi_sup=phi_sup_adot,
+        lx=ML + 78,
+        ly=y_sec + 4,
+        n_pele=n_pele,
+        phi_pele=phi_pele,
         tem_grampo=tem_grampo,
     )
 
@@ -2089,23 +2473,34 @@ def gerar_relatorio_viga_t(
         pdf.section_title(sec_comum, "Dimensionamento ao Cisalhamento")
         sec_comum += 1
 
-        headers_cis = ["Trecho", "Vsd (kN)", "Vrd2 (kN)", "Verif. Vrd2", "Vc (kN)", "Vsw (kN)", "Asw/s,min (cm²/m)", "s (cm)"]
+        headers_cis = [
+            "Trecho",
+            "Vsd (kN)",
+            "Vrd2 (kN)",
+            "Verif. Vrd2",
+            "Vc (kN)",
+            "Vsw (kN)",
+            "Asw/s,min (cm²/m)",
+            "s (cm)",
+        ]
         col_w_cis = [18, 22, 22, 22, 20, 20, 26, 20]
 
         rows_cis = []
         for i, r in enumerate(resultados_cisalhamento):
             if r is None:
                 continue
-            rows_cis.append([
-                f"V{i+1}",
-                f"{_n(r.vsd_kn, 2)}",
-                f"{_n(r.vrd2_kn, 2)}",
-                "OK" if r.passa_vrd2 == "SIM" else "ALERTA",
-                f"{_n(r.vc_kn, 2)}",
-                f"{_n(r.vsw_kn, 2)}",
-                f"{_n(r.asw_s_min_cm2_m, 3)}",
-                f"{_n(r.dist_estribos_cm, 1)}"
-            ])
+            rows_cis.append(
+                [
+                    f"V{i + 1}",
+                    f"{_n(r.vsd_kn, 2)}",
+                    f"{_n(r.vrd2_kn, 2)}",
+                    "OK" if r.passa_vrd2 == "SIM" else "ALERTA",
+                    f"{_n(r.vc_kn, 2)}",
+                    f"{_n(r.vsw_kn, 2)}",
+                    f"{_n(r.asw_s_min_cm2_m, 3)}",
+                    f"{_n(r.dist_estribos_cm, 1)}",
+                ]
+            )
 
         if rows_cis:
             pdf.tabela_flexao(headers_cis, rows_cis, col_w_cis)
@@ -2115,11 +2510,17 @@ def gerar_relatorio_viga_t(
         resultados_flexao,
         resultados_cisalhamento,
         sec_comum,
-        h_cm, bw_cm, cob_mm,
-        fck_mpa, fyk_mpa, fyk_estribo_mpa,
-        phi_estribo_mm, phi_barra_mm,
+        h_cm,
+        bw_cm,
+        cob_mm,
+        fck_mpa,
+        fyk_mpa,
+        fyk_estribo_mpa,
+        phi_estribo_mm,
+        phi_barra_mm,
         is_t=True,
-        bf_cm=bf_cm, hf_cm=hf_cm,
+        bf_cm=bf_cm,
+        hf_cm=hf_cm,
     )
 
     # Assinatura

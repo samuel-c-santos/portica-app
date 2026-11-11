@@ -3,7 +3,6 @@ Módulo para geração de diagramas de esforços diretamente no PDF.
 Fase 2.4 — Diagrama de Esforços no PDF
 """
 
-
 from fpdf import FPDF
 
 from ui.ftool.secoes_criticas import SecaoCritica

@@ -1,4 +1,5 @@
 """Testes da armadura de pele (NBR 6118:17.3.5.2.3)."""
+
 from core.calculos import calcular_armadura_pele, calcular_flexao_viga_comum
 
 
@@ -59,16 +60,26 @@ class TestArmaduraPele:
     def test_phi_menor_mais_barras(self):
         """Diametro menor deve exigir mais barras (ou igual)."""
         pele = calcular_armadura_pele(90, 20, 30, 5, 16)
-        n_phi5 = next(item["n_barras_face"] for item in pele["tabela_phis"] if item["phi_mm"] == 5.0)
-        n_phi16 = next(item["n_barras_face"] for item in pele["tabela_phis"] if item["phi_mm"] == 16.0)
+        n_phi5 = next(
+            item["n_barras_face"] for item in pele["tabela_phis"] if item["phi_mm"] == 5.0
+        )
+        n_phi16 = next(
+            item["n_barras_face"] for item in pele["tabela_phis"] if item["phi_mm"] == 16.0
+        )
         assert n_phi5 >= n_phi16
 
     def test_pele_no_resultado_flexao(self):
         """ResultadoFlexao deve ter campos de pele preenchidos."""
         res = calcular_flexao_viga_comum(
-            h_cm=70, bw_cm=20, caa=2, fck_mpa=30,
-            diam_estribo_mm=5, diam_barra_mm=16,
-            fyk_mpa=50, momentos=[100.0], gamma_f=1.4
+            h_cm=70,
+            bw_cm=20,
+            caa=2,
+            fck_mpa=30,
+            diam_estribo_mm=5,
+            diam_barra_mm=16,
+            fyk_mpa=50,
+            momentos=[100.0],
+            gamma_f=1.4,
         )
         r = res[0]
         assert r.requer_pele is True

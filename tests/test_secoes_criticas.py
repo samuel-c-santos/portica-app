@@ -89,7 +89,7 @@ def test_5_interpolacao_cortante_no_maximo(dados_reais):
     maximos = detectar_maximos_locais(momentos)
 
     max_positivo = max(maximos, key=lambda p: p[1])
-    x_max = max_positivo[0] # x ≈ 3.1
+    x_max = max_positivo[0]  # x ≈ 3.1
 
     v_no_max = interpolar_y(cortantes, x_max)
     # Na posição de máximo momento, V deve ser muito próximo de zero
@@ -110,13 +110,7 @@ def test_6_secoes_criticas_ordenadas_por_x(dados_reais):
 
 def test_7_dataclass_secao_critica():
     """7. Dataclass SecaoCritica funciona."""
-    secao = SecaoCritica(
-        x=2.5,
-        momento=120.5,
-        cortante=-45.2,
-        tipo="MÁX",
-        descricao="Teste secao"
-    )
+    secao = SecaoCritica(x=2.5, momento=120.5, cortante=-45.2, tipo="MÁX", descricao="Teste secao")
     assert secao.x == 2.5
     assert secao.momento == 120.5
     assert secao.cortante == -45.2

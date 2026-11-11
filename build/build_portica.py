@@ -156,7 +156,9 @@ def sha256_file(path: Path) -> str:
 
 def build_command(work: Path, dist: Path, data_args: list[str]) -> list[str]:
     cmd = [
-        sys.executable, "-m", "PyInstaller",
+        sys.executable,
+        "-m",
+        "PyInstaller",
         "--onefile",
         "--windowed",
         f"--name={APP_NAME}",
@@ -226,9 +228,7 @@ def main() -> None:
 
     client_archive = find_flet_desktop_archive()
     if client_archive is not None:
-        data_args.append(
-            f"--add-data={client_archive}{os.pathsep}flet_desktop/app"
-        )
+        data_args.append(f"--add-data={client_archive}{os.pathsep}flet_desktop/app")
         log("[BUILD] cliente desktop do Flet empacotado (offline na 1a execucao)")
     elif args.bundle_client:
         bundled = zip_cached_flet_client(work_root / "client")
@@ -237,9 +237,7 @@ def main() -> None:
                 "nao ha cliente Flet em ~/.flet/client para empacotar. "
                 "Rode o app uma vez (online) ou instale 'flet-desktop'."
             )
-        data_args.append(
-            f"--add-data={bundled}{os.pathsep}flet_desktop/app"
-        )
+        data_args.append(f"--add-data={bundled}{os.pathsep}flet_desktop/app")
     else:
         log(
             "[AVISO] cliente desktop do Flet nao embutido: na primeira execucao "
@@ -272,9 +270,7 @@ def main() -> None:
     size_mb = final_exe.stat().st_size / 1024 / 1024
     digest = sha256_file(final_exe)
 
-    CHECKSUM_FILE.write_text(
-        f"{digest}  {final_exe.name}\n", encoding="utf-8", newline="\n"
-    )
+    CHECKSUM_FILE.write_text(f"{digest}  {final_exe.name}\n", encoding="utf-8", newline="\n")
 
     zip_path = DIST_DIR / f"{APP_NAME}-v{version}-windows-x64.zip"
     if zip_path.exists():

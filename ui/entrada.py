@@ -82,9 +82,7 @@ def aviso_edicao(edicao):
     sinaliza bloqueio: as edições standard e premium são aceitas igualmente.
     """
     if not isinstance(edicao, str) or not edicao.strip():
-        return (
-            "Projeto sem indicação de edição de origem; importado normalmente."
-        )
+        return "Projeto sem indicação de edição de origem; importado normalmente."
     e = edicao.strip().lower()
     if e == EDICAO_PREMIUM:
         return None
@@ -93,7 +91,4 @@ def aviso_edicao(edicao):
             "Projeto criado no Pórtica Standard. Importado normalmente: "
             "as duas edições compartilham o mesmo formato de arquivo."
         )
-    return (
-        f"Projeto criado em uma edição desconhecida ({edicao.strip()!r}). "
-        "Importado normalmente."
-    )
+    return f"Projeto criado em uma edição desconhecida ({edicao.strip()!r}). Importado normalmente."

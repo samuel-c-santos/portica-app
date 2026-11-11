@@ -35,16 +35,16 @@ from .domain import SectionLayoutData
 # ══════════════════════════════════════════════════════════════════════════════
 # Paleta de cores (RGB 0-255)
 # ══════════════════════════════════════════════════════════════════════════════
-_C_CONCRETE_FILL   = (235, 235, 230)   # cinza claro concreto
-_C_CONCRETE_STROKE = (120, 120, 120)   # contorno da seção
-_C_STIRRUP         = (0, 0, 180)       # estribo: azul portica
-_C_BAR_MAIN        = (20, 30, 90)      # barras principais: azul navy
-_C_BAR_MAIN_STROKE = None              # contorno das barras (removido para evitar borda branca)
-_C_BAR_CORNER      = (40, 140, 60)     # barras construtivas: verde
-_C_GRAMPO          = (180, 70, 10)     # grampos: laranja
-_C_DIM             = (80, 80, 200)     # cotas: azul claro
-_C_TEXT            = (50, 50, 50)      # texto padrão
-_C_CG_LINE         = (200, 40, 40)     # linha do baricentro: vermelho
+_C_CONCRETE_FILL = (235, 235, 230)  # cinza claro concreto
+_C_CONCRETE_STROKE = (120, 120, 120)  # contorno da seção
+_C_STIRRUP = (0, 0, 180)  # estribo: azul portica
+_C_BAR_MAIN = (20, 30, 90)  # barras principais: azul navy
+_C_BAR_MAIN_STROKE = None  # contorno das barras (removido para evitar borda branca)
+_C_BAR_CORNER = (40, 140, 60)  # barras construtivas: verde
+_C_GRAMPO = (180, 70, 10)  # grampos: laranja
+_C_DIM = (80, 80, 200)  # cotas: azul claro
+_C_TEXT = (50, 50, 50)  # texto padrão
+_C_CG_LINE = (200, 40, 40)  # linha do baricentro: vermelho
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -58,6 +58,7 @@ RGB = tuple[int, int, int]  # shorthand
 @dataclass
 class CmdRect:
     """Retângulo. Coords em mm no espaço da seção (Y↑, origem canto inf-esq)."""
+
     x: float
     y: float
     w: float
@@ -70,6 +71,7 @@ class CmdRect:
 @dataclass
 class CmdCircle:
     """Círculo."""
+
     cx: float
     cy: float
     r: float
@@ -81,6 +83,7 @@ class CmdCircle:
 @dataclass
 class CmdLine:
     """Linha simples."""
+
     x1: float
     y1: float
     x2: float
@@ -93,7 +96,8 @@ class CmdLine:
 @dataclass
 class CmdPolyline:
     """Sequência de segmentos de linha (não fechada)."""
-    points: list[tuple[float, float]]   # lista de (x, y)
+
+    points: list[tuple[float, float]]  # lista de (x, y)
     color: RGB = field(default_factory=lambda: _C_STIRRUP)
     line_width: float = 1.0
 
@@ -103,11 +107,12 @@ class CmdArcPath:
     """Arco de círculo (usado nos cantos do estribo).
     Approximated as a polyline by the renderers (8 steps/quarter).
     """
+
     cx: float
     cy: float
     radius: float
-    start_angle_deg: float   # graus, 0 = direita, sentido antihorário
-    sweep_angle_deg: float   # varrido (positivo = antihorário)
+    start_angle_deg: float  # graus, 0 = direita, sentido antihorário
+    sweep_angle_deg: float  # varrido (positivo = antihorário)
     color: RGB = field(default_factory=lambda: _C_STIRRUP)
     line_width: float = 1.0
 
@@ -115,17 +120,19 @@ class CmdArcPath:
 @dataclass
 class CmdText:
     """Texto posicionado."""
+
     x: float
     y: float
     text: str
     font_size: float = 7.0
     color: RGB = field(default_factory=lambda: _C_TEXT)
-    align: str = "L"   # "L", "C", "R"
+    align: str = "L"  # "L", "C", "R"
 
 
 @dataclass
 class CmdPolygon:
     """Polígono fechado com preenchimento opcional."""
+
     points: list[tuple[float, float]]
     fill: RGB | None = None
     stroke: RGB | None = None
@@ -139,6 +146,7 @@ DrawCmd = CmdRect | CmdCircle | CmdLine | CmdPolyline | CmdArcPath | CmdText | C
 # ══════════════════════════════════════════════════════════════════════════════
 # Painter Burro — BeamSectionCommands
 # ══════════════════════════════════════════════════════════════════════════════
+
 
 class BeamSectionCommands:
     """Gera a lista de DrawCmd a partir de SectionLayoutData.
@@ -188,29 +196,36 @@ class BeamSectionCommands:
                 (bf, h),
                 (0.0, h),
                 (0.0, h - hf),
-                ((bf - bw) / 2.0, h - hf)
+                ((bf - bw) / 2.0, h - hf),
             ]
-            cmds.append(CmdPolygon(
-                points=vertices,
-                fill=_C_CONCRETE_FILL,
-                stroke=_C_CONCRETE_STROKE,
-                line_width=0.8,
-            ))
+            cmds.append(
+                CmdPolygon(
+                    points=vertices,
+                    fill=_C_CONCRETE_FILL,
+                    stroke=_C_CONCRETE_STROKE,
+                    line_width=0.8,
+                )
+            )
         else:
-            cmds.append(CmdRect(
-                x=0, y=0, w=d.bw, h=d.h,
-                fill=_C_CONCRETE_FILL,
-                stroke=_C_CONCRETE_STROKE,
-                line_width=0.8,
-            ))
+            cmds.append(
+                CmdRect(
+                    x=0,
+                    y=0,
+                    w=d.bw,
+                    h=d.h,
+                    fill=_C_CONCRETE_FILL,
+                    stroke=_C_CONCRETE_STROKE,
+                    line_width=0.8,
+                )
+            )
 
     # ── Bloco 2: Estribo principal com raio de curvatura e gancho 135° ────────
 
     def _draw_stirrup(self, cmds: list[DrawCmd], d: SectionLayoutData) -> None:
-        c  = d.c_nom
+        c = d.c_nom
         pe = d.phi_estribo
-        r  = d.stirrup_corner_radius    # raio interno dos cantos
-        lh = d.hook_length              # comprimento do gancho
+        r = d.stirrup_corner_radius  # raio interno dos cantos
+        lh = d.hook_length  # comprimento do gancho
 
         # Canto interno do estribo (eixo do fio) medido da face externa:
         # distância do fio ao canto = c + pe/2
@@ -223,8 +238,8 @@ class BeamSectionCommands:
         # Coordenadas do retângulo do eixo do estribo:
         ex = (bf - bw) / 2.0 + margin if is_t else margin
         ey = margin
-        ew = bw - 2 * margin         # width
-        eh = d.h  - 2 * margin         # height
+        ew = bw - 2 * margin  # width
+        eh = d.h - 2 * margin  # height
 
         # Construímos o estribo como uma polyline com arcos aproximados nos
         # cantos. Para simplicidade de implementação compatível com fpdf2 e
@@ -239,24 +254,28 @@ class BeamSectionCommands:
         # Adiciona ponto de retorno ao início (para fechar a forma)
         pts.append((hook_anchor_x, hook_anchor_y))
 
-        cmds.append(CmdPolyline(
-            points=pts,
-            color=_C_STIRRUP,
-            line_width=pe * 0.7,  # espessura proporcional ao diâmetro
-        ))
+        cmds.append(
+            CmdPolyline(
+                points=pts,
+                color=_C_STIRRUP,
+                line_width=pe * 0.7,  # espessura proporcional ao diâmetro
+            )
+        )
 
         # Gancho a 135° (diagonal interior de 45°): sobe e vai para esquerda
         sin45 = math.cos(math.radians(45))
         hx = lh * sin45
         hy = lh * sin45
-        cmds.append(CmdPolyline(
-            points=[
-                (hook_anchor_x, hook_anchor_y),
-                (hook_anchor_x - hx, hook_anchor_y + hy),
-            ],
-            color=_C_STIRRUP,
-            line_width=pe * 0.7,
-        ))
+        cmds.append(
+            CmdPolyline(
+                points=[
+                    (hook_anchor_x, hook_anchor_y),
+                    (hook_anchor_x - hx, hook_anchor_y + hy),
+                ],
+                color=_C_STIRRUP,
+                line_width=pe * 0.7,
+            )
+        )
 
     # ── Bloco 3: Barras de canto superiores ───────────────────────────────────
 
@@ -265,12 +284,16 @@ class BeamSectionCommands:
         for bar in d.bar_positions:
             if not bar.is_corner_bar:
                 continue
-            cmds.append(CmdCircle(
-                cx=bar.x, cy=bar.y, r=r_vis,
-                fill=_C_BAR_CORNER,
-                stroke=_C_BAR_MAIN_STROKE,
-                line_width=0.3,
-            ))
+            cmds.append(
+                CmdCircle(
+                    cx=bar.x,
+                    cy=bar.y,
+                    r=r_vis,
+                    fill=_C_BAR_CORNER,
+                    stroke=_C_BAR_MAIN_STROKE,
+                    line_width=0.3,
+                )
+            )
 
     # ── Bloco 4: Barras longitudinais principais ───────────────────────────────
 
@@ -279,30 +302,35 @@ class BeamSectionCommands:
         for bar in d.bar_positions:
             if bar.is_corner_bar:
                 continue
-            cmds.append(CmdCircle(
-                cx=bar.x, cy=bar.y, r=r,
-                fill=_C_BAR_MAIN,
-                stroke=_C_BAR_MAIN_STROKE,
-                line_width=0.3,
-            ))
+            cmds.append(
+                CmdCircle(
+                    cx=bar.x,
+                    cy=bar.y,
+                    r=r,
+                    fill=_C_BAR_MAIN,
+                    stroke=_C_BAR_MAIN_STROKE,
+                    line_width=0.3,
+                )
+            )
 
     # ── Bloco 5: Grampos suplementares ────────────────────────────────────────
 
-    def _draw_supplementary_stirrups(
-        self, cmds: list[DrawCmd], d: SectionLayoutData
-    ) -> None:
+    def _draw_supplementary_stirrups(self, cmds: list[DrawCmd], d: SectionLayoutData) -> None:
         if not d.requires_supplementary_stirrup:
             return
 
         pe = d.phi_estribo
-        arm_w = pe * 3.0   # meia-largura do grampo
-        arm_h = pe * 8.0   # altura dos braços do grampo
+        arm_w = pe * 3.0  # meia-largura do grampo
+        arm_h = pe * 8.0  # altura dos braços do grampo
 
         for gs in d.supplementary_stirrup_positions:
             # Encontra a barra correspondente para saber o Y
             bar = next(
-                (b for b in d.bar_positions
-                 if not b.is_corner_bar and b.layer == gs.layer and abs(b.x - gs.x) < 1),
+                (
+                    b
+                    for b in d.bar_positions
+                    if not b.is_corner_bar and b.layer == gs.layer and abs(b.x - gs.x) < 1
+                ),
                 None,
             )
             if bar is None:
@@ -311,16 +339,18 @@ class BeamSectionCommands:
             top_y = bar.y + d.phi_barra / 2 + pe / 2
 
             # Grampo em "U" invertido: dois braços verticais + travessa horizontal
-            cmds.append(CmdPolyline(
-                points=[
-                    (gs.x - arm_w, top_y + arm_h),
-                    (gs.x - arm_w, top_y),
-                    (gs.x + arm_w, top_y),
-                    (gs.x + arm_w, top_y + arm_h),
-                ],
-                color=_C_GRAMPO,
-                line_width=pe * 0.6,
-            ))
+            cmds.append(
+                CmdPolyline(
+                    points=[
+                        (gs.x - arm_w, top_y + arm_h),
+                        (gs.x - arm_w, top_y),
+                        (gs.x + arm_w, top_y),
+                        (gs.x + arm_w, top_y + arm_h),
+                    ],
+                    color=_C_GRAMPO,
+                    line_width=pe * 0.6,
+                )
+            )
 
     # ── Bloco 6: Cotas ────────────────────────────────────────────────────────
 
@@ -335,80 +365,128 @@ class BeamSectionCommands:
 
         if is_t:
             # bf (no topo)
-            cmds.append(CmdLine(x1=0, y1=h + 8.0, x2=bf, y2=h + 8.0,
-                                color=_C_DIM, line_width=0.4))
+            cmds.append(CmdLine(x1=0, y1=h + 8.0, x2=bf, y2=h + 8.0, color=_C_DIM, line_width=0.4))
             self._arrow_h(cmds, 0, bf, h + 8.0)
-            cmds.append(CmdText(
-                x=bf / 2.0, y=h + 10.0,
-                text=f"bf={bf/10:.0f} cm",
-                font_size=7.0, color=_C_DIM, align="C",
-            ))
+            cmds.append(
+                CmdText(
+                    x=bf / 2.0,
+                    y=h + 10.0,
+                    text=f"bf={bf / 10:.0f} cm",
+                    font_size=7.0,
+                    color=_C_DIM,
+                    align="C",
+                )
+            )
 
             # hf (na lateral esquerda)
             x_dim_f = -8.0
-            cmds.append(CmdLine(x1=x_dim_f, y1=h - hf, x2=x_dim_f, y2=h,
-                                color=_C_DIM, line_width=0.4))
+            cmds.append(
+                CmdLine(x1=x_dim_f, y1=h - hf, x2=x_dim_f, y2=h, color=_C_DIM, line_width=0.4)
+            )
             self._arrow_v(cmds, x_dim_f, h - hf, h)
-            cmds.append(CmdText(
-                x=x_dim_f - 3.0, y=h - hf / 2.0,
-                text=f"hf={hf/10:.0f} cm",
-                font_size=7.0, color=_C_DIM, align="R",
-            ))
+            cmds.append(
+                CmdText(
+                    x=x_dim_f - 3.0,
+                    y=h - hf / 2.0,
+                    text=f"hf={hf / 10:.0f} cm",
+                    font_size=7.0,
+                    color=_C_DIM,
+                    align="R",
+                )
+            )
 
             # bw (embaixo)
             x1_w = (bf - bw) / 2.0
             x2_w = (bf + bw) / 2.0
-            cmds.append(CmdLine(x1=x1_w, y1=y_dim, x2=x2_w, y2=y_dim,
-                                color=_C_DIM, line_width=0.4))
+            cmds.append(CmdLine(x1=x1_w, y1=y_dim, x2=x2_w, y2=y_dim, color=_C_DIM, line_width=0.4))
             self._arrow_h(cmds, x1_w, x2_w, y_dim)
-            cmds.append(CmdText(
-                x=bf / 2.0, y=y_dim - 5.0,
-                text=f"bw={bw/10:.0f} cm",
-                font_size=7.0, color=_C_DIM, align="C",
-            ))
+            cmds.append(
+                CmdText(
+                    x=bf / 2.0,
+                    y=y_dim - 5.0,
+                    text=f"bw={bw / 10:.0f} cm",
+                    font_size=7.0,
+                    color=_C_DIM,
+                    align="C",
+                )
+            )
         else:
             # bw (embaixo)
-            cmds.append(CmdLine(x1=0, y1=y_dim, x2=bw, y2=y_dim,
-                                color=_C_DIM, line_width=0.4))
+            cmds.append(CmdLine(x1=0, y1=y_dim, x2=bw, y2=y_dim, color=_C_DIM, line_width=0.4))
             self._arrow_h(cmds, 0, bw, y_dim)
-            cmds.append(CmdText(
-                x=bw / 2.0, y=y_dim - 5.0,
-                text=f"bw={bw/10:.0f} cm",
-                font_size=7.0, color=_C_DIM, align="C",
-            ))
+            cmds.append(
+                CmdText(
+                    x=bw / 2.0,
+                    y=y_dim - 5.0,
+                    text=f"bw={bw / 10:.0f} cm",
+                    font_size=7.0,
+                    color=_C_DIM,
+                    align="C",
+                )
+            )
 
         # Cota vertical h (à direita da seção)
         x_dim = bf + 8.0
-        cmds.append(CmdLine(x1=x_dim, y1=0, x2=x_dim, y2=h,
-                            color=_C_DIM, line_width=0.4))
+        cmds.append(CmdLine(x1=x_dim, y1=0, x2=x_dim, y2=h, color=_C_DIM, line_width=0.4))
         self._arrow_v(cmds, x_dim, 0, h)
-        cmds.append(CmdText(
-            x=x_dim + 3.0, y=h / 2.0,
-            text=f"h={h/10:.0f} cm",
-            font_size=7.0, color=_C_DIM, align="L",
-        ))
+        cmds.append(
+            CmdText(
+                x=x_dim + 3.0,
+                y=h / 2.0,
+                text=f"h={h / 10:.0f} cm",
+                font_size=7.0,
+                color=_C_DIM,
+                align="L",
+            )
+        )
 
         # Cota cobrimento (traço pontilhado pequeno)
         y_cob = h * 0.25
         x1_cob = (bf - bw) / 2.0 if is_t else 0.0
-        cmds.append(CmdLine(
-            x1=x1_cob, y1=y_cob, x2=x1_cob + d.c_nom, y2=y_cob,
-            color=_C_DIM, line_width=0.3, dashed=True,
-        ))
-        cmds.append(CmdText(
-            x=x1_cob + d.c_nom / 2.0, y=y_cob + 3.0,
-            text=f"c={d.c_nom:.0f}", font_size=6.0, color=_C_DIM, align="C",
-        ))
+        cmds.append(
+            CmdLine(
+                x1=x1_cob,
+                y1=y_cob,
+                x2=x1_cob + d.c_nom,
+                y2=y_cob,
+                color=_C_DIM,
+                line_width=0.3,
+                dashed=True,
+            )
+        )
+        cmds.append(
+            CmdText(
+                x=x1_cob + d.c_nom / 2.0,
+                y=y_cob + 3.0,
+                text=f"c={d.c_nom:.0f}",
+                font_size=6.0,
+                color=_C_DIM,
+                align="C",
+            )
+        )
 
         # Linha tracejada do baricentro (vermelho)
-        cmds.append(CmdLine(
-            x1=0, y1=d.y_cg, x2=bf, y2=d.y_cg,
-            color=_C_CG_LINE, line_width=0.4, dashed=True,
-        ))
-        cmds.append(CmdText(
-            x=bf / 2.0, y=d.y_cg + 3.0,
-            text="CG arm.", font_size=6.0, color=_C_CG_LINE, align="C",
-        ))
+        cmds.append(
+            CmdLine(
+                x1=0,
+                y1=d.y_cg,
+                x2=bf,
+                y2=d.y_cg,
+                color=_C_CG_LINE,
+                line_width=0.4,
+                dashed=True,
+            )
+        )
+        cmds.append(
+            CmdText(
+                x=bf / 2.0,
+                y=d.y_cg + 3.0,
+                text="CG arm.",
+                font_size=6.0,
+                color=_C_CG_LINE,
+                align="C",
+            )
+        )
 
     # ── Bloco 7: Rótulos de armadura ──────────────────────────────────────────
 
@@ -416,25 +494,32 @@ class BeamSectionCommands:
         is_t = getattr(d, "is_t", False)
         bf = d.bf if is_t else d.bw
         for lyr in d.layers:
-            cmds.append(CmdText(
-                x=bf + 5.0,
-                y=lyr.y_centroid,
-                text=(
-                    f"{lyr.bar_count}\u00d8{d.phi_barra:.0f}mm "
-                    f"({lyr.h_spacing/10:.1f}cm)"
-                    if lyr.h_spacing > 0 else f"{lyr.bar_count}\u00d8{d.phi_barra:.0f}mm"
-                ),
-                font_size=7.5,
-                color=_C_TEXT,
-                align="L",
-            ))
+            cmds.append(
+                CmdText(
+                    x=bf + 5.0,
+                    y=lyr.y_centroid,
+                    text=(
+                        f"{lyr.bar_count}\u00d8{d.phi_barra:.0f}mm ({lyr.h_spacing / 10:.1f}cm)"
+                        if lyr.h_spacing > 0
+                        else f"{lyr.bar_count}\u00d8{d.phi_barra:.0f}mm"
+                    ),
+                    font_size=7.5,
+                    color=_C_TEXT,
+                    align="L",
+                )
+            )
 
         # d efetiva
-        cmds.append(CmdText(
-            x=-5.0, y=d.d_efetiva / 2.0,
-            text=f"d={d.d_efetiva:.1f}mm",
-            font_size=6.5, color=_C_DIM, align="R",
-        ))
+        cmds.append(
+            CmdText(
+                x=-5.0,
+                y=d.d_efetiva / 2.0,
+                text=f"d={d.d_efetiva:.1f}mm",
+                font_size=6.5,
+                color=_C_DIM,
+                align="R",
+            )
+        )
 
     # ── Auxiliares ────────────────────────────────────────────────────────────
 
@@ -470,30 +555,43 @@ class BeamSectionCommands:
 
     @staticmethod
     def _arrow_h(cmds, x1, x2, y, size=2.5):
-        cmds.append(CmdPolyline(
-            points=[(x1 + size, y - size / 2), (x1, y), (x1 + size, y + size / 2)],
-            color=_C_DIM, line_width=0.3,
-        ))
-        cmds.append(CmdPolyline(
-            points=[(x2 - size, y - size / 2), (x2, y), (x2 - size, y + size / 2)],
-            color=_C_DIM, line_width=0.3,
-        ))
+        cmds.append(
+            CmdPolyline(
+                points=[(x1 + size, y - size / 2), (x1, y), (x1 + size, y + size / 2)],
+                color=_C_DIM,
+                line_width=0.3,
+            )
+        )
+        cmds.append(
+            CmdPolyline(
+                points=[(x2 - size, y - size / 2), (x2, y), (x2 - size, y + size / 2)],
+                color=_C_DIM,
+                line_width=0.3,
+            )
+        )
 
     @staticmethod
     def _arrow_v(cmds, x, y1, y2, size=2.5):
-        cmds.append(CmdPolyline(
-            points=[(x - size / 2, y1 + size), (x, y1), (x + size / 2, y1 + size)],
-            color=_C_DIM, line_width=0.3,
-        ))
-        cmds.append(CmdPolyline(
-            points=[(x - size / 2, y2 - size), (x, y2), (x + size / 2, y2 - size)],
-            color=_C_DIM, line_width=0.3,
-        ))
+        cmds.append(
+            CmdPolyline(
+                points=[(x - size / 2, y1 + size), (x, y1), (x + size / 2, y1 + size)],
+                color=_C_DIM,
+                line_width=0.3,
+            )
+        )
+        cmds.append(
+            CmdPolyline(
+                points=[(x - size / 2, y2 - size), (x, y2), (x + size / 2, y2 - size)],
+                color=_C_DIM,
+                line_width=0.3,
+            )
+        )
 
 
 # ══════════════════════════════════════════════════════════════════════════════
 # Renderer 1: Flet Canvas (flet.canvas)
 # ══════════════════════════════════════════════════════════════════════════════
+
 
 class FletCanvasRenderer:
     """Executa DrawCmd em um flet.canvas.Canvas.
@@ -560,8 +658,10 @@ class FletCanvasRenderer:
             # Flet canvas usa Y↓, então y do rect = topo em pixels
             top_px = self._py(cmd.y + cmd.h)
             return cv.Rect(
-                x=self._px(cmd.x), y=top_px,
-                width=self._px(cmd.w), height=self._px(cmd.h),
+                x=self._px(cmd.x),
+                y=top_px,
+                width=self._px(cmd.w),
+                height=self._px(cmd.h),
                 paint=ft.Paint(
                     color=self._color(cmd.fill) if cmd.fill else None,
                     stroke_color=self._color(cmd.stroke) if cmd.stroke else None,
@@ -569,7 +669,8 @@ class FletCanvasRenderer:
                     style=(
                         ft.PaintingStyle.FILL_AND_STROKE
                         if cmd.fill and cmd.stroke
-                        else ft.PaintingStyle.FILL if cmd.fill
+                        else ft.PaintingStyle.FILL
+                        if cmd.fill
                         else ft.PaintingStyle.STROKE
                     ),
                 ),
@@ -577,7 +678,8 @@ class FletCanvasRenderer:
 
         if isinstance(cmd, CmdCircle):
             return cv.Circle(
-                x=self._px(cmd.cx), y=self._py(cmd.cy),
+                x=self._px(cmd.cx),
+                y=self._py(cmd.cy),
                 radius=self._px(cmd.r),
                 paint=ft.Paint(
                     color=self._color(cmd.fill) if cmd.fill else None,
@@ -586,7 +688,8 @@ class FletCanvasRenderer:
                     style=(
                         ft.PaintingStyle.FILL_AND_STROKE
                         if cmd.fill and cmd.stroke
-                        else ft.PaintingStyle.FILL if cmd.fill
+                        else ft.PaintingStyle.FILL
+                        if cmd.fill
                         else ft.PaintingStyle.STROKE
                     ),
                 ),
@@ -605,9 +708,7 @@ class FletCanvasRenderer:
             if len(pts_mm) < 2:
                 return None
 
-            path_elements = [
-                cv.Path.MoveTo(self._px(pts_mm[0][0]), self._py(pts_mm[0][1]))
-            ]
+            path_elements = [cv.Path.MoveTo(self._px(pts_mm[0][0]), self._py(pts_mm[0][1]))]
             for px_mm, py_mm in pts_mm[1:]:
                 path_elements.append(cv.Path.LineTo(self._px(px_mm), self._py(py_mm)))
 
@@ -623,9 +724,7 @@ class FletCanvasRenderer:
         if isinstance(cmd, CmdPolygon):
             if len(cmd.points) < 3:
                 return None
-            path_elements = [
-                cv.Path.MoveTo(self._px(cmd.points[0][0]), self._py(cmd.points[0][1]))
-            ]
+            path_elements = [cv.Path.MoveTo(self._px(cmd.points[0][0]), self._py(cmd.points[0][1]))]
             for px_mm, py_mm in cmd.points[1:]:
                 path_elements.append(cv.Path.LineTo(self._px(px_mm), self._py(py_mm)))
             path_elements.append(cv.Path.Close())
@@ -638,7 +737,8 @@ class FletCanvasRenderer:
                     style=(
                         ft.PaintingStyle.FILL_AND_STROKE
                         if cmd.fill and cmd.stroke
-                        else ft.PaintingStyle.FILL if cmd.fill
+                        else ft.PaintingStyle.FILL
+                        if cmd.fill
                         else ft.PaintingStyle.STROKE
                     ),
                 ),
@@ -660,6 +760,7 @@ class FletCanvasRenderer:
 # ══════════════════════════════════════════════════════════════════════════════
 # Renderer 2: fpdf2 (FPDF)
 # ══════════════════════════════════════════════════════════════════════════════
+
 
 class FpdfRenderer:
     """Executa DrawCmd em um objeto FPDF (fpdf2).
@@ -778,8 +879,7 @@ class FpdfRenderer:
             pdf.set_line_width(cmd.line_width)
             if cmd.dashed:
                 pdf.set_dash_pattern(dash=2, gap=1.5)
-            pdf.line(self._tx(cmd.x1), self._ty(cmd.y1),
-                     self._tx(cmd.x2), self._ty(cmd.y2))
+            pdf.line(self._tx(cmd.x1), self._ty(cmd.y1), self._tx(cmd.x2), self._ty(cmd.y2))
             if cmd.dashed:
                 pdf.set_dash_pattern()  # reset
 
@@ -790,8 +890,7 @@ class FpdfRenderer:
             pdf.set_line_width(cmd.line_width)
             pts_pg = [(self._tx(x), self._ty(y)) for x, y in cmd.points]
             for k in range(len(pts_pg) - 1):
-                pdf.line(pts_pg[k][0], pts_pg[k][1],
-                         pts_pg[k + 1][0], pts_pg[k + 1][1])
+                pdf.line(pts_pg[k][0], pts_pg[k][1], pts_pg[k + 1][0], pts_pg[k + 1][1])
 
         elif isinstance(cmd, CmdText):
             r_mm, g_mm, b_mm = cmd.color
@@ -825,6 +924,7 @@ class FpdfRenderer:
 # ══════════════════════════════════════════════════════════════════════════════
 # Função de conveniência para substituir desenhar_secao_retangular()
 # ══════════════════════════════════════════════════════════════════════════════
+
 
 def desenhar_secao_com_detailer(
     pdf: Any,
@@ -871,45 +971,49 @@ def desenhar_secao_com_detailer(
 
     # ── Domínio: barras inferiores ─────────────────────────────────────────
     detailer = BeamDetailer()
-    data_inf = detailer.detail(BeamDetailingInput(
-        bw=bw_mm,
-        h=h_mm,
-        c_nom=cob_mm,
-        phi_estribo=phi_estribo_mm,
-        phi_barra=phi_barra_inf_mm,
-        d_max_agregado=d_max_agregado_mm,
-        total_bars=n_barras_inf,
-        is_t=is_t,
-        bf_cm=bf_cm,
-        hf_cm=hf_cm,
-        is_superior=False,
-    ))
+    data_inf = detailer.detail(
+        BeamDetailingInput(
+            bw=bw_mm,
+            h=h_mm,
+            c_nom=cob_mm,
+            phi_estribo=phi_estribo_mm,
+            phi_barra=phi_barra_inf_mm,
+            d_max_agregado=d_max_agregado_mm,
+            total_bars=n_barras_inf,
+            is_t=is_t,
+            bf_cm=bf_cm,
+            hf_cm=hf_cm,
+            is_superior=False,
+        )
+    )
 
     # ── Comandos e render das barras inferiores ────────────────────────────
     painter = BeamSectionCommands()
     cmds = painter.build(data_inf)
 
-    renderer = FpdfRenderer(
-        pdf=pdf, px=px, py=py, scale=scale, section_height_mm=h_mm
-    )
+    renderer = FpdfRenderer(pdf=pdf, px=px, py=py, scale=scale, section_height_mm=h_mm)
     renderer.render(cmds)
 
     # ── Barras superiores (se houver, sobrepõe com cor diferente) ──────────
     if n_barras_sup > 0 and phi_barra_sup_mm > 0:
-        data_sup = detailer.detail(BeamDetailingInput(
-            bw=bw_mm, h=h_mm, c_nom=cob_mm, phi_estribo=phi_estribo_mm,
-            phi_barra=phi_barra_sup_mm, d_max_agregado=d_max_agregado_mm,
-            total_bars=n_barras_sup,
-            is_t=is_t,
-            bf_cm=bf_cm,
-            hf_cm=hf_cm,
-            is_superior=True,
-        ))
+        data_sup = detailer.detail(
+            BeamDetailingInput(
+                bw=bw_mm,
+                h=h_mm,
+                c_nom=cob_mm,
+                phi_estribo=phi_estribo_mm,
+                phi_barra=phi_barra_sup_mm,
+                d_max_agregado=d_max_agregado_mm,
+                total_bars=n_barras_sup,
+                is_t=is_t,
+                bf_cm=bf_cm,
+                hf_cm=hf_cm,
+                is_superior=True,
+            )
+        )
         # Desenha apenas as barras da armadura de compressão (face superior)
         # Reusa o mesmo renderer; inverte verticalmente no espaço disponível.
-        sup_renderer = FpdfRenderer(
-            pdf=pdf, px=px, py=py, scale=scale, section_height_mm=h_mm
-        )
+        sup_renderer = FpdfRenderer(pdf=pdf, px=px, py=py, scale=scale, section_height_mm=h_mm)
         for bar in data_sup.bar_positions:
             if bar.is_corner_bar:
                 continue
@@ -924,7 +1028,7 @@ def desenhar_secao_com_detailer(
 
     # ── Armadura de pele (faces laterais) ──────────────────────────────────
     if n_barras_pele > 0 and phi_pele_mm > 0:
-        pdf.set_fill_color(197, 90, 17)   # Orange800
+        pdf.set_fill_color(197, 90, 17)  # Orange800
         # Sem contorno (apenas preenchimento)
         r_pele = max(phi_pele_mm * scale / 2.0, 1.0)
 
@@ -933,23 +1037,50 @@ def desenhar_secao_com_detailer(
             alma_x = px + (bf_mm - bw_mm) / 2.0 * scale
             e_off = (cob_mm + phi_estribo_mm / 2.0) * scale
             x_face_esq = alma_x + e_off + (phi_estribo_mm / 2.0 + phi_pele_mm / 2.0) * scale
-            x_face_dir = alma_x + bw_mm * scale - e_off - (phi_estribo_mm / 2.0 + phi_pele_mm / 2.0) * scale
+            x_face_dir = (
+                alma_x + bw_mm * scale - e_off - (phi_estribo_mm / 2.0 + phi_pele_mm / 2.0) * scale
+            )
         else:
             e_off = (cob_mm + phi_estribo_mm / 2.0) * scale
             x_face_esq = px + e_off + (phi_estribo_mm / 2.0 + phi_pele_mm / 2.0) * scale
-            x_face_dir = px + bw_mm * scale - e_off - (phi_estribo_mm / 2.0 + phi_pele_mm / 2.0) * scale
+            x_face_dir = (
+                px + bw_mm * scale - e_off - (phi_estribo_mm / 2.0 + phi_pele_mm / 2.0) * scale
+            )
 
         layer_count_inf = data_inf.layer_count if data_inf else 0
-        layer_count_sup = data_sup.layer_count if (n_barras_sup > 0 and phi_barra_sup_mm > 0 and 'data_sup' in locals()) else 0
-        ev_min_inf_mm = data_inf.ev_min if (data_inf and hasattr(data_inf, 'ev_min')) else max(20.0, phi_barra_inf_mm, 22.8)
-        ev_min_sup_mm = data_sup.ev_min if (n_barras_sup > 0 and phi_barra_sup_mm > 0 and 'data_sup' in locals() and hasattr(data_sup, 'ev_min')) else max(20.0, phi_barra_sup_mm, 22.8)
+        layer_count_sup = (
+            data_sup.layer_count
+            if (n_barras_sup > 0 and phi_barra_sup_mm > 0 and "data_sup" in locals())
+            else 0
+        )
+        ev_min_inf_mm = (
+            data_inf.ev_min
+            if (data_inf and hasattr(data_inf, "ev_min"))
+            else max(20.0, phi_barra_inf_mm, 22.8)
+        )
+        ev_min_sup_mm = (
+            data_sup.ev_min
+            if (
+                n_barras_sup > 0
+                and phi_barra_sup_mm > 0
+                and "data_sup" in locals()
+                and hasattr(data_sup, "ev_min")
+            )
+            else max(20.0, phi_barra_sup_mm, 22.8)
+        )
 
         # Determinar limites brutos (sem gaps) medidos em cm a partir do topo da viga
         if is_t:
             y_top_raw_cm = hf_cm + (cob_mm / 10.0 + phi_estribo_mm / 10.0)
         else:
             y_top_raw_cm = cob_mm / 10.0 + phi_estribo_mm / 10.0
-            if n_barras_sup > 0 and phi_barra_sup_mm > 0 and 'data_sup' in locals() and data_sup and data_sup.bar_positions:
+            if (
+                n_barras_sup > 0
+                and phi_barra_sup_mm > 0
+                and "data_sup" in locals()
+                and data_sup
+                and data_sup.bar_positions
+            ):
                 top_bars_bottoms = []
                 for bar in data_sup.bar_positions:
                     if not bar.is_corner_bar:
@@ -957,7 +1088,9 @@ def desenhar_secao_com_detailer(
                 if top_bars_bottoms:
                     y_top_raw_cm = max(top_bars_bottoms)
             elif layer_count_sup > 0:
-                y_top_raw_cm += layer_count_sup * (phi_barra_sup_mm / 10.0) + (layer_count_sup - 1) * (ev_min_sup_mm / 10.0)
+                y_top_raw_cm += layer_count_sup * (phi_barra_sup_mm / 10.0) + (
+                    layer_count_sup - 1
+                ) * (ev_min_sup_mm / 10.0)
 
         y_bottom_raw_cm = h_cm - (cob_mm / 10.0 + phi_estribo_mm / 10.0)
         if data_inf and data_inf.bar_positions:
@@ -968,7 +1101,9 @@ def desenhar_secao_com_detailer(
             if bottom_bars_tops:
                 y_bottom_raw_cm = min(bottom_bars_tops)
         elif layer_count_inf > 0:
-            y_bottom_raw_cm -= layer_count_inf * (phi_barra_inf_mm / 10.0) + (layer_count_inf - 1) * (ev_min_inf_mm / 10.0)
+            y_bottom_raw_cm -= layer_count_inf * (phi_barra_inf_mm / 10.0) + (
+                layer_count_inf - 1
+            ) * (ev_min_inf_mm / 10.0)
 
         ev_min_cm = ev_min_inf_mm / 10.0
         h_free_cm = y_bottom_raw_cm - y_top_raw_cm
@@ -976,10 +1111,17 @@ def desenhar_secao_com_detailer(
         d_livre_cm = (h_free_cm - n_barras_pele * phi_pele_cm) / (n_barras_pele + 1.0)
 
         if d_livre_cm >= ev_min_cm:
-            ys_cm = [y_top_raw_cm + (i + 1) * d_livre_cm + (i + 0.5) * phi_pele_cm for i in range(n_barras_pele)]
+            ys_cm = [
+                y_top_raw_cm + (i + 1) * d_livre_cm + (i + 0.5) * phi_pele_cm
+                for i in range(n_barras_pele)
+            ]
         else:
             # Fallback
-            y_top_est = hf_cm + (cob_mm / 10.0 + phi_estribo_mm / 10.0) if is_t else cob_mm / 10.0 + phi_estribo_mm / 10.0
+            y_top_est = (
+                hf_cm + (cob_mm / 10.0 + phi_estribo_mm / 10.0)
+                if is_t
+                else cob_mm / 10.0 + phi_estribo_mm / 10.0
+            )
             y_bottom_est = h_cm - (cob_mm / 10.0 + phi_estribo_mm / 10.0)
             s_pele_fb = (y_bottom_est - y_top_est) / (n_barras_pele + 1.0)
             ys_cm = [y_top_est + (i + 1) * s_pele_fb for i in range(n_barras_pele)]

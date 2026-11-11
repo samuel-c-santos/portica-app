@@ -40,7 +40,10 @@ def main(page: ft.Page):
     page.window.min_height = 700
     # Icone da janela (preferir .ico no Windows, .png fallback)
     import platform
-    icon_path = LOGO_ICO if (platform.system() == "Windows" and os.path.exists(LOGO_ICO)) else LOGO_LIGHT
+
+    icon_path = (
+        LOGO_ICO if (platform.system() == "Windows" and os.path.exists(LOGO_ICO)) else LOGO_LIGHT
+    )
     if os.path.exists(icon_path):
         page.window.icon = icon_path
 
@@ -108,7 +111,8 @@ def main(page: ft.Page):
         elif route == ROUTE_VIGA:
             pending = state.pop("pending_file", None)
             content.content = build_viga_screen(
-                page, state["modo"],
+                page,
+                state["modo"],
                 on_back=lambda: navigate(ROUTE_HOME),
                 fp_image=fp_image,
                 fp_pdf=fp_pdf,
@@ -142,17 +146,24 @@ def main(page: ft.Page):
         content.bgcolor = Palette.BG
         # Reconstroi a sidebar (logo troca) e o content atual
         layout.controls[0] = build_sidebar(
-            page, state["route"], navigate, on_toggle_theme=toggle_theme,
+            page,
+            state["route"],
+            navigate,
+            on_toggle_theme=toggle_theme,
         )
         navigate(state["route"])
 
     # Layout principal: sidebar + content
     sidebar = build_sidebar(
-        page, ROUTE_HOME, navigate, on_toggle_theme=toggle_theme,
+        page,
+        ROUTE_HOME,
+        navigate,
+        on_toggle_theme=toggle_theme,
     )
     layout = ft.Row(
         controls=[sidebar, content],
-        spacing=0, expand=True,
+        spacing=0,
+        expand=True,
     )
 
     page.add(layout)

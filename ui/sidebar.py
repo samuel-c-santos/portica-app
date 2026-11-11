@@ -16,9 +16,9 @@ from ui.theme import (
 )
 
 # IDs das rotas de navegação
-ROUTE_HOME     = "home"
-ROUTE_VIGA     = "viga"
-ROUTE_SOBRE    = "sobre"
+ROUTE_HOME = "home"
+ROUTE_VIGA = "viga"
+ROUTE_SOBRE = "sobre"
 
 
 def build_sidebar(page, current_route, on_navigate, on_toggle_theme=None):
@@ -41,8 +41,10 @@ def build_sidebar(page, current_route, on_navigate, on_toggle_theme=None):
                     ft.Container(
                         content=ft.Text(
                             label,
-                            size=10, weight=ft.FontWeight.W_600,
-                            color=fg, text_align=ft.TextAlign.CENTER,
+                            size=10,
+                            weight=ft.FontWeight.W_600,
+                            color=fg,
+                            text_align=ft.TextAlign.CENTER,
                         ),
                         margin=ft.Margin.only(top=2),
                     ),
@@ -50,15 +52,20 @@ def build_sidebar(page, current_route, on_navigate, on_toggle_theme=None):
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                 spacing=0,
             ),
-            width=76, height=68, border_radius=br_all(Radius.MD),
-            bgcolor=bg, alignment=ft.Alignment.CENTER,
-            ink=True, on_click=lambda e, r=route: on_navigate(r),
+            width=76,
+            height=68,
+            border_radius=br_all(Radius.MD),
+            bgcolor=bg,
+            alignment=ft.Alignment.CENTER,
+            ink=True,
+            on_click=lambda e, r=route: on_navigate(r),
         )
 
     # Logo (topo) - usa logo claro ou escuro conforme tema
     logo = ft.Image(
         src=logo_path_for(page),
-        width=44, height=44,
+        width=44,
+        height=44,
         fit=ft.BoxFit.CONTAIN,
     )
     header = ft.Container(
@@ -95,7 +102,9 @@ def build_sidebar(page, current_route, on_navigate, on_toggle_theme=None):
                 on_click=lambda e: on_toggle_theme(),
                 icon_size=20,
             ),
-            width=44, height=44, border_radius=br_all(22),
+            width=44,
+            height=44,
+            border_radius=br_all(22),
             bgcolor=Palette.SURFACE_VARIANT,
             alignment=ft.Alignment.CENTER,
         )
@@ -104,9 +113,10 @@ def build_sidebar(page, current_route, on_navigate, on_toggle_theme=None):
     footer = ft.Container(
         content=ft.Text(
             f"v{APP_VERSION}",
-
-            size=10, weight=ft.FontWeight.W_500,
-            color=Palette.TEXT_DISABLED, text_align=ft.TextAlign.CENTER,
+            size=10,
+            weight=ft.FontWeight.W_500,
+            color=Palette.TEXT_DISABLED,
+            text_align=ft.TextAlign.CENTER,
         ),
         padding=pad_only(bottom=Spacing.LG),
     )
@@ -126,7 +136,9 @@ def build_sidebar(page, current_route, on_navigate, on_toggle_theme=None):
         width=88,
         bgcolor=Palette.SURFACE,
         shadow=ft.BoxShadow(
-            spread_radius=0, blur_radius=8, offset=ft.Offset(2, 0),
+            spread_radius=0,
+            blur_radius=8,
+            offset=ft.Offset(2, 0),
             color=Palette.SHADOW,
         ),
     )

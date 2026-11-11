@@ -11,10 +11,16 @@ from core.calculos.engenharia import calcular_cisalhamento_viga_comum
 
 def _calc_asw_s(vk_kn, gamma_f, h_cm, bw_cm, fck_mpa, fyk_mpa, fyk_estribo_mpa, caa):
     res = calcular_cisalhamento_viga_comum(
-        h_cm=h_cm, bw_cm=bw_cm, fck_mpa=fck_mpa,
-        diam_estribo_mm=5.0, diam_barra_mm=16.0,
-        fyk_estribo_mpa=fyk_estribo_mpa, fyk_barra_mpa=fyk_mpa,
-        caa=caa, forcas_cortantes=[vk_kn], gamma_f=gamma_f,
+        h_cm=h_cm,
+        bw_cm=bw_cm,
+        fck_mpa=fck_mpa,
+        diam_estribo_mm=5.0,
+        diam_barra_mm=16.0,
+        fyk_estribo_mpa=fyk_estribo_mpa,
+        fyk_barra_mpa=fyk_mpa,
+        caa=caa,
+        forcas_cortantes=[vk_kn],
+        gamma_f=gamma_f,
     )
     return res[0].asw_usado_cm2_m if (res and res[0]) else 0.0
 
@@ -36,9 +42,17 @@ def _encontrar_apoios(cortantes: list[tuple[float, float]]) -> list[float]:
     return sorted(set(apoios))
 
 
-def detalhar_estribos(h_cm, bw_cm, fck_mpa, fyk_mpa, fyk_estribo_mpa, caa,
-                      cortantes: list[tuple[float, float]],
-                      phi_estribo_mm=5.0, gamma_f=1.4) -> list[dict]:
+def detalhar_estribos(
+    h_cm,
+    bw_cm,
+    fck_mpa,
+    fyk_mpa,
+    fyk_estribo_mpa,
+    caa,
+    cortantes: list[tuple[float, float]],
+    phi_estribo_mm=5.0,
+    gamma_f=1.4,
+) -> list[dict]:
     """
     Divide a viga em zonas de estribos usando decalagem al = d.
     Para cada vao, gera 3 zonas: Apoio Esq / Vao / Apoio Dir.
@@ -71,10 +85,16 @@ def detalhar_estribos(h_cm, bw_cm, fck_mpa, fyk_mpa, fyk_estribo_mpa, caa,
             pts = [p for p in pontos if xi <= p[0] <= ze_fim]
             vk = max(abs(p[1]) for p in pts) if pts else 0
             asw = _calc_asw_s(vk, gamma_f, h_cm, bw_cm, fck_mpa, fyk_mpa, fyk_estribo_mpa, caa)
-            zonas.append({"x_inicio": round(xi, 2), "x_fim": round(ze_fim, 2),
-                          "phi_mm": phi_estribo_mm,
-                          "espacamento_cm": round(_calc_espacamento(asw, phi_estribo_mm), 1),
-                          "asw_s_cm2m": round(asw, 2), "zona": "Apoio"})
+            zonas.append(
+                {
+                    "x_inicio": round(xi, 2),
+                    "x_fim": round(ze_fim, 2),
+                    "phi_mm": phi_estribo_mm,
+                    "espacamento_cm": round(_calc_espacamento(asw, phi_estribo_mm), 1),
+                    "asw_s_cm2m": round(asw, 2),
+                    "zona": "Apoio",
+                }
+            )
 
         # Zona de meio de vao: xi + al ate xf - al
         zv_ini = ze_fim
@@ -83,10 +103,16 @@ def detalhar_estribos(h_cm, bw_cm, fck_mpa, fyk_mpa, fyk_estribo_mpa, caa,
             pts = [p for p in pontos if zv_ini <= p[0] <= zv_fim]
             vk = max(abs(p[1]) for p in pts) if pts else 0
             asw = _calc_asw_s(vk, gamma_f, h_cm, bw_cm, fck_mpa, fyk_mpa, fyk_estribo_mpa, caa)
-            zonas.append({"x_inicio": round(zv_ini, 2), "x_fim": round(zv_fim, 2),
-                          "phi_mm": phi_estribo_mm,
-                          "espacamento_cm": round(_calc_espacamento(asw, phi_estribo_mm), 1),
-                          "asw_s_cm2m": round(asw, 2), "zona": "Vao"})
+            zonas.append(
+                {
+                    "x_inicio": round(zv_ini, 2),
+                    "x_fim": round(zv_fim, 2),
+                    "phi_mm": phi_estribo_mm,
+                    "espacamento_cm": round(_calc_espacamento(asw, phi_estribo_mm), 1),
+                    "asw_s_cm2m": round(asw, 2),
+                    "zona": "Vao",
+                }
+            )
             zd_ini = zv_fim
         else:
             zd_ini = ze_fim
@@ -96,18 +122,29 @@ def detalhar_estribos(h_cm, bw_cm, fck_mpa, fyk_mpa, fyk_estribo_mpa, caa,
             pts = [p for p in pontos if zd_ini <= p[0] <= xf]
             vk = max(abs(p[1]) for p in pts) if pts else 0
             asw = _calc_asw_s(vk, gamma_f, h_cm, bw_cm, fck_mpa, fyk_mpa, fyk_estribo_mpa, caa)
-            zonas.append({"x_inicio": round(zd_ini, 2), "x_fim": round(xf, 2),
-                          "phi_mm": phi_estribo_mm,
-                          "espacamento_cm": round(_calc_espacamento(asw, phi_estribo_mm), 1),
-                          "asw_s_cm2m": round(asw, 2), "zona": "Apoio"})
+            zonas.append(
+                {
+                    "x_inicio": round(zd_ini, 2),
+                    "x_fim": round(xf, 2),
+                    "phi_mm": phi_estribo_mm,
+                    "espacamento_cm": round(_calc_espacamento(asw, phi_estribo_mm), 1),
+                    "asw_s_cm2m": round(asw, 2),
+                    "zona": "Apoio",
+                }
+            )
 
     # Mesclar zonas adjacentes com mesmo espacamento (tolerancia 2cm)
     if len(zonas) > 1:
         merged = [zonas[0]]
         for z in zonas[1:]:
-            if abs(z["espacamento_cm"] - merged[-1]["espacamento_cm"]) <= 2 and z["phi_mm"] == merged[-1]["phi_mm"]:
+            if (
+                abs(z["espacamento_cm"] - merged[-1]["espacamento_cm"]) <= 2
+                and z["phi_mm"] == merged[-1]["phi_mm"]
+            ):
                 merged[-1]["x_fim"] = z["x_fim"]
-                merged[-1]["zona"] = "Apoio+Vao" if merged[-1]["zona"] != z["zona"] else merged[-1]["zona"]
+                merged[-1]["zona"] = (
+                    "Apoio+Vao" if merged[-1]["zona"] != z["zona"] else merged[-1]["zona"]
+                )
             else:
                 merged.append(z)
         zonas = merged
@@ -129,10 +166,17 @@ def calcular_qtd_estribos(regioes: list[dict]) -> list[dict]:
 def gerar_tabela_detailing(regioes: list[dict]) -> str:
     if not regioes:
         return "Nenhuma regiao calculada."
-    linhas = ["-" * 60, "  DETALHAMENTO DE ESTRIBOS", "-" * 60,
-              f"  {'Trecho (m)':<18} {'Esp.':<7} {'Asw/s':<8} {'Zona':<14}", "-" * 60]
+    linhas = [
+        "-" * 60,
+        "  DETALHAMENTO DE ESTRIBOS",
+        "-" * 60,
+        f"  {'Trecho (m)':<18} {'Esp.':<7} {'Asw/s':<8} {'Zona':<14}",
+        "-" * 60,
+    ]
     for r in regioes:
         trecho = f"{r['x_inicio']:.2f} a {r['x_fim']:.2f}"
-        linhas.append(f"  {trecho:<18} {r['espacamento_cm']:<5}cm {r['asw_s_cm2m']:<6.2f}cm2/m {r['zona']:<14}")
+        linhas.append(
+            f"  {trecho:<18} {r['espacamento_cm']:<5}cm {r['asw_s_cm2m']:<6.2f}cm2/m {r['zona']:<14}"
+        )
     linhas.append("-" * 60)
     return "\n".join(linhas)

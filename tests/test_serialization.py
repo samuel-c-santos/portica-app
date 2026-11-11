@@ -20,6 +20,7 @@ def mock_recent_file(monkeypatch):
     if os.path.exists(temp_path):
         os.remove(temp_path)
 
+
 def test_add_and_get_recent():
     # Cria arquivos temporários para simular projetos válidos (get_recent filtra arquivos inexistentes)
     temp_fd1, path1 = tempfile.mkstemp(suffix=".ptc")
@@ -51,6 +52,7 @@ def test_add_and_get_recent():
             os.remove(path1)
         if os.path.exists(path2):
             os.remove(path2)
+
 
 def test_ptc_json_structure():
     # Valida estrutura do dicionário de persistência do projeto

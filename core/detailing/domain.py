@@ -22,6 +22,7 @@ from dataclasses import dataclass, field
 # Entidades de Domínio
 # ══════════════════════════════════════════════════════════════════════════════
 
+
 @dataclass(frozen=True)
 class BarPosition:
     """Posição do eixo de uma barra na seção transversal.
@@ -37,6 +38,7 @@ class BarPosition:
         is_corner_bar: True se a barra é construtiva de canto (não entra no
                        cálculo do baricentro da armadura de cálculo).
     """
+
     x: float
     y: float
     layer: int
@@ -58,6 +60,7 @@ class ReinforcementLayer:
         h_spacing: Espaçamento horizontal real entre barras adjacentes (mm).
                    0 se há apenas 1 barra na camada.
     """
+
     index: int
     bar_count: int
     y_centroid: float
@@ -72,6 +75,7 @@ class SupplementaryStirrup:
         x: Posição X do eixo da barra travada (mm, coord. absolutas da seção).
         layer: Camada em que a barra travada se encontra.
     """
+
     x: float
     layer: int
 
@@ -91,17 +95,17 @@ class SectionLayoutData:
     """
 
     # ── Parâmetros de entrada (espelhados para o relatório) ──────────────────
-    bw: float           # Largura da alma (mm)
-    h: float            # Altura total (mm)
-    c_nom: float        # Cobrimento nominal (mm)
+    bw: float  # Largura da alma (mm)
+    h: float  # Altura total (mm)
+    c_nom: float  # Cobrimento nominal (mm)
     phi_estribo: float  # Diâmetro do estribo principal (mm)
-    phi_barra: float    # Diâmetro das barras principais (mm)
+    phi_barra: float  # Diâmetro das barras principais (mm)
     d_max_agregado: float  # Diâmetro máximo do agregado (mm)
-    total_bars: int     # Quantidade total de barras principais
+    total_bars: int  # Quantidade total de barras principais
 
     # ── Limites normativos ───────────────────────────────────────────────────
-    eh_min: float   # Espaçamento horiz. mínimo normativo (mm)
-    ev_min: float   # Espaçamento vert. mínimo entre camadas (mm)
+    eh_min: float  # Espaçamento horiz. mínimo normativo (mm)
+    ev_min: float  # Espaçamento vert. mínimo entre camadas (mm)
 
     # ── Layout das camadas ───────────────────────────────────────────────────
     layer_count: int
@@ -115,12 +119,12 @@ class SectionLayoutData:
     supplementary_stirrup_positions: list[SupplementaryStirrup]
 
     # ── Baricentro e altura útil efetiva ─────────────────────────────────────
-    y_cg: float      # Coord. Y do centróide da arm. tracionada (mm, de baixo)
-    d_efetiva: float # Altura útil efetiva (mm): igual a y_cg pois Y↑ de baixo
+    y_cg: float  # Coord. Y do centróide da arm. tracionada (mm, de baixo)
+    d_efetiva: float  # Altura útil efetiva (mm): igual a y_cg pois Y↑ de baixo
 
     is_t: bool = False
-    bf: float = 0.0     # Largura da mesa (mm)
-    hf: float = 0.0     # Altura da mesa (mm)
+    bf: float = 0.0  # Largura da mesa (mm)
+    hf: float = 0.0  # Altura da mesa (mm)
     warnings: list[str] = field(default_factory=list)
 
     # ── Propriedades derivadas (para o Painter) ───────────────────────────────
@@ -146,6 +150,7 @@ class SectionLayoutData:
 # Parâmetros de Entrada
 # ══════════════════════════════════════════════════════════════════════════════
 
+
 @dataclass
 class BeamDetailingInput:
     bw: float
@@ -165,6 +170,7 @@ class BeamDetailingInput:
 # ══════════════════════════════════════════════════════════════════════════════
 # UseCase: BeamDetailer
 # ══════════════════════════════════════════════════════════════════════════════
+
 
 class BeamDetailer:
     """UseCase: calcula o layout de armadura na seção transversal de viga.
@@ -244,8 +250,7 @@ class BeamDetailer:
                 f"horizontal interno disponível {h_space:.1f} mm."
             )
         n_max_por_camada = max(
-            1,
-            int(math.floor((h_space - inp.phi_barra) / (inp.phi_barra + eh_min)) + 1)
+            1, int(math.floor((h_space - inp.phi_barra) / (inp.phi_barra + eh_min)) + 1)
         )
         if n_max_por_camada >= 2:
             eh_check = (h_space - n_max_por_camada * inp.phi_barra) / (n_max_por_camada - 1)
@@ -258,9 +263,7 @@ class BeamDetailer:
             )
 
         # ── 4. Distribuição em camadas ────────────────────────────────────────
-        layer_counts = self._distribute_layers(
-            inp.total_bars, n_max_por_camada, warnings
-        )
+        layer_counts = self._distribute_layers(inp.total_bars, n_max_por_camada, warnings)
         layer_count = len(layer_counts)
 
         # ── 5. Posições Y de cada camada ──────────────────────────────────────
@@ -294,16 +297,18 @@ class BeamDetailer:
 
             if h_spacing < eh_min - 0.5 and n > 1:
                 warnings.append(
-                    f"Camada {i+1}: espaçamento horizontal real "
+                    f"Camada {i + 1}: espaçamento horizontal real "
                     f"{h_spacing:.1f} mm < e_h,mín={eh_min:.1f} mm."
                 )
 
-            reinforcement_layers.append(ReinforcementLayer(
-                index=i,
-                bar_count=n,
-                y_centroid=round(y_center, 3),
-                h_spacing=round(h_spacing, 3),
-            ))
+            reinforcement_layers.append(
+                ReinforcementLayer(
+                    index=i,
+                    bar_count=n,
+                    y_centroid=round(y_center, 3),
+                    h_spacing=round(h_spacing, 3),
+                )
+            )
 
             if n <= 1:
                 x_first = x_inf_estribo + h_space / 2
@@ -314,12 +319,14 @@ class BeamDetailer:
 
             for j in range(n):
                 x = x_first + j * (inp.phi_barra + h_spacing)
-                bar_positions.append(BarPosition(
-                    x=round(x, 3),
-                    y=round(y_center, 3),
-                    layer=i,
-                    is_corner_bar=False,
-                ))
+                bar_positions.append(
+                    BarPosition(
+                        x=round(x, 3),
+                        y=round(y_center, 3),
+                        layer=i,
+                        is_corner_bar=False,
+                    )
+                )
 
         # ── 7. Barras de canto superiores construtivas ────────────────────────
         if is_t:
@@ -329,9 +336,7 @@ class BeamDetailer:
             x_canto_min = (bf_mm - bw_mm) / 2.0 + inp.c_nom + inp.phi_estribo + phi_canto / 2
             x_canto_max = (bf_mm + bw_mm) / 2.0 - inp.c_nom - inp.phi_estribo - phi_canto / 2
         else:
-            layer0_bars = sorted(
-                [b for b in bar_positions if b.layer == 0], key=lambda b: b.x
-            )
+            layer0_bars = sorted([b for b in bar_positions if b.layer == 0], key=lambda b: b.x)
             x_canto_min_lim = x_inf_estribo + phi_canto / 2
             x_canto_max_lim = inp.bw - inp.c_nom - inp.phi_estribo - phi_canto / 2
             if layer0_bars:
@@ -342,12 +347,14 @@ class BeamDetailer:
                 x_canto_max = x_canto_max_lim
 
         for x_c in [x_canto_min, x_canto_max]:
-            bar_positions.append(BarPosition(
-                x=round(x_c, 3),
-                y=round(y_canto_center, 3),
-                layer=-1,
-                is_corner_bar=True,
-            ))
+            bar_positions.append(
+                BarPosition(
+                    x=round(x_c, 3),
+                    y=round(y_canto_center, 3),
+                    layer=-1,
+                    is_corner_bar=True,
+                )
+            )
 
         # ── 8. Grampos suplementares (NBR 6118:18.3.2.3) ─────────────────────
         requires_grampos = False
@@ -356,9 +363,7 @@ class BeamDetailer:
         for lyr in reinforcement_layers:
             if lyr.bar_count < 3:
                 continue
-            lyr_bars = sorted(
-                [b for b in bar_positions if b.layer == lyr.index], key=lambda b: b.x
-            )
+            lyr_bars = sorted([b for b in bar_positions if b.layer == lyr.index], key=lambda b: b.x)
             span = lyr_bars[-1].x - lyr_bars[0].x
             if span > self._MAX_UNSUPPORTED_SPAN_MM:
                 requires_grampos = True
@@ -431,9 +436,7 @@ class BeamDetailer:
             raise ValueError("Parâmetros inválidos: " + "; ".join(erros))
 
     @staticmethod
-    def _distribute_layers(
-        total_bars: int, n_max: int, warnings: list[str]
-    ) -> list[int]:
+    def _distribute_layers(total_bars: int, n_max: int, warnings: list[str]) -> list[int]:
         """Distribui barras em camadas (camada inferior mais cheia).
 
         Returns:

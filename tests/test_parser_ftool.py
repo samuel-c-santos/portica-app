@@ -144,7 +144,9 @@ def test_erro_arquivo_vazio():
 def test_erro_primeira_linha_invalida():
     """Garante erro apropriado quando primeira linha não é um número de pontos válido."""
     # Caso 1: Não é inteiro
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".txt", mode="w", encoding="utf-8") as tmp:
+    with tempfile.NamedTemporaryFile(
+        delete=False, suffix=".txt", mode="w", encoding="utf-8"
+    ) as tmp:
         tmp.write("texto_invalido\n0.0\t10.0\n")
         tmp_path = tmp.name
     try:
@@ -154,7 +156,9 @@ def test_erro_primeira_linha_invalida():
         os.remove(tmp_path)
 
     # Caso 2: Inteiro negativo ou zero
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".txt", mode="w", encoding="utf-8") as tmp:
+    with tempfile.NamedTemporaryFile(
+        delete=False, suffix=".txt", mode="w", encoding="utf-8"
+    ) as tmp:
         tmp.write("0\n0.0\t10.0\n")
         tmp_path = tmp.name
     try:
@@ -166,7 +170,9 @@ def test_erro_primeira_linha_invalida():
 
 def test_erro_linhas_de_dados_insuficientes():
     """Garante erro se o arquivo tem menos linhas de dados que o declarado."""
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".txt", mode="w", encoding="utf-8") as tmp:
+    with tempfile.NamedTemporaryFile(
+        delete=False, suffix=".txt", mode="w", encoding="utf-8"
+    ) as tmp:
         tmp.write("5\n0.0\t10.0\n1.0\t15.0\n")
         tmp_path = tmp.name
     try:
@@ -179,7 +185,9 @@ def test_erro_linhas_de_dados_insuficientes():
 def test_erro_menos_colunas_que_o_esperado():
     """Garante erro se uma linha de dados tem menos colunas que o esperado."""
     # Momentos precisa de 2 colunas
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".txt", mode="w", encoding="utf-8") as tmp:
+    with tempfile.NamedTemporaryFile(
+        delete=False, suffix=".txt", mode="w", encoding="utf-8"
+    ) as tmp:
         tmp.write("1\n0.0\n")
         tmp_path = tmp.name
     try:
@@ -189,7 +197,9 @@ def test_erro_menos_colunas_que_o_esperado():
         os.remove(tmp_path)
 
     # Deformações precisa de 4 colunas
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".txt", mode="w", encoding="utf-8") as tmp:
+    with tempfile.NamedTemporaryFile(
+        delete=False, suffix=".txt", mode="w", encoding="utf-8"
+    ) as tmp:
         tmp.write("1\n0.0\t1.0\t2.0\n")
         tmp_path = tmp.name
     try:
@@ -201,7 +211,9 @@ def test_erro_menos_colunas_que_o_esperado():
 
 def test_erro_valores_nao_numericos():
     """Garante erro se valores na tabela não forem numéricos."""
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".txt", mode="w", encoding="utf-8") as tmp:
+    with tempfile.NamedTemporaryFile(
+        delete=False, suffix=".txt", mode="w", encoding="utf-8"
+    ) as tmp:
         tmp.write("1\n0.0\ttexto\n")
         tmp_path = tmp.name
     try:
@@ -216,12 +228,16 @@ def test_suporte_encodings():
     conteudo = "2\n0.0\t-135.6\n1.0\t120.0\n"
 
     # 1. Testando UTF-8
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".txt", mode="w", encoding="utf-8") as tmp:
+    with tempfile.NamedTemporaryFile(
+        delete=False, suffix=".txt", mode="w", encoding="utf-8"
+    ) as tmp:
         tmp.write(conteudo)
         utf8_path = tmp.name
 
     # 2. Testando ANSI / CP1252
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".txt", mode="w", encoding="cp1252") as tmp:
+    with tempfile.NamedTemporaryFile(
+        delete=False, suffix=".txt", mode="w", encoding="cp1252"
+    ) as tmp:
         tmp.write(conteudo)
         ansi_path = tmp.name
 
@@ -303,7 +319,9 @@ def test_validate_file_type_erros():
     assert "Falha ao ler" in err
 
     # Arquivo com cabeçalho inválido
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".txt", mode="w", encoding="utf-8") as tmp:
+    with tempfile.NamedTemporaryFile(
+        delete=False, suffix=".txt", mode="w", encoding="utf-8"
+    ) as tmp:
         tmp.write("texto_invalido\n0.0\t10.0\n")
         tmp_path = tmp.name
     try:
@@ -312,4 +330,3 @@ def test_validate_file_type_erros():
         assert "primeira linha" in err
     finally:
         os.remove(tmp_path)
-

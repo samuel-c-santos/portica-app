@@ -15,23 +15,23 @@ def exportar_secao_dxf(
     is_t: bool = False,
     bf_cm: float | None = None,
     hf_cm: float | None = None,
-    nome_arquivo: str = "secao_viga.dxf"
+    nome_arquivo: str = "secao_viga.dxf",
 ):
     """
     Gera um arquivo DXF contendo o detalhamento da seção transversal da viga.
     Todas as coordenadas internas e no DXF são salvas em CENTÍMETROS.
     """
-    doc = ezdxf.new('R2010')
+    doc = ezdxf.new("R2010")
     msp = doc.modelspace()
 
     # --- CRIAÇÃO DE LAYERS ---
-    doc.layers.add('CONCRETO', color=7)       # Cor 7 (Branco/Preto)
-    doc.layers.add('ESTRIBO', color=5)        # Cor 5 (Azul)
-    doc.layers.add('ESTRIBO_SUPLEMENTAR', color=30)  # Cor 30 (Laranja)
-    doc.layers.add('ARMADURA_LONG', color=1)  # Cor 1 (Vermelho)
-    doc.layers.add('ARMADURA_PELE', color=2)  # Cor 2 (Amarelo)
+    doc.layers.add("CONCRETO", color=7)  # Cor 7 (Branco/Preto)
+    doc.layers.add("ESTRIBO", color=5)  # Cor 5 (Azul)
+    doc.layers.add("ESTRIBO_SUPLEMENTAR", color=30)  # Cor 30 (Laranja)
+    doc.layers.add("ARMADURA_LONG", color=1)  # Cor 1 (Vermelho)
+    doc.layers.add("ARMADURA_PELE", color=2)  # Cor 2 (Amarelo)
     if is_t:
-        doc.layers.add('ARMADURA_COSTURA', color=3) # Cor 3 (Verde)
+        doc.layers.add("ARMADURA_COSTURA", color=3)  # Cor 3 (Verde)
 
     phi_est_cm = phi_estribo_mm / 10.0
 
@@ -50,7 +50,7 @@ def exportar_secao_dxf(
             (half_bf, h_cm),
             (-half_bf, h_cm),
             (-half_bf, h_cm - hf_cm),
-            (-half_bw, h_cm - hf_cm)
+            (-half_bw, h_cm - hf_cm),
         ]
 
         # Armadura de costura: duas linhas horizontais na mesa
@@ -62,28 +62,19 @@ def exportar_secao_dxf(
         msp.add_line(
             (x_mesa_esq, y_costura_sup),
             (x_mesa_dir, y_costura_sup),
-            dxfattribs={'layer': 'ARMADURA_COSTURA'}
+            dxfattribs={"layer": "ARMADURA_COSTURA"},
         )
         msp.add_line(
             (x_mesa_esq, y_costura_inf),
             (x_mesa_dir, y_costura_inf),
-            dxfattribs={'layer': 'ARMADURA_COSTURA'}
+            dxfattribs={"layer": "ARMADURA_COSTURA"},
         )
     else:
         x_shift = 0.0
         # 1. Contorno de Concreto (Retângulo)
-        vertices_concreto = [
-            (0.0, 0.0),
-            (bw_cm, 0.0),
-            (bw_cm, h_cm),
-            (0.0, h_cm)
-        ]
+        vertices_concreto = [(0.0, 0.0), (bw_cm, 0.0), (bw_cm, h_cm), (0.0, h_cm)]
 
-    msp.add_lwpolyline(
-        vertices_concreto,
-        close=True,
-        dxfattribs={'layer': 'CONCRETO'}
-    )
+    msp.add_lwpolyline(vertices_concreto, close=True, dxfattribs={"layer": "CONCRETO"})
 
     # 2. Desenhar Estribo (Polyline Fechada)
     ex1, ey1 = cob_cm, cob_cm
@@ -92,13 +83,9 @@ def exportar_secao_dxf(
         (ex1 + x_shift, ey1),
         (ex2 + x_shift, ey1),
         (ex2 + x_shift, ey2),
-        (ex1 + x_shift, ey2)
+        (ex1 + x_shift, ey2),
     ]
-    msp.add_lwpolyline(
-        vertices_estribo,
-        close=True,
-        dxfattribs={'layer': 'ESTRIBO'}
-    )
+    msp.add_lwpolyline(vertices_estribo, close=True, dxfattribs={"layer": "ESTRIBO"})
 
     # 3. Desenhar Armaduras Longitudinais Principais
     # Se for seção T, vamos verificar se as barras superiores precisam ser comprimidas para caber na alma
@@ -116,7 +103,9 @@ def exportar_secao_dxf(
     for bar in bar_positions:
         bx = bar.get("x") if isinstance(bar, dict) else getattr(bar, "x", None)
         by = bar.get("y") if isinstance(bar, dict) else getattr(bar, "y", None)
-        b_phi = (bar.get("phi_mm") if isinstance(bar, dict) else getattr(bar, "phi_mm", None)) or phi_barra_mm
+        b_phi = (
+            bar.get("phi_mm") if isinstance(bar, dict) else getattr(bar, "phi_mm", None)
+        ) or phi_barra_mm
         r_vis_cm = (b_phi / 10.0) / 2.0
         if bx is not None and by is not None:
             # Se for barra superior e precisamos mapear/comprimir para a alma
@@ -127,11 +116,7 @@ def exportar_secao_dxf(
 
             cx = (bx_mapped / 10.0) + x_shift
             cy = by / 10.0
-            msp.add_circle(
-                (cx, cy),
-                r_vis_cm,
-                dxfattribs={'layer': 'ARMADURA_LONG'}
-            )
+            msp.add_circle((cx, cy), r_vis_cm, dxfattribs={"layer": "ARMADURA_LONG"})
 
     # 4. Desenhar Armadura de Pele (Laterais)
     if n_barras_pele > 0 and phi_pele_mm > 0:
@@ -148,7 +133,9 @@ def exportar_secao_dxf(
             for bar in bar_positions:
                 by = bar.get("y") if isinstance(bar, dict) else getattr(bar, "y", None)
                 b_layer = bar.get("layer") if isinstance(bar, dict) else getattr(bar, "layer", None)
-                b_phi = (bar.get("phi_mm") if isinstance(bar, dict) else getattr(bar, "phi_mm", None)) or phi_barra_mm
+                b_phi = (
+                    bar.get("phi_mm") if isinstance(bar, dict) else getattr(bar, "phi_mm", None)
+                ) or phi_barra_mm
                 if by is not None:
                     # Considerar barra inferior se layer >= 0 ou se (layer é None) por estar na metade de baixo
                     is_bottom = False
@@ -202,7 +189,10 @@ def exportar_secao_dxf(
             ys_pele = [(cob_cm + phi_est_cm) + (i + 1) * s_pele for i in range(n_barras_pele)]
         else:
             # Distribuição perfeitamente uniforme de folga livre borda a borda
-            ys_pele = [y_bottom_raw_cm + (i + 1) * d_livre_cm + (i + 0.5) * phi_pele_cm for i in range(n_barras_pele)]
+            ys_pele = [
+                y_bottom_raw_cm + (i + 1) * d_livre_cm + (i + 0.5) * phi_pele_cm
+                for i in range(n_barras_pele)
+            ]
 
         # Desenhar círculos de pele
         for y_curr in ys_pele:
@@ -210,13 +200,13 @@ def exportar_secao_dxf(
             msp.add_circle(
                 (x_pele_esq + x_shift, y_curr),
                 phi_pele_cm / 2.0,
-                dxfattribs={'layer': 'ARMADURA_PELE'}
+                dxfattribs={"layer": "ARMADURA_PELE"},
             )
             # Face Direita
             msp.add_circle(
                 (x_pele_dir + x_shift, y_curr),
                 phi_pele_cm / 2.0,
-                dxfattribs={'layer': 'ARMADURA_PELE'}
+                dxfattribs={"layer": "ARMADURA_PELE"},
             )
 
     # 5. Desenhar Grampos (Estribos Suplementares) para camadas com 3 ou mais barras
@@ -226,8 +216,14 @@ def exportar_secao_dxf(
         bx = bar.get("x") if isinstance(bar, dict) else getattr(bar, "x", None)
         by = bar.get("y") if isinstance(bar, dict) else getattr(bar, "y", None)
         layer = bar.get("layer") if isinstance(bar, dict) else getattr(bar, "layer", None)
-        is_corner = bar.get("is_corner_bar") if isinstance(bar, dict) else getattr(bar, "is_corner_bar", False)
-        b_phi = (bar.get("phi_mm") if isinstance(bar, dict) else getattr(bar, "phi_mm", None)) or phi_barra_mm
+        is_corner = (
+            bar.get("is_corner_bar")
+            if isinstance(bar, dict)
+            else getattr(bar, "is_corner_bar", False)
+        )
+        b_phi = (
+            bar.get("phi_mm") if isinstance(bar, dict) else getattr(bar, "phi_mm", None)
+        ) or phi_barra_mm
 
         # Camada 0 (1ª camada inferior) e Camada -1 (1ª camada superior) não precisam de grampos
         if is_corner or layer is None or layer in (0, -1) or bx is None or by is None:
@@ -265,12 +261,10 @@ def exportar_secao_dxf(
                 (x_left + x_shift, y_closed),
                 (x_right + x_shift, y_closed),
                 (x_right + x_shift, y_open),
-                (x_right - hook_len_cm + x_shift, y_open)
+                (x_right - hook_len_cm + x_shift, y_open),
             ]
             msp.add_lwpolyline(
-                vertices_grampo,
-                close=False,
-                dxfattribs={'layer': 'ESTRIBO_SUPLEMENTAR'}
+                vertices_grampo, close=False, dxfattribs={"layer": "ESTRIBO_SUPLEMENTAR"}
             )
 
     # Salva o arquivo DXF

@@ -46,7 +46,9 @@ def dimensionar_trechos_ftool(
 
     resultados = []
 
-    is_t_beam = bool(dados_viga.get("bf_cm") and dados_viga.get("hf_cm") and dados_viga["bf_cm"] > bw_cm)
+    is_t_beam = bool(
+        dados_viga.get("bf_cm") and dados_viga.get("hf_cm") and dados_viga["bf_cm"] > bw_cm
+    )
 
     # Detectar pontos de momento nulo para cálculo automático de l0 (NBR 6118:15.5.2)
     pontos_momento_nulo = []
@@ -69,11 +71,16 @@ def dimensionar_trechos_ftool(
         # Se for seção T, usa o motor específico com largura de mesa bf
         if is_t_beam:
             res_flexao_list = calcular_flexao_viga_t(
-                h_cm=h_cm, bw_cm=bw_cm,
-                bf_cm=dados_viga["bf_cm"], hf_cm=dados_viga["hf_cm"],
-                caa=caa, fck_mpa=fck_mpa,
-                diam_estribo_mm=diam_estribo_mm, diam_barra_mm=diam_barra_mm,
-                fyk_mpa=fyk_mpa, momentos=[secao.momento],
+                h_cm=h_cm,
+                bw_cm=bw_cm,
+                bf_cm=dados_viga["bf_cm"],
+                hf_cm=dados_viga["hf_cm"],
+                caa=caa,
+                fck_mpa=fck_mpa,
+                diam_estribo_mm=diam_estribo_mm,
+                diam_barra_mm=diam_barra_mm,
+                fyk_mpa=fyk_mpa,
+                momentos=[secao.momento],
                 b1esq_cm=dados_viga.get("b1esq_cm"),
                 b1dir_cm=dados_viga.get("b1dir_cm"),
                 lo_esq_cm=lo_esq_cm,
@@ -109,25 +116,34 @@ def dimensionar_trechos_ftool(
         )
         res_cis = res_cis_list[0] if res_cis_list else None
 
-        resultados.append({
-            "x": secao.x,
-            "Mk": secao.momento,
-            "Vk": secao.cortante,
-            "resultado_flexao": res_flexao,
-            "resultado_cisalhamento": res_cis,
-            "tipo": secao.tipo,
-            "descricao": secao.descricao,
-        })
+        resultados.append(
+            {
+                "x": secao.x,
+                "Mk": secao.momento,
+                "Vk": secao.cortante,
+                "resultado_flexao": res_flexao,
+                "resultado_cisalhamento": res_cis,
+                "tipo": secao.tipo,
+                "descricao": secao.descricao,
+            }
+        )
 
     # Detalhamento de estribos por região
     detalhamento = None
     if cortantes:
         try:
             from ui.ftool.detailing import calcular_qtd_estribos, detalhar_estribos
+
             detalhamento = detalhar_estribos(
-                h_cm=h_cm, bw_cm=bw_cm, fck_mpa=fck_mpa,
-                fyk_mpa=fyk_mpa, fyk_estribo_mpa=fyk_estribo_mpa, caa=caa,
-                cortantes=cortantes, phi_estribo_mm=diam_estribo_mm, gamma_f=gamma_f,
+                h_cm=h_cm,
+                bw_cm=bw_cm,
+                fck_mpa=fck_mpa,
+                fyk_mpa=fyk_mpa,
+                fyk_estribo_mpa=fyk_estribo_mpa,
+                caa=caa,
+                cortantes=cortantes,
+                phi_estribo_mm=diam_estribo_mm,
+                gamma_f=gamma_f,
             )
             detalhamento = calcular_qtd_estribos(detalhamento)
         except Exception:
@@ -138,13 +154,24 @@ def dimensionar_trechos_ftool(
     if momentos and deformacoes:
         try:
             from ui.ftool.els import calcular_fissuracao, calcular_flecha
-            as_tracao = max((r["resultado_flexao"].as_usado_cm2 for r in resultados if r["resultado_flexao"]), default=0)
-            is_t = bool(dados_viga.get("bf_cm") and dados_viga.get("hf_cm") and dados_viga["bf_cm"] > bw_cm)
+
+            as_tracao = max(
+                (r["resultado_flexao"].as_usado_cm2 for r in resultados if r["resultado_flexao"]),
+                default=0,
+            )
+            is_t = bool(
+                dados_viga.get("bf_cm") and dados_viga.get("hf_cm") and dados_viga["bf_cm"] > bw_cm
+            )
             cobrimento_mm = dados_viga.get("cobrimento_mm", 25.0)
             flecha = calcular_flecha(
-                h_cm=h_cm, bw_cm=bw_cm, d_cm=h_cm - 3 - diam_estribo_mm/10 - diam_barra_mm/20,
-                fck_mpa=fck_mpa, as_tracao_cm2=as_tracao,
-                momentos=momentos, deformacoes=deformacoes, gamma_f=gamma_f,
+                h_cm=h_cm,
+                bw_cm=bw_cm,
+                d_cm=h_cm - 3 - diam_estribo_mm / 10 - diam_barra_mm / 20,
+                fck_mpa=fck_mpa,
+                as_tracao_cm2=as_tracao,
+                momentos=momentos,
+                deformacoes=deformacoes,
+                gamma_f=gamma_f,
                 is_t=is_t,
                 bf_cm=dados_viga.get("bf_cm"),
                 hf_cm=dados_viga.get("hf_cm"),
@@ -154,10 +181,16 @@ def dimensionar_trechos_ftool(
                 cobrimento_mm=cobrimento_mm,
             )
             fissuracao = calcular_fissuracao(
-                h_cm=h_cm, bw_cm=bw_cm, d_cm=h_cm - 3 - diam_estribo_mm/10 - diam_barra_mm/20,
-                caa=caa, fck_mpa=fck_mpa, fyk_mpa=fyk_mpa,
-                as_tracao_cm2=as_tracao, phi_barra_mm=diam_barra_mm,
-                momentos=momentos, gamma_f=gamma_f,
+                h_cm=h_cm,
+                bw_cm=bw_cm,
+                d_cm=h_cm - 3 - diam_estribo_mm / 10 - diam_barra_mm / 20,
+                caa=caa,
+                fck_mpa=fck_mpa,
+                fyk_mpa=fyk_mpa,
+                as_tracao_cm2=as_tracao,
+                phi_barra_mm=diam_barra_mm,
+                momentos=momentos,
+                gamma_f=gamma_f,
                 is_t=is_t,
                 bf_cm=dados_viga.get("bf_cm"),
                 hf_cm=dados_viga.get("hf_cm"),
@@ -165,11 +198,16 @@ def dimensionar_trechos_ftool(
                 diam_estribo_mm=diam_estribo_mm,
                 cobrimento_mm=cobrimento_mm,
             )
-            resultado_els = {"flecha": flecha, "fissuracao": fissuracao, "ajustes_aplicados": ajustes_els}
+            resultado_els = {
+                "flecha": flecha,
+                "fissuracao": fissuracao,
+                "ajustes_aplicados": ajustes_els,
+            }
 
             # Se há ajustes manuais com barras extras, atualizar resultados de flexão
             if ajustes_els and ajustes_els.barras_extras > 0:
                 import math
+
                 for res in resultados:
                     rf = res["resultado_flexao"]
                     if rf is not None:
@@ -182,9 +220,14 @@ def dimensionar_trechos_ftool(
                         # Recalcular layout_convergido, camadas_adotadas, etc.
                         try:
                             from core.detailing.domain import BeamDetailer, BeamDetailingInput
+
                             detailer = BeamDetailer()
                             cob_mm = rf.cob_mm if rf.cob_mm > 0 else 25.0
-                            is_t = bool(dados_viga.get("bf_cm") and dados_viga.get("hf_cm") and dados_viga["bf_cm"] > bw_cm)
+                            is_t = bool(
+                                dados_viga.get("bf_cm")
+                                and dados_viga.get("hf_cm")
+                                and dados_viga["bf_cm"] > bw_cm
+                            )
 
                             inp = BeamDetailingInput(
                                 bw=bw_cm * 10.0,
@@ -211,8 +254,9 @@ def dimensionar_trechos_ftool(
                             print(f"Erro ao recalcular layout ELS: {e}")
 
                         # Recalcular armadura de pele se necessário
-                        if hasattr(rf, 'requer_pele') and rf.requer_pele:
+                        if hasattr(rf, "requer_pele") and rf.requer_pele:
                             from core.calculos.engenharia import calcular_armadura_pele
+
                             cob_mm = rf.cob_mm if rf.cob_mm > 0 else 25.0
                             pele = calcular_armadura_pele(
                                 h_cm, bw_cm, cob_mm, diam_estribo_mm, rf.diametro_mm
@@ -242,7 +286,9 @@ def gerar_relatorio_premium(dados_viga: dict[str, Any], resultados: list[dict[st
     lines.append("=== PÓRTICA APP: RESUMO DE DIMENSIONAMENTO AUTOMÁTICO (FTOOL) ===")
     lines.append(f"Geometria: bw={dados_viga['bw_cm']} cm | h={dados_viga['h_cm']} cm")
     lines.append(f"Materiais: fck={dados_viga['fck_mpa']} MPa | CAA={dados_viga['caa']}")
-    lines.append(f"Aços: fyk={dados_viga['fyk_mpa']} kN/cm² | fyk_est={dados_viga.get('fyk_estribo_mpa', 60.0)} kN/cm²")
+    lines.append(
+        f"Aços: fyk={dados_viga['fyk_mpa']} kN/cm² | fyk_est={dados_viga.get('fyk_estribo_mpa', 60.0)} kN/cm²"
+    )
     lines.append(f"Majorador de esforços: gamma_f = {gamma_f}")
     lines.append("-" * 75)
 
@@ -261,8 +307,12 @@ def gerar_relatorio_premium(dados_viga: dict[str, Any], resultados: list[dict[st
             md = rf.momento_kNm * gamma_f
             lines.append("  FLEXÃO (As):")
             lines.append(f"    Md = {md:+.2f} kN·m | Limite Domínio (Passa): {rf.bx_passa}")
-            lines.append(f"    As necessário = {rf.as_req_cm2:.2f} cm² | As mínimo = {rf.asmin_cm2:.2f} cm²")
-            lines.append(f"    Armadura Adotada: {rf.qtd_barras} Φ {rf.diametro_mm:.1f} mm (As_adotado = {rf.as_usado_cm2:.2f} cm²)")
+            lines.append(
+                f"    As necessário = {rf.as_req_cm2:.2f} cm² | As mínimo = {rf.asmin_cm2:.2f} cm²"
+            )
+            lines.append(
+                f"    Armadura Adotada: {rf.qtd_barras} Φ {rf.diametro_mm:.1f} mm (As_adotado = {rf.as_usado_cm2:.2f} cm²)"
+            )
             if rf.alerta:
                 lines.append(f"    ⚠️ ALERTA: {rf.alerta}")
         else:
@@ -272,9 +322,13 @@ def gerar_relatorio_premium(dados_viga: dict[str, Any], resultados: list[dict[st
         if rc:
             vsd = rc.vsd_kn
             lines.append("  CISALHAMENTO (Asw/s):")
-            lines.append(f"    Vsd = {vsd:.2f} kN | VRd2 (Bielas) = {rc.vrd2_kn:.2f} kN (Passa VRd2: {rc.passa_vrd2})")
+            lines.append(
+                f"    Vsd = {vsd:.2f} kN | VRd2 (Bielas) = {rc.vrd2_kn:.2f} kN (Passa VRd2: {rc.passa_vrd2})"
+            )
             lines.append(f"    Asw/s necessário = {rc.asw_usado_cm2_m:.2f} cm²/m")
-            lines.append(f"    Estribos Adotados: Φ {rc.diam_estribo_mm:.1f} mm c/ {rc.dist_estribos_cm:.1f} cm")
+            lines.append(
+                f"    Estribos Adotados: Φ {rc.diam_estribo_mm:.1f} mm c/ {rc.dist_estribos_cm:.1f} cm"
+            )
         else:
             lines.append("  CISALHAMENTO (Asw/s): Esforço nulo.")
 
@@ -291,7 +345,7 @@ def gerar_relatorio_viga_comum_premium(
     secoes_criticas: list[SecaoCritica] = None,
     detalhamento: list[dict] = None,
     resultado_els: dict = None,
-    **kwargs
+    **kwargs,
 ) -> str:
     from core.relatorio_base import gerar_relatorio_viga_comum
     from ui.ftool.diagrama import gerar_diagrama_esforcos
@@ -309,7 +363,9 @@ def gerar_relatorio_viga_comum_premium(
             pdf.section_title(sec_det, "Detalhamento de Estribos")
             pdf.set_font("Helvetica", "", 8)
             pdf.set_text_color(80, 80, 80)
-            pdf.cell(0, 4, "Tabela pratica para execucao em obra. Calculo detalhado em Anexo.", border=0)
+            pdf.cell(
+                0, 4, "Tabela pratica para execucao em obra. Calculo detalhado em Anexo.", border=0
+            )
             pdf.ln(7)
             col_w = [55, 39, 26, 25, 25]
             cab = ["Trecho (m)", "Regiao", "fi (mm)", "Esp. (cm)", "Qtd."]
@@ -324,7 +380,13 @@ def gerar_relatorio_viga_comum_premium(
             for j, r in enumerate(detalhamento):
                 bg = (243, 244, 246) if j % 2 == 0 else (255, 255, 255)
                 pdf.set_fill_color(*bg)
-                vals = [f"{r['x_inicio']:.1f}-{r['x_fim']:.1f}", r['zona'], f"{r['phi_mm']:.0f}", f"{r['espacamento_cm']:.0f}", str(r.get('qtd_estribos', '-'))]
+                vals = [
+                    f"{r['x_inicio']:.1f}-{r['x_fim']:.1f}",
+                    r["zona"],
+                    f"{r['phi_mm']:.0f}",
+                    f"{r['espacamento_cm']:.0f}",
+                    str(r.get("qtd_estribos", "-")),
+                ]
                 for i, v in enumerate(vals):
                     pdf.cell(col_w[i], 6, v, border=1, align="C", fill=True)
                 pdf.ln()
@@ -349,9 +411,17 @@ def gerar_relatorio_viga_comum_premium(
                 ("Flecha diferida:", f"{flecha['flecha_diferida_cm']:.2f} cm", None),
                 ("Flecha total:", f"{flecha['flecha_total_cm']:.2f} cm", None),
                 ("Limite L/250:", f"{flecha['limite_total_cm']:.2f} cm", None),
-                ("Status total:", "OK" if flecha['passa_total'] else "NAO PASSA", (22,101,52) if flecha['passa_total'] else (185,28,28)),
+                (
+                    "Status total:",
+                    "OK" if flecha["passa_total"] else "NAO PASSA",
+                    (22, 101, 52) if flecha["passa_total"] else (185, 28, 28),
+                ),
                 ("Limite L/350:", f"{flecha['limite_ativo_cm']:.2f} cm", None),
-                ("Status diferida:", "OK" if flecha['passa_ativo'] else "NAO PASSA", (22,101,52) if flecha['passa_ativo'] else (185,28,28)),
+                (
+                    "Status diferida:",
+                    "OK" if flecha["passa_ativo"] else "NAO PASSA",
+                    (22, 101, 52) if flecha["passa_ativo"] else (185, 28, 28),
+                ),
             ]:
                 pdf.cell(90, 6, label, border=0)
                 cor = cor_override or (31, 41, 55)
@@ -360,7 +430,7 @@ def gerar_relatorio_viga_comum_premium(
                 pdf.set_text_color(31, 41, 55)
                 pdf.ln(6)
             # Exibir dica de correção se não passar
-            if not flecha['passa_total'] and flecha.get('dica'):
+            if not flecha["passa_total"] and flecha.get("dica"):
                 pdf.ln(2)
                 pdf.set_font("Helvetica", "I", 8)
                 pdf.set_text_color(185, 28, 28)
@@ -376,8 +446,8 @@ def gerar_relatorio_viga_comum_premium(
                 pdf.ln(10)
                 pdf.set_font("Helvetica", "", 9)
                 pdf.set_text_color(31, 41, 55)
-                st = "OK" if fiss.get('passa') else "NAO PASSA"
-                cr = (22, 101, 52) if fiss.get('passa') else (185, 28, 28)
+                st = "OK" if fiss.get("passa") else "NAO PASSA"
+                cr = (22, 101, 52) if fiss.get("passa") else (185, 28, 28)
                 for label, val, cor_override in [
                     ("wk:", f"{fiss['wk_mm']:.2f} mm", cr),
                     ("w_lim (CAA):", f"{fiss['wk_limite_mm']:.1f} mm", None),
@@ -390,7 +460,7 @@ def gerar_relatorio_viga_comum_premium(
                     pdf.set_text_color(31, 41, 55)
                     pdf.ln(6)
                 # Exibir dica de correção se não passar
-                if not fiss.get('passa') and fiss.get('dica'):
+                if not fiss.get("passa") and fiss.get("dica"):
                     pdf.ln(2)
                     pdf.set_font("Helvetica", "I", 8)
                     pdf.set_text_color(185, 28, 28)
@@ -399,7 +469,12 @@ def gerar_relatorio_viga_comum_premium(
 
             # Exibir ajustes aplicados se houver
             ajustes = resultado_els.get("ajustes_aplicados")
-            if ajustes and (ajustes.barras_extras > 0 or ajustes.phi_minimo_mm or ajustes.h_override_cm or ajustes.fck_override_mpa):
+            if ajustes and (
+                ajustes.barras_extras > 0
+                or ajustes.phi_minimo_mm
+                or ajustes.h_override_cm
+                or ajustes.fck_override_mpa
+            ):
                 pdf.ln(4)
                 pdf.set_font("Helvetica", "B", 10)
                 pdf.set_fill_color(0, 128, 0)
@@ -430,9 +505,7 @@ def gerar_relatorio_viga_comum_premium(
                     pdf.ln(6)
 
     return gerar_relatorio_viga_comum(
-        filepath,
-        on_add_diagrams=on_add_diagrams if (momentos and cortantes) else None,
-        **kwargs
+        filepath, on_add_diagrams=on_add_diagrams if (momentos and cortantes) else None, **kwargs
     )
 
 
@@ -444,7 +517,7 @@ def gerar_relatorio_viga_t_premium(
     secoes_criticas: list[SecaoCritica] = None,
     detalhamento: list[dict] = None,
     resultado_els: dict = None,
-    **kwargs
+    **kwargs,
 ) -> str:
     from core.relatorio_base import gerar_relatorio_viga_t
     from ui.ftool.diagrama import gerar_diagrama_esforcos
@@ -462,7 +535,9 @@ def gerar_relatorio_viga_t_premium(
             pdf.section_title(sec_det, "Detalhamento de Estribos")
             pdf.set_font("Helvetica", "", 8)
             pdf.set_text_color(80, 80, 80)
-            pdf.cell(0, 4, "Tabela pratica para execucao em obra. Calculo detalhado em Anexo.", border=0)
+            pdf.cell(
+                0, 4, "Tabela pratica para execucao em obra. Calculo detalhado em Anexo.", border=0
+            )
             pdf.ln(7)
             col_w = [55, 39, 26, 25, 25]
             cab = ["Trecho (m)", "Regiao", "fi (mm)", "Esp. (cm)", "Qtd."]
@@ -477,7 +552,13 @@ def gerar_relatorio_viga_t_premium(
             for j, r in enumerate(detalhamento):
                 bg = (243, 244, 246) if j % 2 == 0 else (255, 255, 255)
                 pdf.set_fill_color(*bg)
-                vals = [f"{r['x_inicio']:.1f}-{r['x_fim']:.1f}", r['zona'], f"{r['phi_mm']:.0f}", f"{r['espacamento_cm']:.0f}", str(r.get('qtd_estribos', '-'))]
+                vals = [
+                    f"{r['x_inicio']:.1f}-{r['x_fim']:.1f}",
+                    r["zona"],
+                    f"{r['phi_mm']:.0f}",
+                    f"{r['espacamento_cm']:.0f}",
+                    str(r.get("qtd_estribos", "-")),
+                ]
                 for i, v in enumerate(vals):
                     pdf.cell(col_w[i], 6, v, border=1, align="C", fill=True)
                 pdf.ln()
@@ -502,9 +583,17 @@ def gerar_relatorio_viga_t_premium(
                 ("Flecha diferida:", f"{flecha['flecha_diferida_cm']:.2f} cm", None),
                 ("Flecha total:", f"{flecha['flecha_total_cm']:.2f} cm", None),
                 ("Limite L/250:", f"{flecha['limite_total_cm']:.2f} cm", None),
-                ("Status total:", "OK" if flecha['passa_total'] else "NAO PASSA", (22,101,52) if flecha['passa_total'] else (185,28,28)),
+                (
+                    "Status total:",
+                    "OK" if flecha["passa_total"] else "NAO PASSA",
+                    (22, 101, 52) if flecha["passa_total"] else (185, 28, 28),
+                ),
                 ("Limite L/350:", f"{flecha['limite_ativo_cm']:.2f} cm", None),
-                ("Status diferida:", "OK" if flecha['passa_ativo'] else "NAO PASSA", (22,101,52) if flecha['passa_ativo'] else (185,28,28)),
+                (
+                    "Status diferida:",
+                    "OK" if flecha["passa_ativo"] else "NAO PASSA",
+                    (22, 101, 52) if flecha["passa_ativo"] else (185, 28, 28),
+                ),
             ]:
                 pdf.cell(90, 6, label, border=0)
                 cor = cor_override or (31, 41, 55)
@@ -521,8 +610,8 @@ def gerar_relatorio_viga_t_premium(
                 pdf.ln(10)
                 pdf.set_font("Helvetica", "", 9)
                 pdf.set_text_color(31, 41, 55)
-                st = "OK" if fiss.get('passa') else "NAO PASSA"
-                cr = (22, 101, 52) if fiss.get('passa') else (185, 28, 28)
+                st = "OK" if fiss.get("passa") else "NAO PASSA"
+                cr = (22, 101, 52) if fiss.get("passa") else (185, 28, 28)
                 for label, val, cor_override in [
                     ("wk:", f"{fiss['wk_mm']:.2f} mm", cr),
                     ("w_lim (CAA):", f"{fiss['wk_limite_mm']:.1f} mm", None),
@@ -537,7 +626,12 @@ def gerar_relatorio_viga_t_premium(
 
             # Exibir ajustes aplicados se houver
             ajustes = resultado_els.get("ajustes_aplicados")
-            if ajustes and (ajustes.barras_extras > 0 or ajustes.phi_minimo_mm or ajustes.h_override_cm or ajustes.fck_override_mpa):
+            if ajustes and (
+                ajustes.barras_extras > 0
+                or ajustes.phi_minimo_mm
+                or ajustes.h_override_cm
+                or ajustes.fck_override_mpa
+            ):
                 pdf.ln(4)
                 pdf.set_font("Helvetica", "B", 10)
                 pdf.set_fill_color(0, 128, 0)
@@ -568,8 +662,5 @@ def gerar_relatorio_viga_t_premium(
                     pdf.ln(6)
 
     return gerar_relatorio_viga_t(
-        filepath,
-        on_add_diagrams=on_add_diagrams if (momentos and cortantes) else None,
-        **kwargs
+        filepath, on_add_diagrams=on_add_diagrams if (momentos and cortantes) else None, **kwargs
     )
-

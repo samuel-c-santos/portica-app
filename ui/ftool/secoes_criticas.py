@@ -8,11 +8,11 @@ from dataclasses import dataclass
 
 @dataclass
 class SecaoCritica:
-    x: float          # posição (m)
-    momento: float    # momento fletor (kN·m)
-    cortante: float   # esforço cortante (kN)
-    tipo: str         # "MÁX", "MÍN", "APOIO", "M_NULO", "EXTREMO"
-    descricao: str    # descrição textual da seção
+    x: float  # posição (m)
+    momento: float  # momento fletor (kN·m)
+    cortante: float  # esforço cortante (kN)
+    tipo: str  # "MÁX", "MÍN", "APOIO", "M_NULO", "EXTREMO"
+    descricao: str  # descrição textual da seção
     origem: str = ""  # nome da combinação de origem (ex: "Combinação 1")
 
 
@@ -104,7 +104,9 @@ def detectar_minimos_locais(pontos: list[tuple[float, float]]) -> list[tuple[flo
     return minimos
 
 
-def detectar_apoios(momentos: list[tuple[float, float]], cortantes: list[tuple[float, float]]) -> list[float]:
+def detectar_apoios(
+    momentos: list[tuple[float, float]], cortantes: list[tuple[float, float]]
+) -> list[float]:
     """
     Detecta as posições x dos apoios:
     1. Descontinuidades na curva de cortante (dois pontos com mesmo x)
@@ -163,10 +165,7 @@ def detectar_pontos_momento_nulo(pontos: list[tuple[float, float]]) -> list[tupl
 
 
 def calcular_lo_para_secao(
-    x_secao: float,
-    pontos_momento_nulo: list[tuple[float, float]],
-    x_min: float,
-    x_max: float
+    x_secao: float, pontos_momento_nulo: list[tuple[float, float]], x_min: float, x_max: float
 ) -> tuple[float | None, float | None]:
     """
     Calcula os vãos teóricos l0 esquerdo e direito para uma seção crítica.
@@ -218,7 +217,9 @@ def calcular_lo_para_secao(
     return lo_cm, lo_cm
 
 
-def detectar_todas_secoes(momentos: list[tuple[float, float]], cortantes: list[tuple[float, float]]) -> list[SecaoCritica]:
+def detectar_todas_secoes(
+    momentos: list[tuple[float, float]], cortantes: list[tuple[float, float]]
+) -> list[SecaoCritica]:
     """
     Orquestra todas as detecções (máximos, mínimos, apoios, momentos nulos, extremos)
     e retorna uma lista de SecaoCritica ordenada por x.
@@ -290,12 +291,14 @@ def detectar_todas_secoes(momentos: list[tuple[float, float]], cortantes: list[t
         val_m = interpolar_y(momentos, x)
         val_v = interpolar_y(cortantes, x)
 
-        secoes.append(SecaoCritica(
-            x=round(x, 4),
-            momento=round(val_m, 2),
-            cortante=round(val_v, 2),
-            tipo=tipo,
-            descricao=descricao
-        ))
+        secoes.append(
+            SecaoCritica(
+                x=round(x, 4),
+                momento=round(val_m, 2),
+                cortante=round(val_v, 2),
+                tipo=tipo,
+                descricao=descricao,
+            )
+        )
 
     return secoes

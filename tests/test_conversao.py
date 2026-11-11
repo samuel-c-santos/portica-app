@@ -1,4 +1,5 @@
 """Testes de conversao de unidades e constantes do motor."""
+
 from core.calculos import (
     GAMMA_F_TABLE,
     area_barra,

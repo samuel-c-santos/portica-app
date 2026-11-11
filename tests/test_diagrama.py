@@ -123,11 +123,18 @@ def test_3_gerar_relatorio_viga_t_premium(ftool_data):
     res_flex_t = []
     for sec in secoes:
         rf_list = calcular_flexao_viga_t(
-            h_cm=70.0, bw_cm=20.0, bf_cm=60.0, hf_cm=12.0,
-            caa=2, fck_mpa=30.0,
-            diam_estribo_mm=5.0, diam_barra_mm=16.0,
-            fyk_mpa=50.0, momentos=[sec.momento],
-            b1esq_cm=20.0, b1dir_cm=20.0,
+            h_cm=70.0,
+            bw_cm=20.0,
+            bf_cm=60.0,
+            hf_cm=12.0,
+            caa=2,
+            fck_mpa=30.0,
+            diam_estribo_mm=5.0,
+            diam_barra_mm=16.0,
+            fyk_mpa=50.0,
+            momentos=[sec.momento],
+            b1esq_cm=20.0,
+            b1dir_cm=20.0,
             gamma_f=1.4,
         )
         res_flex_t.append(rf_list[0])

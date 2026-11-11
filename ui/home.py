@@ -38,6 +38,7 @@ from ui.theme import (
 
 # ── Utilitários ───────────────────────────────────────────────────────────
 
+
 def _format_accessed(iso_str: str) -> str:
     try:
         dt = datetime.fromisoformat(iso_str)
@@ -59,7 +60,7 @@ def _format_accessed(iso_str: str) -> str:
 def _truncate_path(path: str, max_len: int = 60) -> str:
     if len(path) <= max_len:
         return path
-    return f"{path[:22]}...{path[-(max_len - 25):]}"
+    return f"{path[:22]}...{path[-(max_len - 25) :]}"
 
 
 def _asset(name: str) -> str:
@@ -68,7 +69,10 @@ def _asset(name: str) -> str:
 
 # ── Card de modo de cálculo ───────────────────────────────────────────────
 
-def _mode_card(page, title, description, mode_label, accent, icon_asset, illustration_asset, on_click):
+
+def _mode_card(
+    page, title, description, mode_label, accent, icon_asset, illustration_asset, on_click
+):
     """
     Card horizontal com:
       - Ilustração 3D posicionada à direita atrás do conteúdo
@@ -84,7 +88,7 @@ def _mode_card(page, title, description, mode_label, accent, icon_asset, illustr
 
     bg_layer = ft.Container(
         content=bg_illustration,
-        alignment=ft.Alignment(1.0, 0.5),   # ancorada à direita
+        alignment=ft.Alignment(1.0, 0.5),  # ancorada à direita
         left=0,
         top=0,
         right=0,
@@ -112,12 +116,14 @@ def _mode_card(page, title, description, mode_label, accent, icon_asset, illustr
     # Ícone PNG
     icon_img = ft.Image(
         src=icon_asset,
-        width=52, height=52,
+        width=52,
+        height=52,
         fit=ft.BoxFit.CONTAIN,
     )
     icon_box = ft.Container(
         content=icon_img,
-        width=64, height=64,
+        width=64,
+        height=64,
         border_radius=br_all(Radius.MD),
         bgcolor=accent,
         alignment=ft.Alignment.CENTER,
@@ -134,7 +140,7 @@ def _mode_card(page, title, description, mode_label, accent, icon_asset, illustr
 
     # Botão iniciar — cor adaptável ao tema
     dark = is_dark(page)
-    btn_bg    = accent if dark else "#0F1728"
+    btn_bg = accent if dark else "#0F1728"
     btn_color = Palette.TEXT_ON_DARK
 
     btn = ft.Container(
@@ -227,27 +233,30 @@ def _mode_card(page, title, description, mode_label, accent, icon_asset, illustr
 
 # ── Item de projeto recente ───────────────────────────────────────────────
 
+
 def _recent_item(entry: dict, mode_icon_rec, mode_icon_t, on_open, on_remove):
-    path  = entry.get("path", "")
-    name  = entry.get("name", os.path.basename(path))
+    path = entry.get("path", "")
+    name = entry.get("name", os.path.basename(path))
     adate = _format_accessed(entry.get("accessed", ""))
     spath = _truncate_path(path)
 
     modo = entry.get("modo")
     if modo:
-        is_t_beam = (modo == "t")
+        is_t_beam = modo == "t"
     else:
         is_t_beam = "viga_t" in name.lower() or name.lower().startswith("vt")
 
     accent = Palette.SECONDARY if is_t_beam else Palette.PRIMARY
     icon_img = ft.Image(
         src=mode_icon_t if is_t_beam else mode_icon_rec,
-        width=22, height=22,
+        width=22,
+        height=22,
         fit=ft.BoxFit.CONTAIN,
     )
     icon_box = ft.Container(
         content=icon_img,
-        width=36, height=36,
+        width=36,
+        height=36,
         border_radius=br_all(Radius.SM),
         bgcolor=accent,
         shadow=SHADOW_SM,
@@ -258,17 +267,20 @@ def _recent_item(entry: dict, mode_icon_rec, mode_icon_t, on_open, on_remove):
         controls=[
             ft.Text(
                 name,
-                size=13, weight=ft.FontWeight.W_600,
+                size=13,
+                weight=ft.FontWeight.W_600,
                 color=Palette.TEXT_PRIMARY,
                 overflow=ft.TextOverflow.ELLIPSIS,
-                max_lines=1, no_wrap=True,
+                max_lines=1,
+                no_wrap=True,
             ),
             ft.Text(
                 spath,
                 size=11,
                 color=Palette.TEXT_SECONDARY,
                 overflow=ft.TextOverflow.ELLIPSIS,
-                max_lines=1, no_wrap=True,
+                max_lines=1,
+                no_wrap=True,
             ),
         ],
         spacing=2,
@@ -281,7 +293,8 @@ def _recent_item(entry: dict, mode_icon_rec, mode_icon_t, on_open, on_remove):
         icon_color=Palette.TEXT_DISABLED,
         tooltip="Remover da lista",
         on_click=lambda e, p=path: on_remove(p),
-        width=26, height=26,
+        width=26,
+        height=26,
         style=ft.ButtonStyle(padding=ft.Padding.all(0)),
     )
 
@@ -307,6 +320,7 @@ def _recent_item(entry: dict, mode_icon_rec, mode_icon_t, on_open, on_remove):
 
 # ── Tela principal ────────────────────────────────────────────────────────
 
+
 def build_home(page, on_select_mode, on_open_recent=None, on_open_file=None):
     """
     Constrói a tela inicial profissional.
@@ -321,10 +335,10 @@ def build_home(page, on_select_mode, on_open_recent=None, on_open_file=None):
 
     # Ícones brancos (claro) ficam sobre o fundo colorido do icon_box (tema claro)
     # Ícones escuros ficam sobre fundo claro/variante (tema escuro)
-    icon_rec  = _asset("icon-rec-claro.png"  if not dark else "icon-rec-escuro.png")
-    icon_t    = _asset("icon-t-claro.png"    if not dark else "icon-t-escuro.png")
+    icon_rec = _asset("icon-rec-claro.png" if not dark else "icon-rec-escuro.png")
+    icon_t = _asset("icon-t-claro.png" if not dark else "icon-t-escuro.png")
     illus_rec = _asset("ilustracao-viga-rec.png" if not dark else "ilustracao-viga-rec-escura.png")
-    illus_t   = _asset("ilustracao-viga-t.png" if not dark else "ilustracao-viga-t-escura.png")
+    illus_t = _asset("ilustracao-viga-t.png" if not dark else "ilustracao-viga-t-escura.png")
 
     # ── Cabeçalho ────────────────────────────────────────────────────────
 
@@ -364,8 +378,10 @@ def build_home(page, on_select_mode, on_open_recent=None, on_open_file=None):
             vertical_alignment=ft.CrossAxisAlignment.CENTER,
         ),
         padding=pad_only(
-            left=Spacing.XXXL, right=Spacing.XXXL,
-            top=Spacing.XXXL, bottom=Spacing.XL,
+            left=Spacing.XXXL,
+            right=Spacing.XXXL,
+            top=Spacing.XXXL,
+            bottom=Spacing.XL,
         ),
     )
 
@@ -404,7 +420,7 @@ def build_home(page, on_select_mode, on_open_recent=None, on_open_file=None):
         content=ft.ResponsiveRow(
             controls=[
                 ft.Container(card_rec, col={"xs": 12, "lg": 6}, padding=pad_only(right=Spacing.SM)),
-                ft.Container(card_t,   col={"xs": 12, "lg": 6}, padding=pad_only(left=Spacing.SM)),
+                ft.Container(card_t, col={"xs": 12, "lg": 6}, padding=pad_only(left=Spacing.SM)),
             ],
         ),
         padding=pad_sym(horizontal=Spacing.XXXL, vertical=0),
@@ -427,7 +443,9 @@ def build_home(page, on_select_mode, on_open_recent=None, on_open_file=None):
                 ft.Container(
                     content=ft.Column(
                         controls=[
-                            ft.Icon(ft.Icons.FOLDER_OPEN_OUTLINED, color=Palette.TEXT_DISABLED, size=36),
+                            ft.Icon(
+                                ft.Icons.FOLDER_OPEN_OUTLINED, color=Palette.TEXT_DISABLED, size=36
+                            ),
                             ft.Container(height=Spacing.SM),
                             body_medium("Nenhum projeto recente", color=Palette.TEXT_DISABLED),
                             ft.Container(height=Spacing.XS),
@@ -483,14 +501,20 @@ def build_home(page, on_select_mode, on_open_recent=None, on_open_file=None):
                 ft.Container(
                     content=ft.Row(
                         controls=[
-                            ft.Icon(ft.Icons.HISTORY_ROUNDED, color=Palette.TEXT_SECONDARY, size=16),
+                            ft.Icon(
+                                ft.Icons.HISTORY_ROUNDED, color=Palette.TEXT_SECONDARY, size=16
+                            ),
                             ft.Container(width=Spacing.SM),
                             title_small("Projetos recentes", color=Palette.TEXT_PRIMARY),
                             ft.Container(expand=True),
                             ft.Container(
                                 content=ft.Row(
                                     controls=[
-                                        ft.Icon(ft.Icons.FOLDER_OPEN_ROUNDED, color=Palette.PRIMARY, size=15),
+                                        ft.Icon(
+                                            ft.Icons.FOLDER_OPEN_ROUNDED,
+                                            color=Palette.PRIMARY,
+                                            size=15,
+                                        ),
                                         ft.Container(width=Spacing.XXS),
                                         label_small("Abrir arquivo", color=Palette.PRIMARY),
                                     ],

@@ -39,17 +39,19 @@ def test_armadura_pele_nao_sobrepoe_2a_camada():
 
     # Calcular layout da armadura principal
     detailer = BeamDetailer()
-    data_inf = detailer.detail(BeamDetailingInput(
-        bw=bw_cm * 10.0,  # mm
-        h=h_cm * 10.0,    # mm
-        c_nom=cob_mm,
-        phi_estribo=phi_estribo_mm,
-        phi_barra=phi_barra_inf_mm,
-        d_max_agregado=19.0,
-        total_bars=n_barras_inf,
-        is_t=False,
-        is_superior=False,
-    ))
+    data_inf = detailer.detail(
+        BeamDetailingInput(
+            bw=bw_cm * 10.0,  # mm
+            h=h_cm * 10.0,  # mm
+            c_nom=cob_mm,
+            phi_estribo=phi_estribo_mm,
+            phi_barra=phi_barra_inf_mm,
+            d_max_agregado=19.0,
+            total_bars=n_barras_inf,
+            is_t=False,
+            is_superior=False,
+        )
+    )
 
     # Verificar que há 2 camadas
     assert data_inf.layer_count == 2, f"Deve haver 2 camadas, mas há {data_inf.layer_count}"
@@ -94,8 +96,9 @@ def test_armadura_pele_nao_sobrepoe_2a_camada():
 
     # A armadura de pele deve começar abaixo do topo da 2ª camada
     # (considerando que y aumenta de cima para baixo no PDF)
-    assert y_inicio_pele_mm > topo_2a_camada_mm, \
+    assert y_inicio_pele_mm > topo_2a_camada_mm, (
         f"Armadura de pele (y={y_inicio_pele_mm:.1f}mm) deve começar abaixo da 2ª camada (topo={topo_2a_camada_mm:.1f}mm)"
+    )
 
 
 def test_armadura_pele_secao_t_nao_sobrepoe():
@@ -117,19 +120,21 @@ def test_armadura_pele_secao_t_nao_sobrepoe():
 
     # Calcular layout da armadura principal
     detailer = BeamDetailer()
-    data_inf = detailer.detail(BeamDetailingInput(
-        bw=bw_cm * 10.0,  # mm
-        h=h_cm * 10.0,    # mm
-        c_nom=cob_mm,
-        phi_estribo=phi_estribo_mm,
-        phi_barra=phi_barra_inf_mm,
-        d_max_agregado=19.0,
-        total_bars=n_barras_inf,
-        is_t=True,
-        bf_cm=bf_cm,
-        hf_cm=hf_cm,
-        is_superior=False,
-    ))
+    data_inf = detailer.detail(
+        BeamDetailingInput(
+            bw=bw_cm * 10.0,  # mm
+            h=h_cm * 10.0,  # mm
+            c_nom=cob_mm,
+            phi_estribo=phi_estribo_mm,
+            phi_barra=phi_barra_inf_mm,
+            d_max_agregado=19.0,
+            total_bars=n_barras_inf,
+            is_t=True,
+            bf_cm=bf_cm,
+            hf_cm=hf_cm,
+            is_superior=False,
+        )
+    )
 
     # Verificar que há 2 camadas
     assert data_inf.layer_count == 2, f"Deve haver 2 camadas, mas há {data_inf.layer_count}"
@@ -185,7 +190,9 @@ def test_armadura_pele_espacamento_perfeitamente_uniforme():
     phi_pele_cm = phi_pele_mm / 10.0
     d_livre_cm = (h_free_cm - n_barras_pele * phi_pele_cm) / (n_barras_pele + 1.0)
 
-    ys_cm = [y_top_raw_cm + (i + 1) * d_livre_cm + (i + 0.5) * phi_pele_cm for i in range(n_barras_pele)]
+    ys_cm = [
+        y_top_raw_cm + (i + 1) * d_livre_cm + (i + 0.5) * phi_pele_cm for i in range(n_barras_pele)
+    ]
 
     # Verificação de espaçamento livre (borda a borda) uniforme
     # Distância da armadura superior até a borda superior da primeira barra de pele
@@ -194,7 +201,7 @@ def test_armadura_pele_espacamento_perfeitamente_uniforme():
 
     # Distâncias intermediárias entre bordas de pele
     for i in range(n_barras_pele - 1):
-        dist_mid = (ys_cm[i+1] - phi_pele_cm / 2.0) - (ys_cm[i] + phi_pele_cm / 2.0)
+        dist_mid = (ys_cm[i + 1] - phi_pele_cm / 2.0) - (ys_cm[i] + phi_pele_cm / 2.0)
         assert abs(dist_mid - d_livre_cm) < 1e-6
 
     # Distância da borda inferior da última barra de pele até a armadura inferior

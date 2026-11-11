@@ -17,6 +17,7 @@ SAMPLES_DIR = os.path.join(BASE_DIR, "samples")
 def _ler_dados():
     """Lê momentos e deformações dos arquivos de amostra."""
     from ui.ftool.parser import parse_deformacao, parse_momento
+
     mom = parse_momento(os.path.join(SAMPLES_DIR, "test_momento_fletor.txt"))
     deform = parse_deformacao(os.path.join(SAMPLES_DIR, "test_deformacoes.txt"))
     return mom, deform
@@ -47,16 +48,13 @@ def test_barras_extras_atualizam_qtd_barras():
 
     # Dimensionar sem ajustes
     resultados_base = dimensionar_trechos_ftool(
-        dados_viga, secoes,
-        momentos=momentos, deformacoes=deformacoes
+        dados_viga, secoes, momentos=momentos, deformacoes=deformacoes
     )
 
     # Dimensionar com 3 barras extras
     ajustes = AjustesELS(barras_extras=3)
     resultados_ajustados = dimensionar_trechos_ftool(
-        dados_viga, secoes,
-        momentos=momentos, deformacoes=deformacoes,
-        ajustes_els=ajustes
+        dados_viga, secoes, momentos=momentos, deformacoes=deformacoes, ajustes_els=ajustes
     )
 
     # Verificar que qtd_barras foi atualizado
@@ -67,12 +65,14 @@ def test_barras_extras_atualizam_qtd_barras():
     assert rf_ajustado is not None
 
     # qtd_barras deve ser maior com ajustes
-    assert rf_ajustado.qtd_barras == rf_base.qtd_barras + 3, \
+    assert rf_ajustado.qtd_barras == rf_base.qtd_barras + 3, (
         f"qtd_barras deve ser {rf_base.qtd_barras + 3}, mas é {rf_ajustado.qtd_barras}"
+    )
 
     # as_usado_cm2 deve ser maior com ajustes
-    assert rf_ajustado.as_usado_cm2 > rf_base.as_usado_cm2, \
+    assert rf_ajustado.as_usado_cm2 > rf_base.as_usado_cm2, (
         f"as_usado_cm2 deve ser maior com ajustes: {rf_ajustado.as_usado_cm2} vs {rf_base.as_usado_cm2}"
+    )
 
 
 def test_barras_extras_recalcula_armadura_pele():
@@ -101,16 +101,14 @@ def test_barras_extras_recalcula_armadura_pele():
     # Dimensionar com 3 barras extras
     ajustes = AjustesELS(barras_extras=3)
     resultados = dimensionar_trechos_ftool(
-        dados_viga, secoes,
-        momentos=momentos, deformacoes=deformacoes,
-        ajustes_els=ajustes
+        dados_viga, secoes, momentos=momentos, deformacoes=deformacoes, ajustes_els=ajustes
     )
 
     rf = resultados["secoes"][0]["resultado_flexao"]
     assert rf is not None
 
     # Se a viga exige armadura de pele, verificar que foi recalculada
-    if hasattr(rf, 'requer_pele') and rf.requer_pele:
+    if hasattr(rf, "requer_pele") and rf.requer_pele:
         # Armadura de pele deve existir
         assert rf.n_barras_pele_face > 0, "Armadura de pele deve existir para h >= 60cm"
         assert rf.phi_pele_mm > 0, "Diâmetro da armadura de pele deve ser > 0"
@@ -139,14 +137,12 @@ def test_sem_ajustes_nao_altera_qtd_barras():
 
     # Dimensionar sem ajustes
     resultados1 = dimensionar_trechos_ftool(
-        dados_viga, secoes,
-        momentos=momentos, deformacoes=deformacoes
+        dados_viga, secoes, momentos=momentos, deformacoes=deformacoes
     )
 
     # Dimensionar novamente sem ajustes
     resultados2 = dimensionar_trechos_ftool(
-        dados_viga, secoes,
-        momentos=momentos, deformacoes=deformacoes
+        dados_viga, secoes, momentos=momentos, deformacoes=deformacoes
     )
 
     rf1 = resultados1["secoes"][0]["resultado_flexao"]
@@ -184,16 +180,13 @@ def test_barras_extras_recalcula_layout_convergido():
 
     # Dimensionar sem ajustes
     resultados_base = dimensionar_trechos_ftool(
-        dados_viga, secoes,
-        momentos=momentos, deformacoes=deformacoes
+        dados_viga, secoes, momentos=momentos, deformacoes=deformacoes
     )
 
     # Dimensionar com 3 barras extras
     ajustes = AjustesELS(barras_extras=3)
     resultados_ajustados = dimensionar_trechos_ftool(
-        dados_viga, secoes,
-        momentos=momentos, deformacoes=deformacoes,
-        ajustes_els=ajustes
+        dados_viga, secoes, momentos=momentos, deformacoes=deformacoes, ajustes_els=ajustes
     )
 
     rf_base = resultados_base["secoes"][0]["resultado_flexao"]

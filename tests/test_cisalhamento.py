@@ -1,4 +1,5 @@
 """Testes do motor de cisalhamento."""
+
 from core.calculos import calcular_cisalhamento_viga_comum
 
 
@@ -141,6 +142,7 @@ class TestCisalhamento:
     def test_lambda_f_para_fck_alto(self):
         """M11: lambda deve reduzir para fck > 50 (NBR 6118:17.4.2.2)."""
         from core.calculos import lambda_f
+
         # fck <= 50: lambda = 0.80
         assert lambda_f(30) == 0.80
         assert lambda_f(50) == 0.80

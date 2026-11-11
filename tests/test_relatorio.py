@@ -13,6 +13,7 @@ from core.relatorio_base import gerar_relatorio_viga_comum, gerar_relatorio_viga
 # Texto do rodapé de aviso de responsabilidade (deve estar em todas as páginas)
 RODAPE_AVISO = "Uso sob responsabilidade do usuário — ver README do projeto"
 
+
 def test_gerar_relatorio_viga_comum_sucesso(viga_exemplo, momentos_exemplo, cortantes_exemplo):
     res_flex = calcular_flexao_viga_comum(
         h_cm=viga_exemplo["h_cm"],
@@ -65,6 +66,7 @@ def test_gerar_relatorio_viga_comum_sucesso(viga_exemplo, momentos_exemplo, cort
     finally:
         if os.path.exists(temp_pdf_path):
             os.remove(temp_pdf_path)
+
 
 def test_gerar_relatorio_viga_t_sucesso(viga_exemplo_t, momentos_exemplo, cortantes_exemplo):
     res_flex = calcular_flexao_viga_t(

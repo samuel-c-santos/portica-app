@@ -43,7 +43,8 @@ def _build_table(data):
                 border_radius=br_all(Radius.SM),
                 expand=True,
                 alignment=ft.Alignment.CENTER,
-            ) for c in data["cabecalho"]
+            )
+            for c in data["cabecalho"]
         ],
         spacing=Spacing.XS,
     )
@@ -54,12 +55,15 @@ def _build_table(data):
         row = ft.Row(
             controls=[
                 ft.Container(
-                    content=body_small(c, color=Palette.TEXT_PRIMARY, text_align=ft.TextAlign.CENTER),
+                    content=body_small(
+                        c, color=Palette.TEXT_PRIMARY, text_align=ft.TextAlign.CENTER
+                    ),
                     bgcolor=bg,
                     padding=pad_sym(horizontal=Spacing.SM, vertical=Spacing.SM),
                     border_radius=br_all(Radius.SM),
                     expand=True,
-                ) for c in linha
+                )
+                for c in linha
             ],
             spacing=Spacing.XS,
         )
@@ -131,6 +135,7 @@ def build_info_dialog(page, data):
 
     if "imagem" in data:
         import os
+
         here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         img_path = os.path.join(here, "assets", "info", data["imagem"])
         if os.path.exists(img_path):
@@ -144,7 +149,9 @@ def build_info_dialog(page, data):
                     ),
                     alignment=ft.Alignment.CENTER,
                     ink=True,
-                    on_click=lambda e, path=img_path, t=data["titulo"]: open_image_preview(page, path, t),
+                    on_click=lambda e, path=img_path, t=data["titulo"]: open_image_preview(
+                        page, path, t
+                    ),
                     tooltip="Clique para ampliar",
                 )
             )
@@ -164,7 +171,8 @@ def build_info_dialog(page, data):
                 controls=[content],
                 scroll=ft.ScrollMode.AUTO,
             ),
-            width=520, padding=pad_sym(horizontal=Spacing.MD, vertical=Spacing.SM),
+            width=520,
+            padding=pad_sym(horizontal=Spacing.MD, vertical=Spacing.SM),
         ),
         actions=[
             ft.TextButton(
@@ -210,6 +218,7 @@ def open_gamma_f_info(page):
 
 # ── Dialogs textuais (conteudo explicativo, nao-tabular) ────────────────────
 
+
 def _build_text_content(data):
     """Renderiza conteudo textual com secoes (titulo + paragrafo)."""
     items = [title_medium(data["titulo"], color=Palette.TEXT_PRIMARY)]
@@ -217,9 +226,7 @@ def _build_text_content(data):
     for sec in data["secoes"]:
         items.append(title_small(sec["titulo"], color=Palette.PRIMARY))
         items.append(ft.Container(height=Spacing.XXS))
-        items.append(
-            body_medium(sec["texto"], color=Palette.TEXT_SECONDARY)
-        )
+        items.append(body_medium(sec["texto"], color=Palette.TEXT_SECONDARY))
         items.append(ft.Container(height=Spacing.MD))
     items.append(caption(data["fonte"], color=Palette.TEXT_DISABLED))
     return ft.Column(controls=items, spacing=0)
@@ -231,6 +238,7 @@ def build_text_dialog(page, data):
 
     if "imagem" in data:
         import os
+
         here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         img_path = os.path.join(here, "assets", "info", data["imagem"])
         if os.path.exists(img_path):
@@ -244,7 +252,9 @@ def build_text_dialog(page, data):
                     ),
                     alignment=ft.Alignment.CENTER,
                     ink=True,
-                    on_click=lambda e, path=img_path, t=data["titulo"]: open_image_preview(page, path, t),
+                    on_click=lambda e, path=img_path, t=data["titulo"]: open_image_preview(
+                        page, path, t
+                    ),
                     tooltip="Clique para ampliar",
                 )
             )
@@ -264,7 +274,8 @@ def build_text_dialog(page, data):
                 controls=[content],
                 scroll=ft.ScrollMode.AUTO,
             ),
-            width=520, padding=pad_sym(horizontal=Spacing.MD, vertical=Spacing.SM),
+            width=520,
+            padding=pad_sym(horizontal=Spacing.MD, vertical=Spacing.SM),
         ),
         actions=[
             ft.TextButton(

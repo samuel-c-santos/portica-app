@@ -24,6 +24,7 @@ class AjustesELS:
         h_override_cm: Substituir altura da viga (cm)
         fck_override_mpa: Substituir resistência do concreto (MPa)
     """
+
     barras_extras: int = 0
     phi_minimo_mm: float | None = None
     h_override_cm: float | None = None
@@ -64,7 +65,7 @@ class AjustesELS:
 
         # Recalcular d_cm se h ou phi mudaram
         if h_ajustado != h_cm or phi_ajustado != phi_barra_mm:
-            d_ajustado = h_ajustado - cobrimento_mm/10 - diam_estribo_mm/10 - phi_ajustado/20
+            d_ajustado = h_ajustado - cobrimento_mm / 10 - diam_estribo_mm / 10 - phi_ajustado / 20
         else:
             d_ajustado = d_cm
 
@@ -85,7 +86,9 @@ def _e_modulus(fck_mpa: float) -> float:
     return e_ci * alfa_e / 1000  # GPa
 
 
-def _propriedades_secao_t(h_cm: float, bw_cm: float, bf_cm: float, hf_cm: float) -> tuple[float, float]:
+def _propriedades_secao_t(
+    h_cm: float, bw_cm: float, bf_cm: float, hf_cm: float
+) -> tuple[float, float]:
     """Retorna o y_cg (a partir da base) e o Ic (cm4) da seção T."""
     a_alma = bw_cm * (h_cm - hf_cm)
     y_alma = (h_cm - hf_cm) / 2.0
@@ -102,7 +105,7 @@ def _propriedades_secao_t(h_cm: float, bw_cm: float, bf_cm: float, hf_cm: float)
     i_alma = (bw_cm * (h_cm - hf_cm) ** 3) / 12.0
     i_alma_steiner = i_alma + a_alma * (y_cg - y_alma) ** 2
 
-    i_mesa = (bf_cm * hf_cm ** 3) / 12.0
+    i_mesa = (bf_cm * hf_cm**3) / 12.0
     i_mesa_steiner = i_mesa + a_mesa * (y_cg - y_mesa) ** 2
 
     i_c = i_alma_steiner + i_mesa_steiner
@@ -110,21 +113,29 @@ def _propriedades_secao_t(h_cm: float, bw_cm: float, bf_cm: float, hf_cm: float)
 
 
 def _momento_inercia_bruto_viga(
-    bw_cm: float, h_cm: float, is_t: bool = False, bf_cm: float | None = None, hf_cm: float | None = None
+    bw_cm: float,
+    h_cm: float,
+    is_t: bool = False,
+    bf_cm: float | None = None,
+    hf_cm: float | None = None,
 ) -> tuple[float, float]:
     """Retorna (y_cg_da_base, Ic_cm4) da viga."""
     if is_t and bf_cm is not None and hf_cm is not None and bf_cm > bw_cm and hf_cm < h_cm:
         return _propriedades_secao_t(h_cm, bw_cm, bf_cm, hf_cm)
     else:
         y_cg = h_cm / 2.0
-        i_c = bw_cm * h_cm ** 3 / 12.0
+        i_c = bw_cm * h_cm**3 / 12.0
         return y_cg, i_c
 
 
 def _momento_fissuracao(
-    bw_cm: float, h_cm: float, fctm_mpa: float,
-    is_t: bool = False, bf_cm: float | None = None, hf_cm: float | None = None,
-    positivo: bool = True
+    bw_cm: float,
+    h_cm: float,
+    fctm_mpa: float,
+    is_t: bool = False,
+    bf_cm: float | None = None,
+    hf_cm: float | None = None,
+    positivo: bool = True,
 ) -> float:
     """Momento de fissuração Mr (kN·cm). NBR 6118:17.3.1."""
     alpha = 1.3 if is_t else 1.5
@@ -137,19 +148,32 @@ def _momento_fissuracao(
 
 
 def _estadio_ii_viga(
-    h_cm: float, bw_cm: float, d_cm: float, as_cm2: float, alfa_e: float,
-    is_t: bool = False, bf_cm: float | None = None, hf_cm: float | None = None,
-    positivo: bool = True
+    h_cm: float,
+    bw_cm: float,
+    d_cm: float,
+    as_cm2: float,
+    alfa_e: float,
+    is_t: bool = False,
+    bf_cm: float | None = None,
+    hf_cm: float | None = None,
+    positivo: bool = True,
 ) -> tuple[float, float]:
     """Calcula linha neutra x_ii e momento de inércia I_ii no estádio II (T ou Retangular)."""
-    if is_t and bf_cm is not None and hf_cm is not None and bf_cm > bw_cm and hf_cm < h_cm and positivo:
+    if (
+        is_t
+        and bf_cm is not None
+        and hf_cm is not None
+        and bf_cm > bw_cm
+        and hf_cm < h_cm
+        and positivo
+    ):
         # Seção T sob momento positivo (mesa comprimida no topo)
         # 1. Tenta assumir x_ii <= hf_cm
         a = bf_cm / 2.0
         b = alfa_e * as_cm2
         c = -alfa_e * as_cm2 * d_cm
 
-        delta = b ** 2 - 4 * a * c
+        delta = b**2 - 4 * a * c
         if delta < 0 or a == 0:
             x_ii = 0.001
         else:
@@ -160,15 +184,15 @@ def _estadio_ii_viga(
                 x_ii = 0.001
             if x_ii > h_cm:
                 x_ii = h_cm
-            i_ii = bf_cm * x_ii ** 3 / 3.0 + alfa_e * as_cm2 * (d_cm - x_ii) ** 2
+            i_ii = bf_cm * x_ii**3 / 3.0 + alfa_e * as_cm2 * (d_cm - x_ii) ** 2
             return x_ii, i_ii
         else:
             # LN na alma (x_ii > hf_cm)
             a = bw_cm / 2.0
             b = (bf_cm - bw_cm) * hf_cm + alfa_e * as_cm2
-            c = -((bf_cm - bw_cm) * hf_cm ** 2 / 2.0 + alfa_e * as_cm2 * d_cm)
+            c = -((bf_cm - bw_cm) * hf_cm**2 / 2.0 + alfa_e * as_cm2 * d_cm)
 
-            delta = b ** 2 - 4 * a * c
+            delta = b**2 - 4 * a * c
             if delta < 0 or a == 0:
                 x_ii = 0.001
             else:
@@ -179,20 +203,22 @@ def _estadio_ii_viga(
             if x_ii > h_cm:
                 x_ii = h_cm
 
-            i_ii = (bw_cm * x_ii ** 3 / 3.0 +
-                    (bf_cm - bw_cm) * hf_cm ** 3 / 12.0 +
-                    (bf_cm - bw_cm) * hf_cm * (x_ii - hf_cm / 2.0) ** 2 +
-                    alfa_e * as_cm2 * (d_cm - x_ii) ** 2)
+            i_ii = (
+                bw_cm * x_ii**3 / 3.0
+                + (bf_cm - bw_cm) * hf_cm**3 / 12.0
+                + (bf_cm - bw_cm) * hf_cm * (x_ii - hf_cm / 2.0) ** 2
+                + alfa_e * as_cm2 * (d_cm - x_ii) ** 2
+            )
             return x_ii, i_ii
     else:
         # Seção retangular (ou T sob momento negativo, onde a mesa está tracionada)
         rho = as_cm2 / (bw_cm * d_cm) if (bw_cm * d_cm) > 0 else 0
-        x_ii = d_cm * (math.sqrt(alfa_e ** 2 * rho ** 2 + 2 * alfa_e * rho) - alfa_e * rho)
+        x_ii = d_cm * (math.sqrt(alfa_e**2 * rho**2 + 2 * alfa_e * rho) - alfa_e * rho)
         if x_ii <= 0:
             x_ii = 0.001
         if x_ii > h_cm:
             x_ii = h_cm
-        i_ii = bw_cm * x_ii ** 3 / 3.0 + alfa_e * as_cm2 * (d_cm - x_ii) ** 2
+        i_ii = bw_cm * x_ii**3 / 3.0 + alfa_e * as_cm2 * (d_cm - x_ii) ** 2
         return x_ii, i_ii
 
 
@@ -202,13 +228,16 @@ def _inercia_equivalente(mk_knm: float, mr_kncm: float, ic_cm4: float, i_ii_cm4:
     if mk_kncm <= mr_kncm or mr_kncm <= 0:
         return ic_cm4  # Estádio I (não fissurado)
     razao = mr_kncm / mk_kncm
-    ieq = razao ** 3 * ic_cm4 + (1 - razao ** 3) * i_ii_cm4
+    ieq = razao**3 * ic_cm4 + (1 - razao**3) * i_ii_cm4
     return max(ieq, i_ii_cm4)
 
 
 def calcular_flecha(
-    h_cm: float, bw_cm: float, d_cm: float,
-    fck_mpa: float, as_tracao_cm2: float,
+    h_cm: float,
+    bw_cm: float,
+    d_cm: float,
+    fck_mpa: float,
+    as_tracao_cm2: float,
     momentos: list[tuple[float, float]],
     deformacoes: list[tuple[float, float, float, float]],
     gamma_f: float = 1.4,
@@ -242,8 +271,7 @@ def calcular_flecha(
     # Aplicar ajustes manuais se fornecidos
     if ajustes is not None:
         h_cm, d_cm, as_tracao_cm2, fck_mpa, _ = ajustes.aplicar_ajustes(
-            h_cm, d_cm, as_tracao_cm2, fck_mpa, phi_barra_mm,
-            diam_estribo_mm, cobrimento_mm
+            h_cm, d_cm, as_tracao_cm2, fck_mpa, phi_barra_mm, diam_estribo_mm, cobrimento_mm
         )
 
     L = max(p[0] for p in deformacoes)
@@ -259,7 +287,9 @@ def calcular_flecha(
 
     y_cg, ic = _momento_inercia_bruto_viga(bw_cm, h_cm, is_t, bf_cm, hf_cm)
     mr = _momento_fissuracao(bw_cm, h_cm, fctm, is_t, bf_cm, hf_cm, positivo)
-    x_ii, i_ii = _estadio_ii_viga(h_cm, bw_cm, d_cm, as_tracao_cm2, alfa_e, is_t, bf_cm, hf_cm, positivo)
+    x_ii, i_ii = _estadio_ii_viga(
+        h_cm, bw_cm, d_cm, as_tracao_cm2, alfa_e, is_t, bf_cm, hf_cm, positivo
+    )
 
     # I_eq para o momento máximo em valor absoluto
     mk_max = max(abs(p[1]) for p in momentos) if momentos else 0
@@ -293,16 +323,16 @@ def calcular_flecha(
         # Primeira integração: θ(x) = ∫κ dx (sem constante ainda)
         thetas_raw = [0.0]  # θ(0) = 0 (valor relativo)
         for i in range(1, len(xs)):
-            dx_cm = (xs[i] - xs[i-1]) * 100  # m → cm
-            dtheta = (kappas[i-1] + kappas[i]) / 2 * dx_cm  # adimensional (radianos)
+            dx_cm = (xs[i] - xs[i - 1]) * 100  # m → cm
+            dtheta = (kappas[i - 1] + kappas[i]) / 2 * dx_cm  # adimensional (radianos)
             theta_i = thetas_raw[-1] + dtheta
             thetas_raw.append(theta_i)
 
         # Segunda integração: f(x) = ∫θ dx (sem constantes ainda)
         flechas_raw = [0.0]  # f(0) = 0
         for i in range(1, len(xs)):
-            dx_cm = (xs[i] - xs[i-1]) * 100  # m → cm
-            df = (thetas_raw[i-1] + thetas_raw[i]) / 2 * dx_cm  # cm
+            dx_cm = (xs[i] - xs[i - 1]) * 100  # m → cm
+            df = (thetas_raw[i - 1] + thetas_raw[i]) / 2 * dx_cm  # cm
             f_i = flechas_raw[-1] + df
             flechas_raw.append(f_i)
 
@@ -326,7 +356,7 @@ def calcular_flecha(
     else:
         # Fallback: usar curvatura máxima se não houver pontos suficientes
         curv_max = max(abs(p[3]) for p in deformacoes) if deformacoes else 0
-        flecha_imediata = curv_max * L ** 2 / 8 * 100  # m → cm
+        flecha_imediata = curv_max * L**2 / 8 * 100  # m → cm
 
     # Flecha diferida (NBR 6118:17.3.2.1.2)
     alfa_f = 2.0 if tempo_meses > 6 else (tempo_meses / 6) * 2.0
@@ -352,14 +382,21 @@ def calcular_flecha(
         "limite_ativo_cm": round(limite_ativo, 2),
         "passa_total": passa_total,
         "passa_ativo": passa_ativo,
-        "dica": _sugerir_correcao_flecha(flecha_total, limite_total, fck_mpa, h_cm, as_tracao_cm2, 12.5),
+        "dica": _sugerir_correcao_flecha(
+            flecha_total, limite_total, fck_mpa, h_cm, as_tracao_cm2, 12.5
+        ),
     }
 
 
 def calcular_fissuracao(
-    h_cm: float, bw_cm: float, d_cm: float,
-    caa: int, fck_mpa: float, fyk_mpa: float,
-    as_tracao_cm2: float, phi_barra_mm: float,
+    h_cm: float,
+    bw_cm: float,
+    d_cm: float,
+    caa: int,
+    fck_mpa: float,
+    fyk_mpa: float,
+    as_tracao_cm2: float,
+    phi_barra_mm: float,
     momentos: list[tuple[float, float]],
     gamma_f: float = 1.4,
     is_t: bool = False,
@@ -386,8 +423,7 @@ def calcular_fissuracao(
     # Aplicar ajustes manuais se fornecidos
     if ajustes is not None:
         h_cm, d_cm, as_tracao_cm2, fck_mpa, phi_barra_mm = ajustes.aplicar_ajustes(
-            h_cm, d_cm, as_tracao_cm2, fck_mpa, phi_barra_mm,
-            diam_estribo_mm, cobrimento_mm
+            h_cm, d_cm, as_tracao_cm2, fck_mpa, phi_barra_mm, diam_estribo_mm, cobrimento_mm
         )
 
     # Parâmetros
@@ -411,7 +447,9 @@ def calcular_fissuracao(
 
     # Tensão na armadura (estádio II) - corrigido modular ratio alfa_e
     d_util = d_cm
-    x_ii, i_ii = _estadio_ii_viga(h_cm, bw_cm, d_util, as_tracao_cm2, alfa_e, is_t, bf_cm, hf_cm, positivo)
+    x_ii, i_ii = _estadio_ii_viga(
+        h_cm, bw_cm, d_util, as_tracao_cm2, alfa_e, is_t, bf_cm, hf_cm, positivo
+    )
     if i_ii <= 0:
         i_ii = 0.01
 
@@ -471,7 +509,9 @@ def calcular_fissuracao(
         "passa": passa,
         "x_ii_cm": round(x_ii, 2),
         "i_ii_cm4": round(i_ii, 1),
-        "dica": _sugerir_correcao_fissuracao(wk_final, w_lim, sigma_s_mpa, fck_mpa, as_tracao_cm2, phi_barra_mm),
+        "dica": _sugerir_correcao_fissuracao(
+            wk_final, w_lim, sigma_s_mpa, fck_mpa, as_tracao_cm2, phi_barra_mm
+        ),
     }
 
 
@@ -506,9 +546,13 @@ def _sugerir_correcao_fissuracao(wk, w_lim, sigma_s, fck, as_atual, phi_atual):
     idx = diametros_validos.index(phi_atual) if phi_atual in diametros_validos else -1
     if idx > 0:
         phi_menor = diametros_validos[idx - 1]
-        sugestoes.append(f"Troque {phi_atual:.0f}mm por {phi_menor:.0f}mm (mais barras finas distribuem melhor a fissuracao)")
+        sugestoes.append(
+            f"Troque {phi_atual:.0f}mm por {phi_menor:.0f}mm (mais barras finas distribuem melhor a fissuracao)"
+        )
     if sigma_s > 250:
-        sugestoes.append(f"Aumente a armadura (As atual={as_atual:.2f} cm², sigma_s={sigma_s:.0f} MPa)")
+        sugestoes.append(
+            f"Aumente a armadura (As atual={as_atual:.2f} cm², sigma_s={sigma_s:.0f} MPa)"
+        )
     sugestoes.append("Aumente a altura h da secao")
     return " | ".join(sugestoes[:2])
 
@@ -532,10 +576,10 @@ def gerar_relatorio_els(flecha: dict, fissuracao: dict) -> str:
         linhas.append(f"  Flecha diferida : {flecha['flecha_diferida_cm']:.2f} cm")
         linhas.append(f"  Flecha total    : {flecha['flecha_total_cm']:.2f} cm")
         linhas.append(f"  Limite L/250    : {flecha['limite_total_cm']:.2f} cm")
-        status_t = "OK" if flecha['passa_total'] else "NAO PASSA"
+        status_t = "OK" if flecha["passa_total"] else "NAO PASSA"
         linhas.append(f"  -> {status_t}")
         linhas.append(f"  Limite L/350    : {flecha['limite_ativo_cm']:.2f} cm")
-        status_a = "OK" if flecha['passa_ativo'] else "NAO PASSA"
+        status_a = "OK" if flecha["passa_ativo"] else "NAO PASSA"
         linhas.append(f"  -> {status_a}")
 
     # Fissuracao
@@ -546,7 +590,7 @@ def gerar_relatorio_els(flecha: dict, fissuracao: dict) -> str:
     else:
         linhas.append(f"  w_k  = {fissuracao['wk_mm']:.2f} mm")
         linhas.append(f"  w_lim = {fissuracao['wk_limite_mm']:.1f} mm")
-        status = "OK" if fissuracao['passa'] else "NAO PASSA"
+        status = "OK" if fissuracao["passa"] else "NAO PASSA"
         linhas.append(f"  -> {status}")
 
     linhas.append("")

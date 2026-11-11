@@ -129,4 +129,3 @@ def test_5_armadura_dupla_momento_negativo():
     assert res.as_linha_adotada > 0.0
     assert res.md_limite_knm < res.momento_kNm
     assert "Armadura dupla utilizada" in res.alerta
-

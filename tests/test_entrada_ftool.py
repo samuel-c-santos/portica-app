@@ -7,6 +7,7 @@ Cobre:
 - o painel FTOOL fica recolhido por padrao e pode ser revelado/fechado;
 - o caminho manual (tabela de trechos + Calcular) continua acessivel.
 """
+
 import asyncio
 import json
 import os
@@ -34,6 +35,7 @@ AMOSTRA_PREMIUM = AMOSTRA_STANDARD
 
 
 # ── Logica pura (sem UI) ─────────────────────────────────────────────────────
+
 
 def test_entrada_de_projeto_ausente_assume_manual():
     """Projeto antigo (sem a chave "entrada") e lido como manual."""
@@ -96,6 +98,7 @@ def test_aviso_edicao_e_informativo_e_nao_bloqueia():
 
 # ── UI (pagina Flet minima, sem servidor) ────────────────────────────────────
 
+
 class _FakePage:
     """Pagina Flet minima para exercitar a UI em teste."""
 
@@ -151,10 +154,12 @@ class _FakePicker:
 def ui(monkeypatch):
     """Prepara o ambiente de UI: update() de controles e add_recent sem efeito."""
     from flet.controls import base_control
+
     monkeypatch.setattr(
         base_control.BaseControl, "update", lambda self, *a, **k: None, raising=False
     )
     import ui.viga as viga_mod
+
     monkeypatch.setattr(viga_mod, "add_recent", lambda *a, **k: None)
     return viga_mod
 
@@ -186,6 +191,7 @@ def _iter_controls(control):
 
 def _ft_control_cls():
     import flet as ft
+
     return ft.Control
 
 
@@ -213,6 +219,7 @@ def _find_textfield(screen, label):
         if getattr(control, "label", None) == label:
             return control
     return None
+
 
 def test_ftool_recolhido_por_padrao(ui):
     """O painel FTOOL nao aparece ate o usuario pedir a importacao."""

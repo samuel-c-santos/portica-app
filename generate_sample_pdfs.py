@@ -97,7 +97,9 @@ res_cis_t = calcular_cisalhamento_viga_comum(
     gamma_f=viga_t["gamma_f"],
 )
 
-artifact_dir = r"C:\Users\usuario\.gemini\antigravity-cli\brain\e6ecb6ce-b4e5-4cfd-8c76-9d6a2bbedcd3"
+artifact_dir = (
+    r"C:\Users\usuario\.gemini\antigravity-cli\brain\e6ecb6ce-b4e5-4cfd-8c76-9d6a2bbedcd3"
+)
 path_comum = os.path.join(artifact_dir, "viga_retangular_exemplo.pdf")
 path_t = os.path.join(artifact_dir, "viga_t_exemplo.pdf")
 

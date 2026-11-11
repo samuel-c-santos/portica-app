@@ -1,4 +1,5 @@
 """Testes para o helper de grampos suplementares (NBR 6118:18.3.2.3)."""
+
 import os
 import sys
 import tempfile
@@ -43,9 +44,15 @@ def test_grampos_zero_quando_camada_tem_2_ou_menos_barras():
     """2 barras = ambas nas laterais, sem barra intermediária, sem grampo."""
     pdf = _make_pdf()
     n = _desenhar_grampos_segunda_camada(
-        pdf, n_camada=2, phi_barra=16.0, phi_estribo=5.0,
-        x_left=20.0, x_right=80.0,
-        y_bar=50.0, s=0.5, fechado_para_cima=True,
+        pdf,
+        n_camada=2,
+        phi_barra=16.0,
+        phi_estribo=5.0,
+        x_left=20.0,
+        x_right=80.0,
+        y_bar=50.0,
+        s=0.5,
+        fechado_para_cima=True,
     )
     assert n == 0
 
@@ -54,9 +61,15 @@ def test_grampos_desenha_1_quando_camada_tem_3_barras():
     """3 barras: existe barra intermediária -> 1 grampo contínuo."""
     pdf = _make_pdf()
     n = _desenhar_grampos_segunda_camada(
-        pdf, n_camada=3, phi_barra=16.0, phi_estribo=5.0,
-        x_left=20.0, x_right=80.0,
-        y_bar=50.0, s=0.5, fechado_para_cima=False,
+        pdf,
+        n_camada=3,
+        phi_barra=16.0,
+        phi_estribo=5.0,
+        x_left=20.0,
+        x_right=80.0,
+        y_bar=50.0,
+        s=0.5,
+        fechado_para_cima=False,
     )
     assert n == 1
 
@@ -65,9 +78,15 @@ def test_grampos_desenha_1_tambem_quando_camada_tem_4_barras():
     """4 barras: mais intermediárias, mas o grampo é sempre 1 (contínuo)."""
     pdf = _make_pdf()
     n = _desenhar_grampos_segunda_camada(
-        pdf, n_camada=4, phi_barra=16.0, phi_estribo=5.0,
-        x_left=20.0, x_right=80.0,
-        y_bar=50.0, s=0.5, fechado_para_cima=True,
+        pdf,
+        n_camada=4,
+        phi_barra=16.0,
+        phi_estribo=5.0,
+        x_left=20.0,
+        x_right=80.0,
+        y_bar=50.0,
+        s=0.5,
+        fechado_para_cima=True,
     )
     assert n == 1
 
@@ -76,9 +95,15 @@ def test_grampos_nao_desenha_quando_n_camada_zero():
     """n=0 (camada inexistente) -> 0 grampos, no exception."""
     pdf = _make_pdf()
     n = _desenhar_grampos_segunda_camada(
-        pdf, n_camada=0, phi_barra=16.0, phi_estribo=5.0,
-        x_left=20.0, x_right=80.0,
-        y_bar=50.0, s=0.5, fechado_para_cima=True,
+        pdf,
+        n_camada=0,
+        phi_barra=16.0,
+        phi_estribo=5.0,
+        x_left=20.0,
+        x_right=80.0,
+        y_bar=50.0,
+        s=0.5,
+        fechado_para_cima=True,
     )
     assert n == 0
 
@@ -95,9 +120,15 @@ def test_grampos_cobre_largura_do_estribo():
     x_right = 115.0  # 95 unidades de largura (largura típica de estribo)
 
     n = _desenhar_grampos_segunda_camada(
-        pdf, n_camada=4, phi_barra=phi_barra, phi_estribo=phi_estribo,
-        x_left=x_left, x_right=x_right,
-        y_bar=y_bar, s=s, fechado_para_cima=False,
+        pdf,
+        n_camada=4,
+        phi_barra=phi_barra,
+        phi_estribo=phi_estribo,
+        x_left=x_left,
+        x_right=x_right,
+        y_bar=y_bar,
+        s=s,
+        fechado_para_cima=False,
     )
     assert n == 1
 
@@ -119,11 +150,17 @@ def test_grampos_fechado_na_1a_camada_e_pernas_passam_pela_2a():
     phi_estribo = 5.0
     s = 0.5
 
-    y_bar = 100.0      # 2a camada
+    y_bar = 100.0  # 2a camada
     n = _desenhar_grampos_segunda_camada(
-        pdf, n_camada=3, phi_barra=phi_barra, phi_estribo=phi_estribo,
-        x_left=20.0, x_right=80.0,
-        y_bar=y_bar, s=s, fechado_para_cima=False,
+        pdf,
+        n_camada=3,
+        phi_barra=phi_barra,
+        phi_estribo=phi_estribo,
+        x_left=20.0,
+        x_right=80.0,
+        y_bar=y_bar,
+        s=s,
+        fechado_para_cima=False,
     )
     assert n == 1
     # Validacao geometrica esperada (fechado_para_cima=False, ∪):
@@ -151,11 +188,17 @@ def test_grampos_2a_camada_superior_fechado_na_1a_camada_sup():
     phi_estribo = 5.0
     s = 0.5
 
-    y_bar = 40.0       # 2a camada sup (menor Y, mais ao topo)
+    y_bar = 40.0  # 2a camada sup (menor Y, mais ao topo)
     n = _desenhar_grampos_segunda_camada(
-        pdf, n_camada=3, phi_barra=phi_barra, phi_estribo=phi_estribo,
-        x_left=20.0, x_right=80.0,
-        y_bar=y_bar, s=s, fechado_para_cima=True,
+        pdf,
+        n_camada=3,
+        phi_barra=phi_barra,
+        phi_estribo=phi_estribo,
+        x_left=20.0,
+        x_right=80.0,
+        y_bar=y_bar,
+        s=s,
+        fechado_para_cima=True,
     )
     assert n == 1
     fd, pdf_path = tempfile.mkstemp(suffix=".pdf")
@@ -174,10 +217,17 @@ def test_legenda_com_grampo_renderiza_sem_erro():
 
     pdf = _make_pdf()
     _legenda_secao(
-        pdf, cob_mm=25.0, phi_est=5.0,
-        n_inf=6, phi_inf=16.0, n_sup=2, phi_sup=10.0,
-        lx=10.0, ly=10.0,
-        n_pele=5, phi_pele=6.3,
+        pdf,
+        cob_mm=25.0,
+        phi_est=5.0,
+        n_inf=6,
+        phi_inf=16.0,
+        n_sup=2,
+        phi_sup=10.0,
+        lx=10.0,
+        ly=10.0,
+        n_pele=5,
+        phi_pele=6.3,
         tem_grampo=True,
     )
     fd, pdf_path = tempfile.mkstemp(suffix=".pdf")
@@ -196,10 +246,17 @@ def test_legenda_sem_grampo_renderiza_sem_erro():
 
     pdf = _make_pdf()
     _legenda_secao(
-        pdf, cob_mm=25.0, phi_est=5.0,
-        n_inf=3, phi_inf=16.0, n_sup=2, phi_sup=10.0,
-        lx=10.0, ly=10.0,
-        n_pele=5, phi_pele=6.3,
+        pdf,
+        cob_mm=25.0,
+        phi_est=5.0,
+        n_inf=3,
+        phi_inf=16.0,
+        n_sup=2,
+        phi_sup=10.0,
+        lx=10.0,
+        ly=10.0,
+        n_pele=5,
+        phi_pele=6.3,
         tem_grampo=False,
     )
     fd, pdf_path = tempfile.mkstemp(suffix=".pdf")
@@ -238,9 +295,15 @@ def test_desenhar_secao_com_2_camadas_gera_pdf_sem_erro():
         # bw=20, h=50, cob=25, estribo=5, barra=10, 3 barras inferiores
         # _split_layers(3, 10, 20, 25, 5) -> testa
         desenhar_secao_retangular(
-            pdf, h_cm=50.0, bw_cm=20.0, cob_mm=25.0, phi_estribo=5.0,
-            phi_barra_inf=10.0, n_barras_inf=3,
-            phi_barra_sup=10.0, n_barras_sup=2,
+            pdf,
+            h_cm=50.0,
+            bw_cm=20.0,
+            cob_mm=25.0,
+            phi_estribo=5.0,
+            phi_barra_inf=10.0,
+            n_barras_inf=3,
+            phi_barra_sup=10.0,
+            n_barras_sup=2,
         )
         pdf.output(pdf_path)
         assert os.path.getsize(pdf_path) > 0
@@ -257,9 +320,15 @@ def test_desenhar_secao_com_1_camada_nao_gera_grampos():
         pdf = FPDF()
         pdf.add_page()
         desenhar_secao_retangular(
-            pdf, h_cm=50.0, bw_cm=30.0, cob_mm=25.0, phi_estribo=5.0,
-            phi_barra_inf=16.0, n_barras_inf=2,
-            phi_barra_sup=10.0, n_barras_sup=2,
+            pdf,
+            h_cm=50.0,
+            bw_cm=30.0,
+            cob_mm=25.0,
+            phi_estribo=5.0,
+            phi_barra_inf=16.0,
+            n_barras_inf=2,
+            phi_barra_sup=10.0,
+            n_barras_sup=2,
         )
         pdf.output(pdf_path)
         # 2 barras na 1a camada = sem grampos. So valida que nao quebra.

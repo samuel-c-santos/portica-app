@@ -19,6 +19,7 @@ SAMPLES_DIR = os.path.join(BASE_DIR, "samples")
 def _ler_dados():
     """Lê momentos e deformações dos arquivos de amostra."""
     from ui.ftool.parser import parse_deformacao, parse_momento
+
     mom = parse_momento(os.path.join(SAMPLES_DIR, "test_momento_fletor.txt"))
     deform = parse_deformacao(os.path.join(SAMPLES_DIR, "test_deformacoes.txt"))
     return mom, deform
@@ -29,8 +30,7 @@ def test_ajustes_els_default():
     ajustes = AjustesELS()
 
     h_cm, d_cm, as_cm2, fck_mpa, phi_mm = ajustes.aplicar_ajustes(
-        h_cm=70.0, d_cm=65.0, as_tracao_cm2=5.0,
-        fck_mpa=30.0, phi_barra_mm=12.5
+        h_cm=70.0, d_cm=65.0, as_tracao_cm2=5.0, fck_mpa=30.0, phi_barra_mm=12.5
     )
 
     assert h_cm == 70.0
@@ -45,8 +45,7 @@ def test_ajustes_barras_extras():
     ajustes = AjustesELS(barras_extras=2)
 
     h_cm, d_cm, as_cm2, fck_mpa, phi_mm = ajustes.aplicar_ajustes(
-        h_cm=70.0, d_cm=65.0, as_tracao_cm2=5.0,
-        fck_mpa=30.0, phi_barra_mm=12.5
+        h_cm=70.0, d_cm=65.0, as_tracao_cm2=5.0, fck_mpa=30.0, phi_barra_mm=12.5
     )
 
     # Área de uma barra φ12.5 = π * (1.25/2)² = 1.227 cm²
@@ -63,9 +62,13 @@ def test_ajustes_h_override():
     ajustes = AjustesELS(h_override_cm=75.0)
 
     h_cm, d_cm, as_cm2, fck_mpa, phi_mm = ajustes.aplicar_ajustes(
-        h_cm=70.0, d_cm=65.0, as_tracao_cm2=5.0,
-        fck_mpa=30.0, phi_barra_mm=12.5,
-        cobrimento_mm=25.0, diam_estribo_mm=5.0
+        h_cm=70.0,
+        d_cm=65.0,
+        as_tracao_cm2=5.0,
+        fck_mpa=30.0,
+        phi_barra_mm=12.5,
+        cobrimento_mm=25.0,
+        diam_estribo_mm=5.0,
     )
 
     assert h_cm == 75.0
@@ -78,8 +81,7 @@ def test_ajustes_fck_override():
     ajustes = AjustesELS(fck_override_mpa=35.0)
 
     h_cm, d_cm, as_cm2, fck_mpa, phi_mm = ajustes.aplicar_ajustes(
-        h_cm=70.0, d_cm=65.0, as_tracao_cm2=5.0,
-        fck_mpa=30.0, phi_barra_mm=12.5
+        h_cm=70.0, d_cm=65.0, as_tracao_cm2=5.0, fck_mpa=30.0, phi_barra_mm=12.5
     )
 
     assert fck_mpa == 35.0
@@ -92,9 +94,13 @@ def test_ajustes_phi_minimo():
     ajustes = AjustesELS(phi_minimo_mm=16.0)
 
     h_cm, d_cm, as_cm2, fck_mpa, phi_mm = ajustes.aplicar_ajustes(
-        h_cm=70.0, d_cm=65.0, as_tracao_cm2=5.0,
-        fck_mpa=30.0, phi_barra_mm=12.5,
-        cobrimento_mm=25.0, diam_estribo_mm=5.0
+        h_cm=70.0,
+        d_cm=65.0,
+        as_tracao_cm2=5.0,
+        fck_mpa=30.0,
+        phi_barra_mm=12.5,
+        cobrimento_mm=25.0,
+        diam_estribo_mm=5.0,
     )
 
     assert phi_mm == 16.0
@@ -104,16 +110,16 @@ def test_ajustes_phi_minimo():
 
 def test_ajustes_combinados():
     """Testa combinação de múltiplos ajustes."""
-    ajustes = AjustesELS(
-        barras_extras=2,
-        h_override_cm=75.0,
-        fck_override_mpa=35.0
-    )
+    ajustes = AjustesELS(barras_extras=2, h_override_cm=75.0, fck_override_mpa=35.0)
 
     h_cm, d_cm, as_cm2, fck_mpa, phi_mm = ajustes.aplicar_ajustes(
-        h_cm=70.0, d_cm=65.0, as_tracao_cm2=5.0,
-        fck_mpa=30.0, phi_barra_mm=12.5,
-        cobrimento_mm=25.0, diam_estribo_mm=5.0
+        h_cm=70.0,
+        d_cm=65.0,
+        as_tracao_cm2=5.0,
+        fck_mpa=30.0,
+        phi_barra_mm=12.5,
+        cobrimento_mm=25.0,
+        diam_estribo_mm=5.0,
     )
 
     assert h_cm == 75.0
@@ -133,22 +139,30 @@ def test_calcular_flecha_com_ajustes():
 
     # Sem ajustes
     resultado_base = calcular_flecha(
-        h_cm=70.0, bw_cm=20.0, d_cm=65.0,
-        fck_mpa=30.0, as_tracao_cm2=5.0,
-        momentos=momentos, deformacoes=deformacoes,
+        h_cm=70.0,
+        bw_cm=20.0,
+        d_cm=65.0,
+        fck_mpa=30.0,
+        as_tracao_cm2=5.0,
+        momentos=momentos,
+        deformacoes=deformacoes,
     )
 
     # Com ajustes (aumentar h)
     ajustes = AjustesELS(h_override_cm=75.0)
     resultado_ajustado = calcular_flecha(
-        h_cm=70.0, bw_cm=20.0, d_cm=65.0,
-        fck_mpa=30.0, as_tracao_cm2=5.0,
-        momentos=momentos, deformacoes=deformacoes,
+        h_cm=70.0,
+        bw_cm=20.0,
+        d_cm=65.0,
+        fck_mpa=30.0,
+        as_tracao_cm2=5.0,
+        momentos=momentos,
+        deformacoes=deformacoes,
         ajustes=ajustes,
     )
 
     # Flecha deve ser menor com h maior
-    assert resultado_ajustado['flecha_total_cm'] < resultado_base['flecha_total_cm']
+    assert resultado_ajustado["flecha_total_cm"] < resultado_base["flecha_total_cm"]
 
 
 def test_calcular_fissuracao_com_ajustes():
@@ -157,24 +171,34 @@ def test_calcular_fissuracao_com_ajustes():
 
     # Sem ajustes
     resultado_base = calcular_fissuracao(
-        h_cm=70.0, bw_cm=20.0, d_cm=65.0,
-        caa=2, fck_mpa=30.0, fyk_mpa=50.0,
-        as_tracao_cm2=5.0, phi_barra_mm=12.5,
+        h_cm=70.0,
+        bw_cm=20.0,
+        d_cm=65.0,
+        caa=2,
+        fck_mpa=30.0,
+        fyk_mpa=50.0,
+        as_tracao_cm2=5.0,
+        phi_barra_mm=12.5,
         momentos=momentos,
     )
 
     # Com ajustes (aumentar barras)
     ajustes = AjustesELS(barras_extras=3)
     resultado_ajustado = calcular_fissuracao(
-        h_cm=70.0, bw_cm=20.0, d_cm=65.0,
-        caa=2, fck_mpa=30.0, fyk_mpa=50.0,
-        as_tracao_cm2=5.0, phi_barra_mm=12.5,
+        h_cm=70.0,
+        bw_cm=20.0,
+        d_cm=65.0,
+        caa=2,
+        fck_mpa=30.0,
+        fyk_mpa=50.0,
+        as_tracao_cm2=5.0,
+        phi_barra_mm=12.5,
         momentos=momentos,
         ajustes=ajustes,
     )
 
     # wk deve ser menor com mais armadura
-    assert resultado_ajustado['wk_mm'] < resultado_base['wk_mm']
+    assert resultado_ajustado["wk_mm"] < resultado_base["wk_mm"]
 
 
 def test_ajustes_nao_passa_para_passa():
@@ -183,25 +207,32 @@ def test_ajustes_nao_passa_para_passa():
 
     # Viga com flecha alta (sem ajustes)
     resultado_base = calcular_flecha(
-        h_cm=70.0, bw_cm=20.0, d_cm=65.0,
-        fck_mpa=30.0, as_tracao_cm2=4.0,
-        momentos=momentos, deformacoes=deformacoes,
+        h_cm=70.0,
+        bw_cm=20.0,
+        d_cm=65.0,
+        fck_mpa=30.0,
+        as_tracao_cm2=4.0,
+        momentos=momentos,
+        deformacoes=deformacoes,
     )
 
     # Aplicar ajustes para reduzir flecha
-    ajustes = AjustesELS(
-        h_override_cm=80.0,
-        barras_extras=3
-    )
+    ajustes = AjustesELS(h_override_cm=80.0, barras_extras=3)
     resultado_ajustado = calcular_flecha(
-        h_cm=70.0, bw_cm=20.0, d_cm=65.0,
-        fck_mpa=30.0, as_tracao_cm2=4.0,
-        momentos=momentos, deformacoes=deformacoes,
+        h_cm=70.0,
+        bw_cm=20.0,
+        d_cm=65.0,
+        fck_mpa=30.0,
+        as_tracao_cm2=4.0,
+        momentos=momentos,
+        deformacoes=deformacoes,
         ajustes=ajustes,
     )
 
     # Flecha deve reduzir significativamente
-    reducao = (resultado_base['flecha_total_cm'] - resultado_ajustado['flecha_total_cm']) / resultado_base['flecha_total_cm']
+    reducao = (
+        resultado_base["flecha_total_cm"] - resultado_ajustado["flecha_total_cm"]
+    ) / resultado_base["flecha_total_cm"]
     assert reducao > 0.3  # Pelo menos 30% de redução
 
 

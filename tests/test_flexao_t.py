@@ -1,4 +1,5 @@
 """Testes de viga T (flexao com mesa colaborante)."""
+
 from core.calculos import bf_efetivo_viga_t, calcular_flexao_viga_t
 
 
@@ -109,8 +110,7 @@ class TestVigaT:
         # bw_cm = 20, bf_cm = 100, b1esq_cm = 20, b1dir_cm = 20
         # Com lo_esq/lo_dir: b1e limitado para 10, b1d limitado para 15 -> bf_ef = 20 + 10 + 15 = 45.0
         bf_ef = bf_efetivo_viga_t(
-            bw_cm=20, bf_cm=100, b1esq_cm=20, b1dir_cm=20,
-            lo_esq_cm=100, lo_dir_cm=150
+            bw_cm=20, bf_cm=100, b1esq_cm=20, b1dir_cm=20, lo_esq_cm=100, lo_dir_cm=150
         )
         assert bf_ef == 45.0
 
@@ -161,4 +161,3 @@ class TestVigaT:
         assert r.as_req_cm2 > 0
         assert r.as_linha_cm2 > 0
         assert "armadura dupla na alma" in r.alerta
-

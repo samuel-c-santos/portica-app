@@ -17,7 +17,7 @@ def test_exportar_secao_dxf_retangular():
             {"x": 100.0, "y": 45.0},
             {"x": 160.0, "y": 45.0},
             {"x": 40.0, "y": 655.0},
-            {"x": 160.0, "y": 655.0}
+            {"x": 160.0, "y": 655.0},
         ]
 
         exportar_secao_dxf(
@@ -30,7 +30,7 @@ def test_exportar_secao_dxf_retangular():
             n_barras_pele=2,
             phi_pele_mm=5.0,
             is_t=False,
-            nome_arquivo=dxf_path
+            nome_arquivo=dxf_path,
         )
 
         assert os.path.exists(dxf_path)
@@ -52,10 +52,7 @@ def test_exportar_secao_dxf_t():
     with tempfile.TemporaryDirectory() as tmpdir:
         dxf_path = os.path.join(tmpdir, "secao_t.dxf")
 
-        bar_positions = [
-            {"x": 40.0, "y": 45.0},
-            {"x": 160.0, "y": 45.0}
-        ]
+        bar_positions = [{"x": 40.0, "y": 45.0}, {"x": 160.0, "y": 45.0}]
 
         exportar_secao_dxf(
             bw_cm=20.0,
@@ -69,7 +66,7 @@ def test_exportar_secao_dxf_t():
             is_t=True,
             bf_cm=60.0,
             hf_cm=10.0,
-            nome_arquivo=dxf_path
+            nome_arquivo=dxf_path,
         )
 
         assert os.path.exists(dxf_path)
@@ -93,15 +90,12 @@ def test_exportar_secao_dxf_com_grampos():
             {"x": 40.0, "y": 45.0, "layer": 0, "is_corner_bar": False},
             {"x": 100.0, "y": 45.0, "layer": 0, "is_corner_bar": False},
             {"x": 160.0, "y": 45.0, "layer": 0, "is_corner_bar": False},
-
             {"x": 40.0, "y": 100.0, "layer": 1, "is_corner_bar": False},
             {"x": 100.0, "y": 100.0, "layer": 1, "is_corner_bar": False},
             {"x": 160.0, "y": 100.0, "layer": 1, "is_corner_bar": False},
-
             {"x": 40.0, "y": 655.0, "layer": -1, "is_corner_bar": False},
             {"x": 100.0, "y": 655.0, "layer": -1, "is_corner_bar": False},
             {"x": 160.0, "y": 655.0, "layer": -1, "is_corner_bar": False},
-
             {"x": 40.0, "y": 600.0, "layer": -2, "is_corner_bar": False},
             {"x": 100.0, "y": 600.0, "layer": -2, "is_corner_bar": False},
             {"x": 160.0, "y": 600.0, "layer": -2, "is_corner_bar": False},
@@ -117,7 +111,7 @@ def test_exportar_secao_dxf_com_grampos():
             n_barras_pele=0,
             phi_pele_mm=0.0,
             is_t=False,
-            nome_arquivo=dxf_path
+            nome_arquivo=dxf_path,
         )
 
         assert os.path.exists(dxf_path)
@@ -125,7 +119,9 @@ def test_exportar_secao_dxf_com_grampos():
         msp = doc.modelspace()
 
         # Filtra polilinhas do layer 'ESTRIBO_SUPLEMENTAR'
-        supl_polylines = [e for e in msp if e.dxftype() == 'LWPOLYLINE' and e.dxf.layer == 'ESTRIBO_SUPLEMENTAR']
+        supl_polylines = [
+            e for e in msp if e.dxftype() == "LWPOLYLINE" and e.dxf.layer == "ESTRIBO_SUPLEMENTAR"
+        ]
 
         # Deve ter exatamente 2 estribos suplementares (grampo inf e grampo sup)
         assert len(supl_polylines) == 2
@@ -147,7 +143,6 @@ def test_exportar_secao_dxf_com_pele_e_camadas_duplas():
             {"x": 160.0, "y": 45.0, "layer": 0, "phi_mm": 16.0},
             {"x": 40.0, "y": 100.0, "layer": 1, "phi_mm": 16.0},
             {"x": 160.0, "y": 100.0, "layer": 1, "phi_mm": 16.0},
-
             {"x": 40.0, "y": 655.0, "layer": -1, "phi_mm": 16.0},
             {"x": 160.0, "y": 655.0, "layer": -1, "phi_mm": 16.0},
             {"x": 40.0, "y": 600.0, "layer": -2, "phi_mm": 16.0},
@@ -164,7 +159,7 @@ def test_exportar_secao_dxf_com_pele_e_camadas_duplas():
             n_barras_pele=2,
             phi_pele_mm=10.0,
             is_t=False,
-            nome_arquivo=dxf_path
+            nome_arquivo=dxf_path,
         )
 
         assert os.path.exists(dxf_path)
@@ -172,7 +167,9 @@ def test_exportar_secao_dxf_com_pele_e_camadas_duplas():
         msp = doc.modelspace()
 
         # Filtra os círculos de armadura de pele
-        pele_circles = [e for e in msp if e.dxftype() == 'CIRCLE' and e.dxf.layer == 'ARMADURA_PELE']
+        pele_circles = [
+            e for e in msp if e.dxftype() == "CIRCLE" and e.dxf.layer == "ARMADURA_PELE"
+        ]
 
         # Como n_barras_pele = 2 por face (total de 4 círculos no modelo space)
         assert len(pele_circles) == 4
@@ -188,4 +185,3 @@ def test_exportar_secao_dxf_com_pele_e_camadas_duplas():
         # ys_pele deve ser exatamente [10.8 + 15.4667 + 0.5, 10.8 + 30.9333 + 1.5] = [26.7667, 43.2333]
         assert abs(ys[0] - 26.7667) < 1e-3
         assert abs(ys[1] - 43.2333) < 1e-3
-
