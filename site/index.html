@@ -541,11 +541,41 @@
 
         <details class="aipim-accordion" name="faq">
           <summary class="aipim-accordion__header">
-            <span class="aipim-accordion__title">O resultado substitui a ART?</span>
+            <span class="aipim-accordion__title">O Windows vai avisar que o arquivo é desconhecido (SmartScreen)?</span>
             <svg class="aipim-icon aipim-accordion__chevron" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-chevron-down"></use></svg>
           </summary>
           <div class="aipim-accordion__panel">
-            <p>Não. O Pórtica App é uma <strong>ferramenta de apoio</strong>. Os resultados devem ser verificados por engenheiro civil habilitado, com ART, antes de qualquer uso em projeto executivo. Veja a seção <a class="aipim-link" href="#limitacoes">limitações e responsabilidade</a>.</p>
+            <p>Sim, na primeira abertura. Como o projeto é independente e gratuito, o binário não possui certificado comercial de assinatura de código (<em>Code Signing</em>). Quando o Windows Defender SmartScreen exibir o aviso <em>"O Windows protegeu o seu computador"</em>, clique em <strong>Mais informações</strong> e depois em <strong>Executar assim mesmo</strong>. Você pode auditar o código-fonte no GitHub e conferir a integridade do arquivo pelo hash <strong>SHA-256</strong> informado na seção de <a class="aipim-link" href="#download">download</a> (comando <code>Get-FileHash</code> no PowerShell).</p>
+          </div>
+        </details>
+
+        <details class="aipim-accordion" name="faq">
+          <summary class="aipim-accordion__header">
+            <span class="aipim-accordion__title">Posso usar em obra/projeto real sem internet?</span>
+            <svg class="aipim-icon aipim-accordion__chevron" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-chevron-down"></use></svg>
+          </summary>
+          <div class="aipim-accordion__panel">
+            <p>Sim. Para computadores de obra, campo ou escritórios sem acesso externo, baixe o pacote recomendado <strong>.zip (96,3 MB)</strong>: ele já inclui o cliente gráfico e não realiza nenhuma conexão de rede nem na primeira execução. Todo o dimensionamento, a leitura de arquivos do FTOOL, o salvamento de projetos <code>.ptc</code> e a geração de PDF e DXF funcionam 100% offline.</p>
+          </div>
+        </details>
+
+        <details class="aipim-accordion" name="faq">
+          <summary class="aipim-accordion__header">
+            <span class="aipim-accordion__title">Como atualizo para uma nova versão?</span>
+            <svg class="aipim-icon aipim-accordion__chevron" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-chevron-down"></use></svg>
+          </summary>
+          <div class="aipim-accordion__panel">
+            <p>O aplicativo é portátil e não modifica o registro do Windows. Para atualizar, basta baixar o novo pacote na seção de <a class="aipim-link" href="#download">download</a> (ou na página de <a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app/releases" target="_blank" rel="noopener noreferrer">Releases no GitHub</a>) e substituir a pasta ou o executável anterior. Seus arquivos de projeto (<code>.ptc</code>) continuam funcionando normalmente.</p>
+          </div>
+        </details>
+
+        <details class="aipim-accordion" name="faq">
+          <summary class="aipim-accordion__header">
+            <span class="aipim-accordion__title">Posso usar o resultado em um projeto que assino com ART?</span>
+            <svg class="aipim-icon aipim-accordion__chevron" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-chevron-down"></use></svg>
+          </summary>
+          <div class="aipim-accordion__panel">
+            <p>O Pórtica App pode ser utilizado como ferramenta de apoio, pré-dimensionamento e verificação independente, mas <strong>não substitui</strong> o projeto estrutural completo nem o julgamento técnico do profissional. A responsabilidade técnica perante o CREA e a emissão de ART cabem exclusivamente ao engenheiro civil habilitado, que deve conferir as premissas de carregamento, estabilidade global, detalhamento e conformidade com a ABNT NBR 6118:2023. Consulte o termo integral em <a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app/blob/public-main/DISCLAIMER.md" target="_blank" rel="noopener noreferrer">DISCLAIMER.md</a> e a seção <a class="aipim-link" href="#limitacoes">limitações e responsabilidade</a>.</p>
           </div>
         </details>
 
@@ -585,7 +615,7 @@
             <svg class="aipim-icon aipim-accordion__chevron" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-chevron-down"></use></svg>
           </summary>
           <div class="aipim-accordion__panel">
-            <p>Abra uma <a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app/issues" target="_blank" rel="noopener noreferrer">Issue</a> no GitHub informando a versão do app, os dados de entrada, a saída obtida, o valor esperado e a referência normativa. Se preferir, envie um e-mail para <a class="aipim-link" href="mailto:samuelsantosambiental@gmail.com">samuelsantosambiental@gmail.com</a>. Falhas de cálculo têm procedimento específico, descrito em <a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app/blob/public-main/SECURITY.md" target="_blank" rel="noopener noreferrer">SECURITY.md</a>.</p>
+            <p>Abra uma <a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app/issues" target="_blank" rel="noopener noreferrer">Issue no repositório do Pórtica App</a> informando a versão do app, os dados de entrada, a saída obtida, o valor esperado e o item correspondente da ABNT NBR 6118:2023. Para relatos privados de segurança ou falhas críticas, utilize a aba <a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app/security" target="_blank" rel="noopener noreferrer">Security do projeto</a> conforme o roteiro detalhado em <a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app/blob/public-main/SECURITY.md" target="_blank" rel="noopener noreferrer">SECURITY.md</a>.</p>
           </div>
         </details>
       </div>
