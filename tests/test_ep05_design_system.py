@@ -276,3 +276,79 @@ def test_ep05_7_padronizacao_componentes_e_zero_elevated_button():
         "build_info_dialog",
     ):
         assert hasattr(theme, sym), f"{sym} ausente em ui.theme"
+
+
+def test_ep05_9_acessibilidade_contraste_tooltips_e_erros_por_campo():
+    """EP-05.9: Contraste WCAG AA >= 4.5, tooltips contextuais, rotulos acessiveis e erros associados ao campo."""
+    import flet as ft
+
+    from ui.theme import DARK_COLORS, LIGHT_COLORS, contrast_ratio, field
+
+    # 1. Contraste WCAG AA (>= 4.5:1) para texto primario/secundario e chips de status em claro e escuro
+    for pal_name, pal in (("LIGHT", LIGHT_COLORS), ("DARK", DARK_COLORS)):
+        for bg_key in ("BG", "SURFACE", "SURFACE_VARIANT"):
+            assert contrast_ratio(pal["TEXT_PRIMARY"], pal[bg_key]) >= 4.5, (
+                f"{pal_name}: TEXT_PRIMARY em {bg_key} abaixo de 4.5"
+            )
+            assert contrast_ratio(pal["TEXT_SECONDARY"], pal[bg_key]) >= 4.5, (
+                f"{pal_name}: TEXT_SECONDARY em {bg_key} abaixo de 4.5"
+            )
+        for fg_key, bg_key in (
+            ("SUCCESS", "SUCCESS_BG"),
+            ("WARNING", "WARNING_BG"),
+            ("ERROR", "ERROR_BG"),
+            ("INFO", "INFO_BG"),
+        ):
+            ratio = contrast_ratio(pal[fg_key], pal[bg_key])
+            assert ratio >= 4.5, f"{pal_name}: {fg_key}/{bg_key} = {ratio:.2f} < 4.5"
+
+    # 2. field() injeta label acessivel, tooltip e foco visivel quando ausentes
+    raw_tf = ft.TextField(value="10")
+    field("Largura útil", raw_tf, hint="em cm")
+    assert raw_tf.label == "Largura útil"
+    assert "Largura útil" in raw_tf.tooltip
+    assert raw_tf.focused_border_color == Palette.PRIMARY
+
+    # 3. Todos os inputs com info_button possuem tooltip contextual e foco visivel
+    page = _FakePage()
+    ctx = montar_contexto(page, "t", lambda: None, None, None, None, None, None)
+    for wrapped in (
+        ctx.h_tf,
+        ctx.bw_tf,
+        ctx.bf_tf,
+        ctx.hf_tf,
+        ctx.b1esq_tf,
+        ctx.b1dir_tf,
+        ctx.caa_dd,
+        ctx.fck_dd,
+        ctx.fyk_dd,
+        ctx.fyke_dd,
+        ctx.gamma_f_dd,
+        ctx.phi_est_dd,
+        ctx.phi_bar_dd,
+    ):
+        assert wrapped.control.focused_border_color == Palette.PRIMARY
+        info_btn = wrapped.content.controls[1]
+        assert info_btn.tooltip and "NBR" in info_btn.tooltip
+
+    # 4. Erros de validacao associados diretamente ao campo que os originou
+    ctx.h_tf.control.value = ""
+    ctx.bw_tf.control.value = ""
+    ctx.phi_bar_dd.control.value = ""
+    assert ctx.run_manual_validations() is False
+    assert ctx.h_tf.control.error_text == "Campo obrigatório"
+    assert ctx.bw_tf.control.error_text == "Campo obrigatório"
+    assert ctx.phi_bar_dd.control.error_text == "Selecione a bitola"
+
+    # Altura menor ou igual a d' associa erro ao campo h_tf
+    ctx.h_tf.control.value = "3"
+    ctx.bw_tf.control.value = "20"
+    ctx.phi_bar_dd.control.value = "16"
+    ctx.on_calculate(None)
+    assert ctx.h_tf.control.error_text and "d'" in ctx.h_tf.control.error_text
+
+    # Largura bw <= 5 associa erro ao campo bw_tf
+    ctx.h_tf.control.value = "50"
+    ctx.bw_tf.control.value = "4"
+    ctx.on_calculate(None)
+    assert ctx.bw_tf.control.error_text == "Mínimo 5,0 cm"

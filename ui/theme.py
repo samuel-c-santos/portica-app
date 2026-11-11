@@ -21,7 +21,7 @@ LIGHT_COLORS = {
     "SUCCESS_LIGHT": "#60AD5E",
     "SUCCESS_BG": "#E8F5E9",
     "ON_SUCCESS": "#FFFFFF",
-    "WARNING": "#E65100",
+    "WARNING": "#B93800",
     "WARNING_LIGHT": "#FF8A50",
     "WARNING_BG": "#FFF3E0",
     "ON_WARNING": "#FFFFFF",
@@ -29,7 +29,7 @@ LIGHT_COLORS = {
     "ERROR_LIGHT": "#FF5F52",
     "ERROR_BG": "#FFEBEE",
     "ON_ERROR": "#FFFFFF",
-    "INFO": "#0277BD",
+    "INFO": "#01579B",
     "INFO_BG": "#E1F5FE",
     "BG": "#F5F7FA",
     "SURFACE": "#FFFFFF",
@@ -609,13 +609,41 @@ def section_header(title, *, icon=None, action=None):
     )
 
 
-# ── Campo de input estilizado (label acima do input) ─────────────────────
+# ── Campo de input estilizado (label acima do input + rótulo acessível) ───
 def field(label_text, control, *, hint=None):
+    if hasattr(control, "label") and not getattr(control, "label", None):
+        control.label = label_text
+    if hasattr(control, "tooltip") and not getattr(control, "tooltip", None):
+        control.tooltip = f"{label_text} — {hint}" if hint else label_text
+    if hasattr(control, "focused_border_color") and not getattr(
+        control, "focused_border_color", None
+    ):
+        control.focused_border_color = Palette.PRIMARY
     children = [label_medium(label_text, color=Palette.TEXT_SECONDARY)]
     children.append(control)
     if hint:
         children.append(caption(hint, color=Palette.TEXT_DISABLED))
     return ft.Column(children, spacing=Spacing.XS)
+
+
+# ── Helpers de contraste WCAG AA (EP-05.9) ─────────────────────────────────
+def relative_luminance(hex_color: str) -> float:
+    """Calcula a luminância relativa WCAG 2.1 de uma cor hexadecimal (#RRGGBB)."""
+    h = hex_color.lstrip("#")[:6]
+    r, g, b = (int(h[i : i + 2], 16) / 255.0 for i in (0, 2, 4))
+
+    def _chan(c: float) -> float:
+        return c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
+
+    return 0.2126 * _chan(r) + 0.7152 * _chan(g) + 0.0722 * _chan(b)
+
+
+def contrast_ratio(fg_hex: str, bg_hex: str) -> float:
+    """Razão de contraste WCAG 2.1 entre duas cores hexadecimais (1.0 a 21.0)."""
+    l1 = relative_luminance(fg_hex)
+    l2 = relative_luminance(bg_hex)
+    lighter, darker = max(l1, l2), min(l1, l2)
+    return (lighter + 0.05) / (darker + 0.05)
 
 
 # ── Botao de info (abre dialog com tabela) ─────────────────────────────────

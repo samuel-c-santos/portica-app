@@ -59,7 +59,9 @@ def _make_trecho_field(ctx, prefix, idx, value=""):
         keyboard_type=ft.KeyboardType.NUMBER,
         text_align=ft.TextAlign.CENTER,
         hint_text=hint,
+        tooltip=f"Trecho {prefix}{idx} ({'momento fletor em kN·m' if prefix == 'M' else 'força cortante em kN'})",
         on_change=_on_change_trecho,
+        on_submit=lambda e: ctx.on_calculate(e) if hasattr(ctx, "on_calculate") else None,
         expand=True,
     )
 

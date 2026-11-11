@@ -58,6 +58,7 @@ def build_sidebar(page, current_route, on_navigate, on_toggle_theme=None):
             bgcolor=bg,
             alignment=ft.Alignment.CENTER,
             ink=is_active,
+            tooltip=f"Ir para {label}",
             on_click=lambda e, r=route: on_navigate(r),
         )
 

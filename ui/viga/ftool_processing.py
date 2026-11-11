@@ -57,6 +57,12 @@ def processar_ftool(ctx):
     except (ValueError, AttributeError):
         h_val = bw_val = phi_val = 0
     if h_val <= 0 or bw_val <= 0 or phi_val <= 0:
+        from ui.viga.form_geometry import erro_numero_positivo
+
+        ctx.h_tf.control.error_text = erro_numero_positivo(ctx.h_tf.control.value or "")
+        ctx.bw_tf.control.error_text = erro_numero_positivo(ctx.bw_tf.control.value or "")
+        ctx.phi_bar_dd.control.error_text = "Selecione a bitola" if phi_val <= 0 else None
+        ctx.page.update()
         ctx.show_msg(
             "Preencha h, bw e o diâmetro da armadura antes de importar o FTOOL", Palette.WARNING
         )

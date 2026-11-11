@@ -47,6 +47,7 @@ def build_sobre(page, on_back):
                 ft.IconButton(
                     icon=ft.Icons.ARROW_BACK,
                     icon_color=Palette.TEXT_PRIMARY,
+                    tooltip="Voltar para o início",
                     on_click=lambda e: on_back(),
                 ),
                 ft.Container(height=Spacing.LG),

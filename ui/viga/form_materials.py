@@ -48,6 +48,7 @@ def setup_materiais(ctx):
         "2",
         _make_caa_options(),
         info_on_click=lambda e: _open_caa(ctx.page),
+        info_tooltip="Tabela 6.1 e 7.2 — Classe de Agressividade Ambiental e cobrimento (NBR 6118:2023)",
     )
 
     ctx.fck_dd = _styled_dropdown(
@@ -55,6 +56,7 @@ def setup_materiais(ctx):
         "30",
         _make_options([20, 25, 30, 35, 40, 45, 50, 55, 60]),
         info_on_click=lambda e: _open_fck(ctx.page),
+        info_tooltip="Classes de resistência do concreto C20 a C60 (NBR 6118:2023 — Seção 8.2.1)",
     )
 
     ctx.fyk_dd = _styled_dropdown(
@@ -62,6 +64,7 @@ def setup_materiais(ctx):
         "50",
         _make_options([25, 50, 60]),
         info_on_click=lambda e: _open_aco(ctx.page),
+        info_tooltip="Aços para armadura passiva CA-25, CA-50 e CA-60 (NBR 7480 / NBR 6118:2023)",
     )
 
     ctx.fyke_dd = _styled_dropdown(
@@ -69,6 +72,7 @@ def setup_materiais(ctx):
         "60",
         _make_options([25, 50, 60]),
         info_on_click=lambda e: _open_aco(ctx.page),
+        info_tooltip="Aço dos estribos transversais (NBR 6118:2023 — Seção 17.4)",
     )
 
     ctx.gamma_f_dd = _styled_dropdown(
@@ -76,6 +80,7 @@ def setup_materiais(ctx):
         "normais",
         _make_gamma_f_options(),
         info_on_click=lambda e: _open_gamma_f(ctx.page),
+        info_tooltip="Tabela 11.1 — Coeficiente de ponderação das ações γf (NBR 6118:2023)",
     )
 
     ctx._diam_options = partial(_diam_options, ctx)
@@ -89,12 +94,19 @@ def setup_materiais(ctx):
         "5",
         ctx._diam_options(),
         info_on_click=lambda e: _open_diametros(ctx.page),
+        info_tooltip="Bitolas comerciais para estribos φt (NBR 7480 / NBR 6118:2023)",
     )
+
+    def _on_phi_bar_change(e):
+        if (ctx.phi_bar_dd.control.value or "").strip():
+            ctx.phi_bar_dd.control.error_text = None
+        ctx._check_ftool_pronto()
 
     ctx.phi_bar_dd = _styled_dropdown(
         "Barra phi_l (mm)",
         "",
         ctx._diam_options_placeholder_long(),
-        on_change=lambda e: ctx._check_ftool_pronto(),
+        on_change=_on_phi_bar_change,
         info_on_click=lambda e: _open_diametros(ctx.page),
+        info_tooltip="Bitolas comerciais para armadura longitudinal φl (NBR 7480 / NBR 6118:2023)",
     )

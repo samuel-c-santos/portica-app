@@ -95,12 +95,16 @@ def on_calculate(ctx, e):
         h = float(ctx.h_tf.control.value or 0)
         bw = float(ctx.bw_tf.control.value or 0)
         if h <= d_lin_est:
+            ctx.h_tf.control.error_text = f"Deve ser > d' ({fmt_num(d_lin_est, 1, unidade='cm')})"
+            ctx.page.update()
             ctx.show_msg(
                 f"Altura h={fmt_num(h, 1, unidade='cm')} incorreta. d'={fmt_num(d_lin_est, 1, unidade='cm')}. h deve ser maior.",
                 Palette.ERROR,
             )
             return
         if bw <= 5:
+            ctx.bw_tf.control.error_text = "Mínimo 5,0 cm"
+            ctx.page.update()
             ctx.show_msg(f"Largura bw={bw} cm muito pequena (min 5 cm).", Palette.ERROR)
             return
         fck = float(ctx.fck_dd.control.value or 0)
@@ -157,6 +161,14 @@ def on_calculate(ctx, e):
                 gamma_f=gamma_f,
             )
     except (ValueError, TypeError, ZeroDivisionError, ArithmeticError) as ex:
+        err_msg = str(ex)
+        if ctx.is_t:
+            if "bf" in err_msg:
+                ctx.bf_tf.control.error_text = err_msg
+                ctx.page.update()
+            elif "hf" in err_msg:
+                ctx.hf_tf.control.error_text = err_msg
+                ctx.page.update()
         ctx.show_msg(f"Falha no cálculo de flexão: {ex}", Palette.ERROR)
         return
 

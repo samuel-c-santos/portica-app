@@ -131,6 +131,15 @@ def run_manual_validations(ctx):
 
             ok = False
 
+    # Validar bitola longitudinal (phi_bar_dd)
+    phi_bar_ctrl = getattr(getattr(ctx, "phi_bar_dd", None), "control", None)
+    if phi_bar_ctrl is not None:
+        if not (phi_bar_ctrl.value or "").strip():
+            phi_bar_ctrl.error_text = "Selecione a bitola"
+            ok = False
+        else:
+            phi_bar_ctrl.error_text = None
+
     if ctx.is_t:
         for tf_ctrl, _ in [(ctx.bf_tf, "bf"), (ctx.hf_tf, "hf")]:
             val = tf_ctrl.control.value.strip()
@@ -148,7 +157,15 @@ def run_manual_validations(ctx):
                     tf_ctrl.control.error_text = "Use número (ex: 50,0)"
                     ok = False
 
-        pass
+        for b1_ctrl in (ctx.b1esq_tf, ctx.b1dir_tf):
+            val = b1_ctrl.control.value.strip()
+            if val:
+                err_b1 = erro_numero_nao_negativo(val)
+                b1_ctrl.control.error_text = err_b1
+                if err_b1 is not None:
+                    ok = False
+            else:
+                b1_ctrl.control.error_text = None
 
     # Validar trechos
     for tf in ctx.md_rows + ctx.vk_rows:
@@ -185,6 +202,7 @@ def setup_geometria(ctx):
         "",
         on_change=ctx._on_geom_change(ctx.validate_positive_number),
         info_on_click=lambda e: _open_geometria(ctx.page),
+        info_tooltip="Altura total da seção d/h (NBR 6118:2023 — Seção 14.6)",
     )
 
     ctx.bw_tf = _styled_textfield(
@@ -192,6 +210,7 @@ def setup_geometria(ctx):
         "",
         on_change=ctx._on_geom_change(ctx.validate_positive_number),
         info_on_click=lambda e: _open_geometria(ctx.page),
+        info_tooltip="Largura da alma tw/bw (NBR 6118:2023 — Seção 13.2.2)",
     )
 
     ctx.bf_tf = _styled_textfield(
@@ -199,6 +218,7 @@ def setup_geometria(ctx):
         "60",
         on_change=ctx.validate_positive_number,
         info_on_click=lambda e: _open_viga_t(ctx.page),
+        info_tooltip="Largura da mesa colaborante bf (NBR 6118:2023 — Seção 14.6.2.2)",
     )
 
     ctx.hf_tf = _styled_textfield(
@@ -206,6 +226,7 @@ def setup_geometria(ctx):
         "12",
         on_change=ctx.validate_positive_number,
         info_on_click=lambda e: _open_viga_t(ctx.page),
+        info_tooltip="Espessura da mesa hf/tf (NBR 6118:2023 — Seção 14.6.2.2)",
     )
 
     ctx.b1esq_tf = _styled_textfield(
@@ -213,6 +234,7 @@ def setup_geometria(ctx):
         "40",
         on_change=ctx.validate_non_negative_number,
         info_on_click=lambda e: _open_b1(ctx.page),
+        info_tooltip="Aba colaborante esquerda b1 (NBR 6118:2023 — Seção 14.6.2.2)",
     )
 
     ctx.b1dir_tf = _styled_textfield(
@@ -220,6 +242,7 @@ def setup_geometria(ctx):
         "40",
         on_change=ctx.validate_non_negative_number,
         info_on_click=lambda e: _open_b1(ctx.page),
+        info_tooltip="Aba colaborante direita b1 (NBR 6118:2023 — Seção 14.6.2.2)",
     )
 
     # RT inputs
@@ -344,7 +367,11 @@ def build_sidebar(ctx):
                         ft.Container(width=Spacing.XS),
                         ft.Text("Momentos", size=12, expand=True),
                         ft.OutlinedButton(
-                            "...", icon=ft.Icons.FILE_UPLOAD, height=28, on_click=ctx._pick_momento
+                            "...",
+                            icon=ft.Icons.FILE_UPLOAD,
+                            height=28,
+                            tooltip="Selecionar arquivo .txt de momentos do FTOOL",
+                            on_click=ctx._pick_momento,
                         ),
                     ],
                     vertical_alignment=ft.CrossAxisAlignment.CENTER,
@@ -356,7 +383,11 @@ def build_sidebar(ctx):
                         ft.Container(width=Spacing.XS),
                         ft.Text("Cortantes", size=12, expand=True),
                         ft.OutlinedButton(
-                            "...", icon=ft.Icons.FILE_UPLOAD, height=28, on_click=ctx._pick_cortante
+                            "...",
+                            icon=ft.Icons.FILE_UPLOAD,
+                            height=28,
+                            tooltip="Selecionar arquivo .txt de cortantes do FTOOL",
+                            on_click=ctx._pick_cortante,
                         ),
                     ],
                     vertical_alignment=ft.CrossAxisAlignment.CENTER,
@@ -371,6 +402,7 @@ def build_sidebar(ctx):
                             "...",
                             icon=ft.Icons.FILE_UPLOAD,
                             height=28,
+                            tooltip="Selecionar arquivo .txt de deformações do FTOOL",
                             on_click=ctx._pick_deformacao,
                         ),
                     ],
