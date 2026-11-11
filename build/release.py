@@ -449,8 +449,10 @@ def bump_site(velho: str, novo: str) -> str:
     texto = ler(SITE_FILE)
     for url_velha in urls_assets(velho):
         n_url = texto.count(url_velha)
-        if n_url != 1:
-            die(f"site/index.html: esperava 1 ocorrência de {url_velha!r}, achei {n_url}")
+        if n_url < 1:
+            die(
+                f"site/index.html: esperava pelo menos 1 ocorrência de {url_velha!r}, achei {n_url}"
+            )
     alvo_cit = f"(versão {velho})"
     n_cit = texto.count(alvo_cit)
     if n_cit < 1:

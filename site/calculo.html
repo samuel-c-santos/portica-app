@@ -4,9 +4,26 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
-  <title>Modelo de cálculo — Pórtica App</title>
-  <meta name="description" content="Modelo de cálculo do Pórtica App: flexão, cisalhamento, viga T, armadura dupla, armadura de pele e ELS, conforme a ABNT NBR 6118:2023.">
-  <link rel="icon" href="img/logo.png" type="image/png">
+  <meta name="theme-color" content="#1565C0" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0F1419" media="(prefers-color-scheme: dark)">
+  <title>Modelo de cálculo (NBR 6118:2023) — Pórtica App</title>
+  <meta name="description" content="Fórmulas e critérios normativos da ABNT NBR 6118:2023 implementados no Pórtica App: equilíbrio da linha neutra na flexão, Modelo I de cisalhamento, viga T colaborante, armadura dupla, armadura de pele e ELS.">
+  <link rel="canonical" href="https://samuel-c-santos.github.io/portica-app/calculo.html">
+  <link rel="icon" href="img/favicon.ico" sizes="any">
+  <link rel="icon" href="img/favicon-light.png" type="image/png" media="(prefers-color-scheme: light)">
+  <link rel="icon" href="img/favicon-dark.png" type="image/png" media="(prefers-color-scheme: dark)">
+  <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://samuel-c-santos.github.io/portica-app/calculo.html">
+  <meta property="og:title" content="Modelo de cálculo (NBR 6118:2023) — Pórtica App">
+  <meta property="og:description" content="Documentação técnica das equações de flexão, cisalhamento, seção T, armadura dupla, pele e ELS implementadas no Pórtica App conforme a ABNT NBR 6118:2023.">
+  <meta property="og:image" content="https://samuel-c-santos.github.io/portica-app/img/ilustracao-viga-t-escura.png">
+  <meta property="og:locale" content="pt_BR">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Modelo de cálculo (NBR 6118:2023) — Pórtica App">
+  <meta name="twitter:description" content="Equações e critérios da ABNT NBR 6118:2023 implementados no Pórtica App.">
+  <meta name="twitter:image" content="https://samuel-c-santos.github.io/portica-app/img/ilustracao-viga-t-escura.png">
 
   <link rel="stylesheet" href="vendor/aipim/aipim.css">
   <link rel="stylesheet" href="vendor/aipim/aipim-components.css">
@@ -78,30 +95,30 @@
           <h2>Flexão</h2>
         </div>
 
-        <h4>Altura útil</h4>
+        <h3>Altura útil</h3>
         <p>A altura útil <code>d</code> desconta da altura total <code>h</code> o cobrimento <code>c</code>, o diâmetro do estribo <code>φt</code> e metade do diâmetro da barra longitudinal <code>φl</code>:</p>
         <img class="eq" src="img/equations/eq_d.png" alt="d igual a h menos c menos φt menos φl sobre 2" loading="lazy">
 
-        <h4 style="margin-top: var(--aipim-space-24);">Coeficiente KC</h4>
+        <h3 style="margin-top: var(--aipim-space-24);">Coeficiente KC</h3>
         <img class="eq" src="img/equations/eq_kc.png" alt="KC igual a bw vezes d ao quadrado sobre Md" loading="lazy">
 
-        <h4 style="margin-top: var(--aipim-space-24);">Linha neutra (equilíbrio NBR)</h4>
+        <h3 style="margin-top: var(--aipim-space-24);">Linha neutra (equilíbrio NBR)</h3>
         <p>A posição <code>x</code> da linha neutra sai do equilíbrio de momentos do diagrama retangular (NBR 6118:2023, 17.2.2), com raiz válida no domínio 2/3:</p>
         <img class="eq" src="img/equations/eq_2grau.png" alt="0,4 vezes x ao quadrado, menos d vezes x, mais Md sobre fcd vezes b, igual a 0" loading="lazy">
 
-        <h4 style="margin-top: var(--aipim-space-24);">Limite do domínio</h4>
+        <h3 style="margin-top: var(--aipim-space-24);">Limite do domínio</h3>
         <img class="eq" src="img/equations/eq_bxmin.png" alt="βx mínimo igual a 0,45 se fck menor que 50 MPa, ou 0,35 se fck maior ou igual a 50 MPa" loading="lazy">
 
-        <h4 style="margin-top: var(--aipim-space-24);">Posição da linha neutra</h4>
+        <h3 style="margin-top: var(--aipim-space-24);">Posição da linha neutra</h3>
         <img class="eq" src="img/equations/eq_x.png" alt="x igual a βx vezes d" loading="lazy">
 
-        <h4 style="margin-top: var(--aipim-space-24);">Armadura de tração</h4>
+        <h3 style="margin-top: var(--aipim-space-24);">Armadura de tração</h3>
         <img class="eq" src="img/equations/eq_ks.png" alt="ks igual a 1 sobre fyd vezes 1 menos 0,4 vezes βx" loading="lazy">
         <img class="eq" src="img/equations/eq_asreq.png" alt="área de aço requerida igual a ks vezes módulo de Md sobre d" loading="lazy">
         <img class="eq" src="img/equations/eq_asmin.png" alt="área de aço mínima igual a rô mínimo vezes bw vezes h sobre 100" loading="lazy">
         <img class="eq" src="img/equations/eq_asadot.png" alt="área de aço adotada igual ao máximo entre a requerida e a mínima" loading="lazy">
 
-        <h4 style="margin-top: var(--aipim-space-24);">Número de barras e espaçamento</h4>
+        <h3 style="margin-top: var(--aipim-space-24);">Número de barras e espaçamento</h3>
         <img class="eq" src="img/equations/eq_nbarras.png" alt="n igual ao teto de área adotada sobre área de uma barra" loading="lazy">
         <img class="eq" src="img/equations/eq_eh.png" alt="espaçamento horizontal livre eh maior ou igual a 2,0 cm" loading="lazy">
       </div>
@@ -115,22 +132,22 @@
           <h2>Cisalhamento</h2>
         </div>
 
-        <h4>Solicitação de cálculo</h4>
+        <h3>Solicitação de cálculo</h3>
         <img class="eq" src="img/equations/eq_vsd.png" alt="Vsd igual a Vk vezes γf, com γf igual a 1,4" loading="lazy">
 
-        <h4 style="margin-top: var(--aipim-space-24);">Compressão diagonal do concreto (V<sub>Rd2</sub>)</h4>
+        <h3 style="margin-top: var(--aipim-space-24);">Compressão diagonal do concreto (V<sub>Rd2</sub>)</h3>
         <img class="eq" src="img/equations/eq_vrd2.png" alt="Vrd2 igual a 0,27 vezes λ vezes fcd vezes bw vezes d sobre 10" loading="lazy">
 
-        <h4 style="margin-top: var(--aipim-space-24);">Resistências do concreto</h4>
+        <h3 style="margin-top: var(--aipim-space-24);">Resistências do concreto</h3>
         <img class="eq" src="img/equations/eq_fcd.png" alt="fcd igual a αc vezes fck sobre γc, com αc igual a 0,85 e γc igual a 1,4" loading="lazy">
         <img class="eq" src="img/equations/eq_fctm.png" alt="fctm igual a 0,30 vezes fck elevado a dois terços, e fctk,inf igual a 0,7 vezes fctm" loading="lazy">
         <img class="eq" src="img/equations/eq_fctd.png" alt="fctd igual a fctk,inf sobre γc dividido por 10" loading="lazy">
 
-        <h4 style="margin-top: var(--aipim-space-24);">Contribuição do concreto (V<sub>c</sub>) e do aço (V<sub>sw</sub>)</h4>
+        <h3 style="margin-top: var(--aipim-space-24);">Contribuição do concreto (V<sub>c</sub>) e do aço (V<sub>sw</sub>)</h3>
         <img class="eq" src="img/equations/eq_vc.png" alt="Vc igual a 0,6 vezes fctd vezes bw vezes d" loading="lazy">
         <img class="eq" src="img/equations/eq_vsw.png" alt="Vsw igual a Vsd menos Vc" loading="lazy">
 
-        <h4 style="margin-top: var(--aipim-space-24);">Armadura transversal</h4>
+        <h3 style="margin-top: var(--aipim-space-24);">Armadura transversal</h3>
         <img class="eq" src="img/equations/eq_aswmin.png" alt="Asw sobre s mínimo igual a ρw vezes bw" loading="lazy">
         <img class="eq" src="img/equations/eq_sestribo.png" alt="espaçamento s igual a 100 sobre a razão entre Asw adotado e Asw por ramo" loading="lazy">
       </div>
@@ -144,17 +161,17 @@
           <h2>Viga T (mesa colaborante)</h2>
         </div>
 
-        <h4>Largura efetiva da mesa</h4>
+        <h3>Largura efetiva da mesa</h3>
         <img class="eq" src="img/equations/eq_bfef.png" alt="bf,ef igual ao mínimo entre bf e bw mais b1 esquerdo mais b1 direito" loading="lazy">
         <p style="margin-top: var(--aipim-space-8);">Cada b<sub>1</sub> é limitado por <code>0,1·l0</code> (l0 entre pontos de momento nulo) e por <code>0,5·bf1</code>. Sem b<sub>1</sub> informado, adota-se 0,0 (bf,ef = bw).</p>
 
-        <h4 style="margin-top: var(--aipim-space-24);">Momento positivo: linha neutra na mesa</h4>
+        <h3 style="margin-top: var(--aipim-space-24);">Momento positivo: linha neutra na mesa</h3>
         <img class="eq" src="img/equations/eq_kc_t.png" alt="KC igual a bf,ef vezes d ao quadrado sobre Md" loading="lazy">
         <img class="eq" src="img/equations/eq_ln_mesa.png" alt="se x menor ou igual a hf, a linha neutra está dentro da mesa e a viga T é válida" loading="lazy">
 
         <div class="grid grid--2" style="margin-top: var(--aipim-space-24); align-items: start;">
           <div>
-            <h4>Quando a linha neutra cai na alma</h4>
+            <h3>Quando a linha neutra cai na alma</h3>
             <p style="margin-top: var(--aipim-space-8);">O momento é decomposto em duas parcelas: a resistida pelas abas (M<sub>d1</sub>) e a resistida pela alma (M<sub>d2</sub>). A armadura total é <code>As = As1 + As2</code>, com a equação do 2º grau resolvida com <code>bw</code> para a alma. Para momento negativo, o cálculo é idêntico ao da viga retangular com largura <code>bw</code>.</p>
           </div>
           <figure class="fig">
