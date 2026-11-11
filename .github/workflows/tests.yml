@@ -48,8 +48,18 @@ jobs:
       - name: Instala dependências
         run: pip install -r requirements.txt -r requirements-dev.txt
 
-      - name: Roda a suíte de testes
-        run: python -m pytest tests -q
+      - name: Roda a suíte com cobertura (EP-03.6)
+        run: python -m pytest tests --cov=core --cov=ui --cov-report=json:coverage.json -q
+
+      - name: Gate de cobertura por módulo (EP-03.6)
+        run: python tools/coverage_min.py coverage.json
+
+      - name: Publica relatório de cobertura como artefato (EP-03.6)
+        if: matrix.python-version == '3.12'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-json
+          path: coverage.json
 
       - name: Benchmarks normativos (EP-03.1) — obrigatórios
         # Os xfails do benchmark de flexão são strict (xfail_strict=true no

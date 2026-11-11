@@ -67,6 +67,7 @@ flet_build/
 .coverage
 htmlcov/
 coverage.xml
+coverage.json
 .tox/
 .nox/
 *.egg-info/
