@@ -117,6 +117,7 @@ def _setup_layout(ctx):
         width=300,
         padding=pad_sym(horizontal=Spacing.MD, vertical=Spacing.MD),
         bgcolor=Palette.BG,
+        alignment=ft.Alignment(-1, -1),
     )
 
     ctx.center_holder = ft.Container(
@@ -148,6 +149,7 @@ def _setup_layout(ctx):
                 width=300,
                 padding=pad_sym(horizontal=Spacing.MD, vertical=Spacing.MD),
                 bgcolor=Palette.BG,
+                alignment=ft.Alignment(-1, -1),
             ),
         ],
         spacing=0,

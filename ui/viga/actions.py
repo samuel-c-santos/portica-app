@@ -1034,4 +1034,5 @@ def setup_card_acoes(ctx):
         ],
         spacing=Spacing.MD,
         scroll=ft.ScrollMode.AUTO,
+        expand=True,
     )

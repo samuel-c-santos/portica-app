@@ -398,7 +398,6 @@ def build_sidebar(ctx):
                 ),
             ],
             spacing=Spacing.SM,
-            scroll=ft.ScrollMode.AUTO,
         ),
         padding=Spacing.LG,
     )
@@ -439,6 +438,7 @@ def build_sidebar(ctx):
         ],
         spacing=Spacing.MD,
         scroll=ft.ScrollMode.AUTO,
+        expand=True,
     )
 
 

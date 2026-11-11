@@ -141,3 +141,27 @@ def test_ep05_3_fonte_tabular_em_campos_e_tabelas():
     viewer_table = ctx.viewer_flexao.controls[-1]
     assert viewer_table.columns[0].numeric is True
     assert viewer_table.rows[0].cells[0].content.font_family == "Roboto Mono"
+
+
+def test_ep05_5_scroll_independente_sem_clipping():
+    """EP-05.5: Coluna esquerda (geometria/materiais) e coluna direita possuem scroll independente e expand=True."""
+    import flet as ft
+
+    from ui.entrada import ENTRADA_FTOOL
+
+    page = _FakePage()
+    ctx = montar_contexto(page, "t", lambda: None, None, None, None, None, None)
+    left_col = ctx.sidebar_holder.content
+    assert left_col.scroll == ft.ScrollMode.AUTO
+    assert left_col.expand is True
+    assert ctx.sidebar_holder.alignment == ft.Alignment(-1, -1)
+
+    # Modo FTOOL nao aninha scroll dentro do card FTOOL
+    ctx.state["entrada"] = ENTRADA_FTOOL
+    left_col_ftool = ctx.build_sidebar()
+    ftool_card_col = left_col_ftool.controls[-1].content
+    assert ftool_card_col.scroll is None
+    assert left_col_ftool.scroll == ft.ScrollMode.AUTO
+    assert left_col_ftool.expand is True
+    assert ctx.right_sidebar.scroll == ft.ScrollMode.AUTO
+    assert ctx.right_sidebar.expand is True

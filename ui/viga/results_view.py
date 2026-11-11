@@ -779,9 +779,9 @@ def setup_viewer(ctx):
     """Passo de construcao: setup_viewer."""
 
     # ── Visualizador de dados FTOOL (centro) ──────────────────────────────
-    ctx.viewer_flexao = ft.Column(spacing=Spacing.SM)
+    ctx.viewer_flexao = ft.Column(spacing=Spacing.SM, scroll=ft.ScrollMode.AUTO, expand=True)
 
-    ctx.viewer_cisalhamento = ft.Column(spacing=Spacing.SM)
+    ctx.viewer_cisalhamento = ft.Column(spacing=Spacing.SM, scroll=ft.ScrollMode.AUTO, expand=True)
 
     ctx._atualizar_viewer = partial(_atualizar_viewer, ctx)
 
