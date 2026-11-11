@@ -1303,6 +1303,8 @@ def _legenda_secao(
     n_pele: int = 0,
     phi_pele: float = 0,
     tem_grampo: bool = False,
+    tem_as_linha_sup: bool = False,
+    tem_as_linha_inf: bool = False,
 ):
     pdf.set_xy(lx, ly)
     pdf.set_font("Helvetica", "B", 9)
@@ -1313,11 +1315,14 @@ def _legenda_secao(
     pdf.line(lx, pdf.get_y(), lx + 70, pdf.get_y())
     pdf.ln(3)
 
+    label_inf = "Barras Inferiores (As')" if tem_as_linha_inf else "Barras Inferiores"
+    label_sup = "Barras Superiores (As')" if tem_as_linha_sup else "Barras Superiores"
+
     itens = [
         ("Concreto", f"Cobrimento nom. {cob_mm:g} mm", C_GRAY100, C_GRAY600, False),
         ("Estribo", f"Estribo phi {phi_est:g} mm", C_WHITE, C_PORTICA, True),
-        ("Barras Inferiores", f"{n_inf} x phi {_diam(phi_inf)} mm", (31, 41, 55), C_PORTICA, False),
-        ("Barras Superiores", f"{n_sup} x phi {_diam(phi_sup)} mm", (31, 41, 55), C_PORTICA, False),
+        (label_inf, f"{n_inf} x phi {_diam(phi_inf)} mm", (31, 41, 55), C_PORTICA, False),
+        (label_sup, f"{n_sup} x phi {_diam(phi_sup)} mm", (31, 41, 55), C_PORTICA, False),
     ]
     if n_pele > 0 and phi_pele > 0:
         itens.append(
@@ -1575,10 +1580,19 @@ def gerar_relatorio_viga_comum(
     max_bars_sup = 0
     phi_inf_adot = phi_barra_mm
     phi_sup_adot = phi_barra_mm
+    tem_as_linha_sup = False
+    tem_as_linha_inf = False
 
     for i, r in enumerate(resultados_flexao):
         if r is None:
             continue
+
+        arm_adot = f"{r.qtd_barras} phi {_diam(r.diametro_mm)}"
+        if getattr(r, "as_linha_cm2", 0.0) > 0:
+            area_b = math.pi * (r.diametro_mm / 10.0) ** 2 / 4.0
+            n_comp = math.ceil(r.as_linha_cm2 / area_b) if area_b > 0 else 0
+            if n_comp > 0:
+                arm_adot += f" + {n_comp} phi {_diam(r.diametro_mm)} (As')"
 
         rows_flex.append(
             [
@@ -1590,19 +1604,35 @@ def gerar_relatorio_viga_comum(
                 f"{_n(r.x_cm, 2) if r.x_cm is not None else 'n/ap'}",
                 f"{_n(r.as_req_cm2, 2)}",
                 f"{_n(r.asmin_cm2, 2)}",
-                f"{r.qtd_barras} phi {_diam(r.diametro_mm)}",
+                arm_adot,
             ]
         )
 
-        # Encontrar armadura máxima para o desenho da seção transversal representativa
+        # Encontrar armadura máxima para o desenho da seção transversal representativa (EP-04.5)
         if r.tipo == "POSITIVO":
             if r.qtd_barras > max_bars_inf:
                 max_bars_inf = r.qtd_barras
                 phi_inf_adot = r.diametro_mm
+            # Compressão no topo para momento positivo com As' > 0
+            if getattr(r, "as_linha_cm2", 0.0) > 0:
+                area_b = math.pi * (r.diametro_mm / 10.0) ** 2 / 4.0
+                n_comp = math.ceil(r.as_linha_cm2 / area_b) if area_b > 0 else 0
+                if n_comp > max_bars_sup:
+                    max_bars_sup = n_comp
+                    phi_sup_adot = r.diametro_mm
+                    tem_as_linha_sup = True
         else:
             if r.qtd_barras > max_bars_sup:
                 max_bars_sup = r.qtd_barras
                 phi_sup_adot = r.diametro_mm
+            # Compressão embaixo para momento negativo com As' > 0
+            if getattr(r, "as_linha_cm2", 0.0) > 0:
+                area_b = math.pi * (r.diametro_mm / 10.0) ** 2 / 4.0
+                n_comp = math.ceil(r.as_linha_cm2 / area_b) if area_b > 0 else 0
+                if n_comp > max_bars_inf:
+                    max_bars_inf = n_comp
+                    phi_inf_adot = r.diametro_mm
+                    tem_as_linha_inf = True
 
     if rows_flex:
         pdf.tabela_flexao(headers_flex, rows_flex, col_w_flex)
@@ -1704,6 +1734,8 @@ def gerar_relatorio_viga_comum(
         n_pele=n_pele,
         phi_pele=phi_pele,
         tem_grampo=tem_grampo,
+        tem_as_linha_sup=tem_as_linha_sup,
+        tem_as_linha_inf=tem_as_linha_inf,
     )
 
     # Nota sobre cavaletes (apenas quando ha 2a camada com grampo)
@@ -1938,10 +1970,19 @@ def gerar_relatorio_viga_t(
     max_bars_sup = 0
     phi_inf_adot = phi_barra_mm
     phi_sup_adot = phi_barra_mm
+    tem_as_linha_sup = False
+    tem_as_linha_inf = False
 
     for i, r in enumerate(resultados_flexao):
         if r is None:
             continue
+
+        arm_adot = f"{r.qtd_barras} phi {_diam(r.diametro_mm)}"
+        if getattr(r, "as_linha_cm2", 0.0) > 0:
+            area_b = math.pi * (r.diametro_mm / 10.0) ** 2 / 4.0
+            n_comp = math.ceil(r.as_linha_cm2 / area_b) if area_b > 0 else 0
+            if n_comp > 0:
+                arm_adot += f" + {n_comp} phi {_diam(r.diametro_mm)} (As')"
 
         rows_flex.append(
             [
@@ -1953,7 +1994,7 @@ def gerar_relatorio_viga_t(
                 f"{_n(r.x_cm, 2) if r.x_cm is not None else 'n/ap'}",
                 f"{_n(r.as_req_cm2, 2)}",
                 f"{_n(r.asmin_cm2, 2)}",
-                f"{r.qtd_barras} phi {_diam(r.diametro_mm)}",
+                arm_adot,
             ]
         )
 
@@ -1961,10 +2002,24 @@ def gerar_relatorio_viga_t(
             if r.qtd_barras > max_bars_inf:
                 max_bars_inf = r.qtd_barras
                 phi_inf_adot = r.diametro_mm
+            if getattr(r, "as_linha_cm2", 0.0) > 0:
+                area_b = math.pi * (r.diametro_mm / 10.0) ** 2 / 4.0
+                n_comp = math.ceil(r.as_linha_cm2 / area_b) if area_b > 0 else 0
+                if n_comp > max_bars_sup:
+                    max_bars_sup = n_comp
+                    phi_sup_adot = r.diametro_mm
+                    tem_as_linha_sup = True
         else:
             if r.qtd_barras > max_bars_sup:
                 max_bars_sup = r.qtd_barras
                 phi_sup_adot = r.diametro_mm
+            if getattr(r, "as_linha_cm2", 0.0) > 0:
+                area_b = math.pi * (r.diametro_mm / 10.0) ** 2 / 4.0
+                n_comp = math.ceil(r.as_linha_cm2 / area_b) if area_b > 0 else 0
+                if n_comp > max_bars_inf:
+                    max_bars_inf = n_comp
+                    phi_inf_adot = r.diametro_mm
+                    tem_as_linha_inf = True
 
     if rows_flex:
         pdf.tabela_flexao(headers_flex, rows_flex, col_w_flex)
@@ -2067,6 +2122,8 @@ def gerar_relatorio_viga_t(
         n_pele=n_pele,
         phi_pele=phi_pele,
         tem_grampo=tem_grampo,
+        tem_as_linha_sup=tem_as_linha_sup,
+        tem_as_linha_inf=tem_as_linha_inf,
     )
 
     if tem_grampo:

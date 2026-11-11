@@ -279,3 +279,72 @@ def test_rodape_contem_aviso_de_responsabilidade(viga_exemplo, momentos_exemplo,
     finally:
         if os.path.exists(temp_pdf_path):
             os.remove(temp_pdf_path)
+
+
+def test_relatorio_desenha_armadura_de_compressao(monkeypatch):
+    """EP-04.5: Seção positiva com As' > 0 desenha barras de compressão no topo
+
+    e exibe legenda 'Barras Superiores (As')' casando com a tabela de flexão.
+    """
+    from helpers_pdf import pdf_com_captura
+
+    r_flex = calcular_flexao_viga_comum(
+        h_cm=50.0,
+        bw_cm=12.0,
+        caa=2,
+        fck_mpa=30.0,
+        diam_estribo_mm=5.0,
+        diam_barra_mm=16.0,
+        fyk_kn_cm2=50.0,
+        momentos=[139.2],
+        gamma_f=1.4,
+    )
+    r_cis = calcular_cisalhamento_viga_comum(
+        h_cm=50.0,
+        bw_cm=12.0,
+        fck_mpa=30.0,
+        diam_estribo_mm=5.0,
+        diam_barra_mm=16.0,
+        fyk_estribo_kn_cm2=50.0,
+        fyk_barra_kn_cm2=50.0,
+        caa=2,
+        forcas_cortantes=[40.0],
+        gamma_f=1.4,
+    )
+
+    res = r_flex[0]
+    assert res is not None
+    assert res.armadura_dupla is True
+    assert res.as_linha_cm2 > 0
+
+    fd, temp_pdf_path = tempfile.mkstemp(suffix=".pdf")
+    os.close(fd)
+    try:
+
+        def _gerar():
+            gerar_relatorio_viga_comum(
+                temp_pdf_path,
+                nome_viga="Viga Armadura Dupla",
+                h_cm=50.0,
+                bw_cm=12.0,
+                caa=2,
+                fck_mpa=30.0,
+                fyk_kn_cm2=50.0,
+                fyk_estribo_kn_cm2=50.0,
+                phi_estribo_mm=5.0,
+                phi_barra_mm=16.0,
+                resultados_flexao=r_flex,
+                resultados_cisalhamento=r_cis,
+                nome_engenheiro="Samuel Santos",
+                crea="123456/D-SP",
+            )
+
+        texto = pdf_com_captura(monkeypatch, _gerar)
+
+        # 1. Legenda deve indicar explicitamente que as barras superiores são As'
+        assert "Barras Superiores (As')" in texto
+        # 2. Tabela de flexão deve conter a armadura de compressão (As')
+        assert "(As')" in texto
+    finally:
+        if os.path.exists(temp_pdf_path):
+            os.remove(temp_pdf_path)
