@@ -2,7 +2,7 @@ from typing import Any
 
 import ezdxf
 
-from core.detailing.domain import ev_min_mm
+from core.detailing.domain import posicionar_armadura_pele
 
 
 def exportar_secao_dxf(
@@ -118,90 +118,33 @@ def exportar_secao_dxf(
     # 4. Desenhar Armadura de Pele (Laterais)
     if n_barras_pele > 0 and phi_pele_mm > 0:
         phi_pele_cm = phi_pele_mm / 10.0
-        x_pele_esq = cob_cm + phi_est_cm + (phi_pele_cm / 2.0)
-        x_pele_dir = bw_cm - cob_cm - phi_est_cm - (phi_pele_cm / 2.0)
+        x_esq_mm, x_dir_mm, ys_pele_mm = posicionar_armadura_pele(
+            h_mm=h_cm * 10.0,
+            bw_mm=bw_cm * 10.0,
+            cob_mm=cob_cm * 10.0,
+            phi_estribo_mm=phi_estribo_mm,
+            n_barras_pele_face=n_barras_pele,
+            phi_pele_mm=phi_pele_mm,
+            bar_positions=bar_positions,
+            is_t=is_t,
+            bf_mm=(bf_cm or 0.0) * 10.0,
+            hf_mm=(hf_cm or 0.0) * 10.0,
+            d_max_agregado_mm=d_max_agregado_mm,
+            phi_barra_inf_mm=phi_barra_mm,
+        )
 
-        # 1. Encontrar o topo/fundo real da última camada de armadura principal (em cm)
-        topo_cm = None
-        fundo_sup_cm = None
-        if bar_positions:
-            bottom_bars_tops = []
-            top_bars_bottoms = []
-            for bar in bar_positions:
-                by = bar.get("y") if isinstance(bar, dict) else getattr(bar, "y", None)
-                b_layer = bar.get("layer") if isinstance(bar, dict) else getattr(bar, "layer", None)
-                b_phi = (
-                    bar.get("phi_mm") if isinstance(bar, dict) else getattr(bar, "phi_mm", None)
-                ) or phi_barra_mm
-                if by is not None:
-                    # Considerar barra inferior se layer >= 0 ou se (layer é None) por estar na metade de baixo
-                    is_bottom = False
-                    is_top = False
-                    if b_layer is not None:
-                        if b_layer >= 0:
-                            is_bottom = True
-                        else:
-                            is_top = True
-                    else:
-                        if by < (h_cm * 10.0) / 2.0:
-                            is_bottom = True
-                        else:
-                            is_top = True
+        x_pele_esq_cm = x_esq_mm / 10.0 - (bf_cm / 2.0 if is_t and bf_cm else 0.0)
+        x_pele_dir_cm = x_dir_mm / 10.0 - (bf_cm / 2.0 if is_t and bf_cm else 0.0)
 
-                    if is_bottom:
-                        bottom_bars_tops.append((by + b_phi / 2.0) / 10.0)
-                    if is_top:
-                        top_bars_bottoms.append((by - b_phi / 2.0) / 10.0)
-
-            if bottom_bars_tops:
-                topo_cm = max(bottom_bars_tops)
-            if top_bars_bottoms:
-                fundo_sup_cm = min(top_bars_bottoms)
-
-        # Calcular ev_min (em cm) pela definição única do domínio
-        ev_min_cm = ev_min_mm(d_max_agregado_mm, phi_barra_mm) / 10.0
-
-        # Determinar limites brutos (sem gaps)
-        y_bottom_raw_cm = topo_cm if topo_cm is not None else (cob_cm + phi_est_cm)
-        if fundo_sup_cm is not None:
-            y_top_raw_cm = fundo_sup_cm
-        else:
-            if is_t and hf_cm is not None:
-                y_top_raw_cm = h_cm - hf_cm
-            else:
-                y_top_raw_cm = h_cm - (cob_cm + phi_est_cm)
-
-        # Verificar se podemos usar a nova distribuição com folga borda a borda (clearance) uniforme
-        usar_fallback = True
-        if bar_positions:
-            h_free_cm = y_top_raw_cm - y_bottom_raw_cm
-            d_livre_cm = (h_free_cm - n_barras_pele * phi_pele_cm) / (n_barras_pele + 1.0)
-            if d_livre_cm >= ev_min_cm:
-                usar_fallback = False
-
-        if usar_fallback:
-            # Fallback com a fórmula antiga
-            h_interna = h_cm - 2.0 * (cob_cm + phi_est_cm)
-            s_pele = h_interna / (n_barras_pele + 1)
-            ys_pele = [(cob_cm + phi_est_cm) + (i + 1) * s_pele for i in range(n_barras_pele)]
-        else:
-            # Distribuição perfeitamente uniforme de folga livre borda a borda
-            ys_pele = [
-                y_bottom_raw_cm + (i + 1) * d_livre_cm + (i + 0.5) * phi_pele_cm
-                for i in range(n_barras_pele)
-            ]
-
-        # Desenhar círculos de pele
-        for y_curr in ys_pele:
-            # Face Esquerda
+        for y_mm in ys_pele_mm:
+            y_curr = y_mm / 10.0
             msp.add_circle(
-                (x_pele_esq + x_shift, y_curr),
+                (x_pele_esq_cm, y_curr),
                 phi_pele_cm / 2.0,
                 dxfattribs={"layer": "ARMADURA_PELE"},
             )
-            # Face Direita
             msp.add_circle(
-                (x_pele_dir + x_shift, y_curr),
+                (x_pele_dir_cm, y_curr),
                 phi_pele_cm / 2.0,
                 dxfattribs={"layer": "ARMADURA_PELE"},
             )

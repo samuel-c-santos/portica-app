@@ -41,6 +41,7 @@ _C_STIRRUP = (0, 0, 180)  # estribo: azul portica
 _C_BAR_MAIN = (20, 30, 90)  # barras principais: azul navy
 _C_BAR_MAIN_STROKE = None  # contorno das barras (removido para evitar borda branca)
 _C_BAR_CORNER = (40, 140, 60)  # barras construtivas: verde
+_C_PELE = (197, 90, 17)  # armadura de pele: laranja
 _C_GRAMPO = (180, 70, 10)  # grampos: laranja
 _C_DIM = (80, 80, 200)  # cotas: azul claro
 _C_TEXT = (50, 50, 50)  # texto padrão
@@ -174,6 +175,7 @@ class BeamSectionCommands:
         self._draw_stirrup(cmds, data)
         self._draw_corner_bars(cmds, data)
         self._draw_main_bars(cmds, data)
+        self._draw_skin_bars(cmds, data)
         self._draw_supplementary_stirrups(cmds, data)
         self._draw_dimensions(cmds, data)
         self._draw_labels(cmds, data)
@@ -298,16 +300,38 @@ class BeamSectionCommands:
     # ── Bloco 4: Barras longitudinais principais ───────────────────────────────
 
     def _draw_main_bars(self, cmds: list[DrawCmd], d: SectionLayoutData) -> None:
-        r = d.phi_barra / 2
         for bar in d.bar_positions:
-            if bar.is_corner_bar:
+            if bar.is_corner_bar or getattr(bar, "is_skin_bar", False):
                 continue
+            phi = getattr(bar, "phi_mm", None) or d.phi_barra
+            r = phi / 2.0
             cmds.append(
                 CmdCircle(
                     cx=bar.x,
                     cy=bar.y,
                     r=r,
                     fill=_C_BAR_MAIN,
+                    stroke=_C_BAR_MAIN_STROKE,
+                    line_width=0.3,
+                )
+            )
+
+    # ── Bloco 4b: Armadura de pele ─────────────────────────────────────────────
+
+    def _draw_skin_bars(self, cmds: list[DrawCmd], d: SectionLayoutData) -> None:
+        skin_bars = list(d.skin_bar_positions)
+        for b in d.bar_positions:
+            if getattr(b, "is_skin_bar", False) and b not in skin_bars:
+                skin_bars.append(b)
+        for bar in skin_bars:
+            phi = getattr(bar, "phi_mm", None) or 10.0
+            r = phi / 2.0
+            cmds.append(
+                CmdCircle(
+                    cx=bar.x,
+                    cy=bar.y,
+                    r=r,
+                    fill=_C_PELE,
                     stroke=_C_BAR_MAIN_STROKE,
                     line_width=0.3,
                 )
@@ -320,37 +344,50 @@ class BeamSectionCommands:
             return
 
         pe = d.phi_estribo
-        arm_w = pe * 3.0  # meia-largura do grampo
-        arm_h = pe * 8.0  # altura dos braços do grampo
+        is_t = getattr(d, "is_t", False)
+        bf = d.bf if is_t else d.bw
+        bw = d.bw
+        alma_x0 = (bf - bw) / 2.0 if is_t else 0.0
 
-        for gs in d.supplementary_stirrup_positions:
-            # Encontra a barra correspondente para saber o Y
-            bar = next(
-                (
-                    b
-                    for b in d.bar_positions
-                    if not b.is_corner_bar and b.layer == gs.layer and abs(b.x - gs.x) < 1
-                ),
-                None,
-            )
-            if bar is None:
+        x_left = alma_x0 + d.c_nom + pe / 2.0
+        x_right = alma_x0 + bw - d.c_nom - pe / 2.0
+        hook_len = 10.0  # 1 cm hook
+
+        layers_dict: dict[int, list[float]] = {}
+        layers_phi: dict[int, float] = {}
+        for bar in d.bar_positions:
+            if bar.is_corner_bar or getattr(bar, "is_skin_bar", False) or bar.layer in (0, -1):
                 continue
-            # Topo do grampo: acima da barra
-            top_y = bar.y + d.phi_barra / 2 + pe / 2
+            layers_dict.setdefault(bar.layer, []).append(bar.y)
+            layers_phi[bar.layer] = getattr(bar, "phi_mm", None) or d.phi_barra
 
-            # Grampo em "U" invertido: dois braços verticais + travessa horizontal
-            cmds.append(
-                CmdPolyline(
-                    points=[
-                        (gs.x - arm_w, top_y + arm_h),
-                        (gs.x - arm_w, top_y),
-                        (gs.x + arm_w, top_y),
-                        (gs.x + arm_w, top_y + arm_h),
-                    ],
-                    color=_C_GRAMPO,
-                    line_width=pe * 0.6,
+        for layer_idx, ys in layers_dict.items():
+            if len(ys) >= 3:
+                y_bar = sum(ys) / len(ys)
+                phi_b = layers_phi[layer_idx]
+                grampo_off = pe / 2.0 + phi_b / 2.0
+
+                if layer_idx > 0:
+                    y_closed = y_bar - grampo_off
+                    y_open = y_bar + grampo_off
+                else:
+                    y_closed = y_bar + grampo_off
+                    y_open = y_bar - grampo_off
+
+                cmds.append(
+                    CmdPolyline(
+                        points=[
+                            (x_left + hook_len, y_open),
+                            (x_left, y_open),
+                            (x_left, y_closed),
+                            (x_right, y_closed),
+                            (x_right, y_open),
+                            (x_right - hook_len, y_open),
+                        ],
+                        color=_C_GRAMPO,
+                        line_width=pe * 0.6,
+                    )
                 )
-            )
 
     # ── Bloco 6: Cotas ────────────────────────────────────────────────────────
 
@@ -947,21 +984,17 @@ def desenhar_secao_com_detailer(
     n_barras_pele: int = 0,
     phi_pele_mm: float = 0.0,
 ) -> SectionLayoutData:
-    """Wrapper plug-in para relatorio_base.py.
+    """Wrapper canônico de desenho da seção transversal.
 
-    Substitui a chamada à antiga `desenhar_secao_retangular()` com uma que usa
-    o pipeline completo (domínio → painter → renderer), adicionando distribuição
-    correta de camadas, grampos e estribo realista.
-
-    Retorna o SectionLayoutData para uso posterior (legenda, tabela, etc.).
+    EP-04.4: única fonte de verdade para renderização de seções.
+    Utiliza detalhar_secao_completa + BeamSectionCommands + FpdfRenderer.
     """
-    from .domain import BeamDetailer, BeamDetailingInput  # import local p/ evitar circular
+    from .domain import detalhar_secao_completa
 
     h_mm = h_cm * 10.0
     bw_mm = bw_cm * 10.0
     bf_mm = bf_cm * 10.0 if is_t else bw_mm
 
-    # Fator de escala: domínio em mm, página em mm (unidades PDF)
     scale = min(max_h_mm_pagina / h_mm, max_w_mm_pagina / bf_mm)
 
     if px is None:
@@ -969,169 +1002,29 @@ def desenhar_secao_com_detailer(
     if py is None:
         py = pdf.get_y()
 
-    # ── Domínio: barras inferiores ─────────────────────────────────────────
-    detailer = BeamDetailer()
-    data_inf = detailer.detail(
-        BeamDetailingInput(
-            bw=bw_mm,
-            h=h_mm,
-            c_nom=cob_mm,
-            phi_estribo=phi_estribo_mm,
-            phi_barra=phi_barra_inf_mm,
-            d_max_agregado=d_max_agregado_mm,
-            total_bars=n_barras_inf,
-            is_t=is_t,
-            bf_cm=bf_cm,
-            hf_cm=hf_cm,
-            is_superior=False,
-        )
+    data = detalhar_secao_completa(
+        h_cm=h_cm,
+        bw_cm=bw_cm,
+        cob_mm=cob_mm,
+        phi_estribo_mm=phi_estribo_mm,
+        phi_barra_inf_mm=phi_barra_inf_mm,
+        n_barras_inf=n_barras_inf,
+        phi_barra_sup_mm=phi_barra_sup_mm,
+        n_barras_sup=n_barras_sup,
+        n_barras_pele=n_barras_pele,
+        phi_pele_mm=phi_pele_mm,
+        d_max_agregado_mm=d_max_agregado_mm,
+        is_t=is_t,
+        bf_cm=bf_cm,
+        hf_cm=hf_cm,
     )
 
-    # ── Comandos e render das barras inferiores ────────────────────────────
     painter = BeamSectionCommands()
-    cmds = painter.build(data_inf)
+    cmds = painter.build(data)
 
     renderer = FpdfRenderer(pdf=pdf, px=px, py=py, scale=scale, section_height_mm=h_mm)
     renderer.render(cmds)
 
-    # ── Barras superiores (se houver, sobrepõe com cor diferente) ──────────
-    if n_barras_sup > 0 and phi_barra_sup_mm > 0:
-        data_sup = detailer.detail(
-            BeamDetailingInput(
-                bw=bw_mm,
-                h=h_mm,
-                c_nom=cob_mm,
-                phi_estribo=phi_estribo_mm,
-                phi_barra=phi_barra_sup_mm,
-                d_max_agregado=d_max_agregado_mm,
-                total_bars=n_barras_sup,
-                is_t=is_t,
-                bf_cm=bf_cm,
-                hf_cm=hf_cm,
-                is_superior=True,
-            )
-        )
-        # Desenha apenas as barras da armadura de compressão (face superior)
-        # Reusa o mesmo renderer; inverte verticalmente no espaço disponível.
-        sup_renderer = FpdfRenderer(pdf=pdf, px=px, py=py, scale=scale, section_height_mm=h_mm)
-        for bar in data_sup.bar_positions:
-            if bar.is_corner_bar:
-                continue
-            # Espelha Y: barras superiores ficam perto do topo
-            y_espelhado = h_mm - bar.y
-            r = max(phi_barra_sup_mm * scale / 2, 1.0)
-            cx = px + bar.x * scale
-            cy = py + y_espelhado * scale
-            pdf.set_fill_color(*_C_BAR_MAIN)
-            # Sem contorno (apenas preenchimento)
-            pdf.ellipse(cx - r, cy - r, r * 2, r * 2, style="F")
-
-    # ── Armadura de pele (faces laterais) ──────────────────────────────────
-    if n_barras_pele > 0 and phi_pele_mm > 0:
-        pdf.set_fill_color(197, 90, 17)  # Orange800
-        # Sem contorno (apenas preenchimento)
-        r_pele = max(phi_pele_mm * scale / 2.0, 1.0)
-
-        # Posicionamento X na alma
-        if is_t:
-            alma_x = px + (bf_mm - bw_mm) / 2.0 * scale
-            e_off = (cob_mm + phi_estribo_mm / 2.0) * scale
-            x_face_esq = alma_x + e_off + (phi_estribo_mm / 2.0 + phi_pele_mm / 2.0) * scale
-            x_face_dir = (
-                alma_x + bw_mm * scale - e_off - (phi_estribo_mm / 2.0 + phi_pele_mm / 2.0) * scale
-            )
-        else:
-            e_off = (cob_mm + phi_estribo_mm / 2.0) * scale
-            x_face_esq = px + e_off + (phi_estribo_mm / 2.0 + phi_pele_mm / 2.0) * scale
-            x_face_dir = (
-                px + bw_mm * scale - e_off - (phi_estribo_mm / 2.0 + phi_pele_mm / 2.0) * scale
-            )
-
-        layer_count_inf = data_inf.layer_count if data_inf else 0
-        layer_count_sup = (
-            data_sup.layer_count
-            if (n_barras_sup > 0 and phi_barra_sup_mm > 0 and "data_sup" in locals())
-            else 0
-        )
-        ev_min_inf_mm = (
-            data_inf.ev_min
-            if (data_inf and hasattr(data_inf, "ev_min"))
-            else max(20.0, phi_barra_inf_mm, 22.8)
-        )
-        ev_min_sup_mm = (
-            data_sup.ev_min
-            if (
-                n_barras_sup > 0
-                and phi_barra_sup_mm > 0
-                and "data_sup" in locals()
-                and hasattr(data_sup, "ev_min")
-            )
-            else max(20.0, phi_barra_sup_mm, 22.8)
-        )
-
-        # Determinar limites brutos (sem gaps) medidos em cm a partir do topo da viga
-        if is_t:
-            y_top_raw_cm = hf_cm + (cob_mm / 10.0 + phi_estribo_mm / 10.0)
-        else:
-            y_top_raw_cm = cob_mm / 10.0 + phi_estribo_mm / 10.0
-            if (
-                n_barras_sup > 0
-                and phi_barra_sup_mm > 0
-                and "data_sup" in locals()
-                and data_sup
-                and data_sup.bar_positions
-            ):
-                top_bars_bottoms = []
-                for bar in data_sup.bar_positions:
-                    if not bar.is_corner_bar:
-                        top_bars_bottoms.append((bar.y + phi_barra_sup_mm / 2.0) / 10.0)
-                if top_bars_bottoms:
-                    y_top_raw_cm = max(top_bars_bottoms)
-            elif layer_count_sup > 0:
-                y_top_raw_cm += layer_count_sup * (phi_barra_sup_mm / 10.0) + (
-                    layer_count_sup - 1
-                ) * (ev_min_sup_mm / 10.0)
-
-        y_bottom_raw_cm = h_cm - (cob_mm / 10.0 + phi_estribo_mm / 10.0)
-        if data_inf and data_inf.bar_positions:
-            bottom_bars_tops = []
-            for bar in data_inf.bar_positions:
-                if not bar.is_corner_bar:
-                    bottom_bars_tops.append(h_cm - (bar.y + phi_barra_inf_mm / 2.0) / 10.0)
-            if bottom_bars_tops:
-                y_bottom_raw_cm = min(bottom_bars_tops)
-        elif layer_count_inf > 0:
-            y_bottom_raw_cm -= layer_count_inf * (phi_barra_inf_mm / 10.0) + (
-                layer_count_inf - 1
-            ) * (ev_min_inf_mm / 10.0)
-
-        ev_min_cm = ev_min_inf_mm / 10.0
-        h_free_cm = y_bottom_raw_cm - y_top_raw_cm
-        phi_pele_cm = phi_pele_mm / 10.0
-        d_livre_cm = (h_free_cm - n_barras_pele * phi_pele_cm) / (n_barras_pele + 1.0)
-
-        if d_livre_cm >= ev_min_cm:
-            ys_cm = [
-                y_top_raw_cm + (i + 1) * d_livre_cm + (i + 0.5) * phi_pele_cm
-                for i in range(n_barras_pele)
-            ]
-        else:
-            # Fallback
-            y_top_est = (
-                hf_cm + (cob_mm / 10.0 + phi_estribo_mm / 10.0)
-                if is_t
-                else cob_mm / 10.0 + phi_estribo_mm / 10.0
-            )
-            y_bottom_est = h_cm - (cob_mm / 10.0 + phi_estribo_mm / 10.0)
-            s_pele_fb = (y_bottom_est - y_top_est) / (n_barras_pele + 1.0)
-            ys_cm = [y_top_est + (i + 1) * s_pele_fb for i in range(n_barras_pele)]
-
-        for face_x in [x_face_esq, x_face_dir]:
-            for y_bar_cm in ys_cm:
-                y_bar = py + y_bar_cm * 10.0 * scale
-                pdf.ellipse(face_x - r_pele, y_bar - r_pele, r_pele * 2, r_pele * 2, style="F")
-
-    # Avança o cursor do PDF para após o desenho
     pdf.set_y(py + h_mm * scale + 8)
 
-    return data_inf
+    return data

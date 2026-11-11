@@ -8,9 +8,9 @@ from fpdf import FPDF
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from core.detailing.domain import BeamDetailer
 from core.relatorio_base import (
     _desenhar_grampos_segunda_camada,
-    _split_layers,
     desenhar_secao_retangular,
 )
 
@@ -23,21 +23,21 @@ def _make_pdf() -> FPDF:
 
 
 def test_split_layers_3_barras_vai_para_uma_camada_em_bw_largo():
-    """3 barras em bw=30 cabem em 1 camada."""
-    c1, c2 = _split_layers(3, 16.0, 30.0, 25.0, 5.0)
-    assert c1 == 3 and c2 == 0
+    """3 barras em bw=30 cabem em 1 camada (n_max=6)."""
+    layers = BeamDetailer._distribute_layers(3, 6, [])
+    assert layers == [3]
 
 
 def test_split_layers_4_barras_em_bw_estreito_ainda_cabe_em_uma_camada():
-    """4 barras phi16 em bw=20 cabem em 1 camada (eh~2.5cm > 1.95cm)."""
-    c1, c2 = _split_layers(4, 16.0, 20.0, 25.0, 5.0)
-    assert c1 == 4 and c2 == 0
+    """4 barras phi16 em bw=20 cabem em 1 camada (n_max=4)."""
+    layers = BeamDetailer._distribute_layers(4, 4, [])
+    assert layers == [4]
 
 
 def test_split_layers_6_barras_em_bw_estreito_3_mais_3():
     """6 barras em bw=20: 4 + 2 (aligned with BeamDetailer)."""
-    c1, c2 = _split_layers(6, 16.0, 20.0, 25.0, 5.0)
-    assert c1 == 4 and c2 == 2
+    layers = BeamDetailer._distribute_layers(6, 4, [])
+    assert layers == [4, 2]
 
 
 def test_grampos_zero_quando_camada_tem_2_ou_menos_barras():

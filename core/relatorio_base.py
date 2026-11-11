@@ -24,6 +24,7 @@ from core.calculos.engenharia import (
     fcd_mpa,
 )
 from core.calculos.secao import altura_util_cm, d_linha_cm, lambda_f
+from core.detailing.presentation import desenhar_secao_com_detailer
 from core.utils_tempfile import temp_path
 
 # Cores oficiais do design HTML do usuário
@@ -1211,41 +1212,6 @@ def _desenhar_nota_cavaletes(pdf: PorticaPDF, x: float, y: float, largura: float
     )
 
 
-def _split_layers(n_barras, phi_mm, bw_cm, cob_mm, phi_est_mm, d_max_agregado_mm=19.0):
-    """Retorna o número de barras na camada 1 e na camada 2 para fins de desenho visual."""
-    if n_barras <= 1:
-        return n_barras, 0
-    espaco = bw_cm - 2 * (cob_mm / 10) - 2 * (phi_est_mm / 10)
-
-    # NBR 6118: eh_lim = max(2.0 cm, phi, 1.2 * d_max_agregado)
-    eh_lim = max(2.0, phi_mm / 10, 1.2 * d_max_agregado_mm / 10)
-
-    h_space = espaco * 10.0
-    eh_min = eh_lim * 10.0
-    if phi_mm > h_space:
-        return 1, n_barras - 1
-
-    n_max = max(1, int(math.floor((h_space - phi_mm) / (phi_mm + eh_min)) + 1))
-
-    if n_barras <= n_max:
-        return n_barras, 0
-
-    layers = []
-    remaining = n_barras
-    while remaining > 0:
-        count = min(remaining, n_max)
-        layers.append(count)
-        remaining -= count
-
-    if len(layers) >= 2 and layers[-1] == 1 and layers[-2] > 2:
-        layers[-1] += 1
-        layers[-2] -= 1
-
-    c1 = layers[0]
-    c2 = sum(layers[1:])
-    return c1, c2
-
-
 def desenhar_secao_retangular(
     pdf: PorticaPDF,
     h_cm: float,
@@ -1260,193 +1226,27 @@ def desenhar_secao_retangular(
     phi_pele: float = 0,
     layout_convergido=None,
 ):
-    max_h_mm, max_w_mm = 80, 50
-    s = min(max_h_mm / (h_cm * 10), max_w_mm / (bw_cm * 10), 0.5)
-    dw = bw_cm * 10 * s
-    dh = h_cm * 10 * s
+    """Desenha seção retangular via BeamDetailer unificado (EP-04.4)."""
     px = ML + 25
     py = pdf.get_y() + 6
-
-    pdf.set_fill_color(243, 244, 246)
-    pdf.set_draw_color(*C_GRAY300)
-    pdf.set_line_width(0.4)
-    pdf.rect(px, py, dw, dh, style="FD")
-
-    e_off = (cob_mm + phi_estribo / 2) * s
-    pdf.set_draw_color(*C_PORTICA)
-    pdf.set_line_width(0.6)
-    pdf.rect(px + e_off, py + e_off, dw - 2 * e_off, dh - 2 * e_off, style="D")
-
-    pdf.set_fill_color(31, 41, 55)
-    pdf.set_draw_color(255, 255, 255)
-    pdf.set_line_width(0.15)
-
-    def _bars(n, phi, yc, ref_x, ref_w):
-        if n <= 0:
-            return
-        r = max(phi * s * 0.65, 0.5)
-        bar_off = (phi_estribo / 2 + phi / 2) * s
-        avail = max(ref_w - 2 * (e_off + bar_off), 0)
-        if n == 1 or avail <= 0:
-            xs = [ref_x + ref_w / 2]
-        else:
-            xs = [ref_x + e_off + bar_off + i * avail / (n - 1) for i in range(n)]
-        pdf.set_draw_color(255, 255, 255)
-        pdf.set_line_width(0.15)
-        for x in xs:
-            pdf.ellipse(x - r, yc - r, r * 2, r * 2, style="FD")
-
-    n_ic1, n_ic2 = _split_layers(n_barras_inf, phi_barra_inf, bw_cm, cob_mm, phi_estribo)
-    n_sc1, n_sc2 = _split_layers(n_barras_sup, phi_barra_sup, bw_cm, cob_mm, phi_estribo)
-
-    bar_off_inf = (phi_estribo / 2 + phi_barra_inf / 2) * s
-    bar_off_sup = (phi_estribo / 2 + phi_barra_sup / 2) * s
-    dy_i = py + dh - e_off - bar_off_inf
-    dy_s = py + e_off + bar_off_sup
-    gap = (max(phi_barra_inf, phi_barra_sup) + 20.0) * s
-
-    x_estribo_left = px + e_off
-    x_estribo_right = px + dw - e_off
-
-    _bars(n_sc1, phi_barra_sup, dy_s, px, dw)
-    if n_sc2 > 0:
-        _bars(n_sc2, phi_barra_sup, dy_s + gap, px, dw)
-        _desenhar_grampos_segunda_camada(
-            pdf,
-            n_sc2,
-            phi_barra_sup,
-            phi_estribo,
-            x_estribo_left,
-            x_estribo_right,
-            dy_s + gap,
-            s,
-            fechado_para_cima=True,
-        )
-
-    if layout_convergido:
-        r_inf = max(phi_barra_inf * s * 0.65, 0.5)
-        pdf.set_fill_color(31, 41, 55)
-        pdf.set_draw_color(255, 255, 255)
-        pdf.set_line_width(0.15)
-        for bar in layout_convergido.bar_positions:
-            if bar.is_corner_bar:
-                continue
-            if bar.layer >= 0:
-                x_c = px + bar.x * s
-                y_c = py + dh - bar.y * s
-                pdf.ellipse(x_c - r_inf, y_c - r_inf, r_inf * 2, r_inf * 2, style="FD")
-
-        for layer in layout_convergido.layers:
-            if layer.index >= 1 and layer.bar_count >= 3:
-                y_layer_c = py + dh - layer.y_centroid * s
-                _desenhar_grampos_segunda_camada(
-                    pdf,
-                    layer.bar_count,
-                    phi_barra_inf,
-                    phi_estribo,
-                    x_estribo_left,
-                    x_estribo_right,
-                    y_layer_c,
-                    s,
-                    fechado_para_cima=False,
-                )
-    else:
-        _bars(n_ic1, phi_barra_inf, dy_i, px, dw)
-        if n_ic2 > 0:
-            _bars(n_ic2, phi_barra_inf, dy_i - gap, px, dw)
-            _desenhar_grampos_segunda_camada(
-                pdf,
-                n_ic2,
-                phi_barra_inf,
-                phi_estribo,
-                x_estribo_left,
-                x_estribo_right,
-                dy_i - gap,
-                s,
-                fechado_para_cima=False,
-            )
-
-    if n_barras_pele > 0 and phi_pele > 0:
-        pdf.set_fill_color(197, 90, 17)
-        pdf.set_draw_color(255, 255, 255)
-        pdf.set_line_width(0.15)
-        r_pele = max(phi_pele * s * 0.65, 0.5)
-        x_face_esq = px + e_off + (phi_estribo / 2 + phi_pele / 2) * s
-        x_face_dir = px + dw - e_off - (phi_estribo / 2 + phi_pele / 2) * s
-
-        # Determinar limites brutos (sem gaps) medidos em cm a partir do topo da viga
-        layer_count_inf = (
-            layout_convergido.layer_count
-            if layout_convergido
-            else (2 if n_ic2 > 0 else 1 if n_barras_inf > 0 else 0)
-        )
-        layer_count_sup = 2 if n_sc2 > 0 else 1 if n_barras_sup > 0 else 0
-        ev_min_inf_mm = (
-            layout_convergido.ev_min
-            if (layout_convergido and hasattr(layout_convergido, "ev_min"))
-            else max(20.0, phi_barra_inf, 22.8)
-        )
-        ev_min_sup_mm = max(20.0, phi_barra_sup, 22.8)
-
-        y_top_raw_cm = cob_mm / 10.0 + phi_estribo / 10.0
-        if layer_count_sup > 0:
-            y_top_raw_cm += layer_count_sup * (phi_barra_sup / 10.0) + (layer_count_sup - 1) * (
-                ev_min_sup_mm / 10.0
-            )
-
-        y_bottom_raw_cm = h_cm - (cob_mm / 10.0 + phi_estribo / 10.0)
-        if layout_convergido:
-            bottom_bars_tops = []
-            for bar in layout_convergido.bar_positions:
-                if not bar.is_corner_bar and bar.layer >= 0:
-                    bottom_bars_tops.append(h_cm - (bar.y + phi_barra_inf / 2.0) / 10.0)
-            if bottom_bars_tops:
-                y_bottom_raw_cm = min(bottom_bars_tops)
-        elif layer_count_inf > 0:
-            y_bottom_raw_cm -= layer_count_inf * (phi_barra_inf / 10.0) + (layer_count_inf - 1) * (
-                ev_min_inf_mm / 10.0
-            )
-
-        ev_min_cm = ev_min_inf_mm / 10.0
-        h_free_cm = y_bottom_raw_cm - y_top_raw_cm
-        phi_pele_cm = phi_pele / 10.0
-        d_livre_cm = (h_free_cm - n_barras_pele * phi_pele_cm) / (n_barras_pele + 1.0)
-
-        if d_livre_cm >= ev_min_cm:
-            ys_cm = [
-                y_top_raw_cm + (i + 1) * d_livre_cm + (i + 0.5) * phi_pele_cm
-                for i in range(n_barras_pele)
-            ]
-        else:
-            # Fallback
-            y_top_estribo = cob_mm / 10.0 + phi_estribo / 10.0
-            y_bottom_estribo = h_cm - (cob_mm / 10.0 + phi_estribo / 10.0)
-            s_pele_fb = (y_bottom_estribo - y_top_estribo) / (n_barras_pele + 1.0)
-            ys_cm = [y_top_estribo + (i + 1) * s_pele_fb for i in range(n_barras_pele)]
-
-        for face_x in [x_face_esq, x_face_dir]:
-            for y_bar_cm in ys_cm:
-                y_bar = py + y_bar_cm * 10.0 * s
-                pdf.ellipse(face_x - r_pele, y_bar - r_pele, r_pele * 2, r_pele * 2, style="FD")
-
-    pdf.set_draw_color(*C_GRAY400)
-    pdf.set_line_width(0.2)
-
-    cy = py + dh + 4
-    pdf.line(px, cy, px + dw, cy)
-    pdf.line(px, cy - 1, px, cy + 1)
-    pdf.line(px + dw, cy - 1, px + dw, cy + 1)
-    pdf.set_xy(px, cy + 1.2)
-    pdf.set_font("Courier", "", 7.5)
-    pdf.set_text_color(*C_GRAY600)
-    pdf.cell(dw, 4, f"bw={bw_cm:g} cm", border=0, align="C")
-
-    cxc = px + dw + 4
-    pdf.line(cxc, py, cxc, py + dh)
-    pdf.line(cxc - 1, py, cxc + 1, py)
-    pdf.line(cxc - 1, py + dh, cxc + 1, py + dh)
-    pdf.set_xy(cxc + 1.5, py + dh / 2 - 2)
-    pdf.cell(14, 4, f"h={h_cm:g} cm", border=0, align="L")
+    return desenhar_secao_com_detailer(
+        pdf=pdf,
+        h_cm=h_cm,
+        bw_cm=bw_cm,
+        cob_mm=cob_mm,
+        phi_estribo_mm=phi_estribo,
+        phi_barra_inf_mm=phi_barra_inf,
+        n_barras_inf=n_barras_inf,
+        phi_barra_sup_mm=phi_barra_sup,
+        n_barras_sup=n_barras_sup,
+        px=px,
+        py=py,
+        max_h_mm_pagina=80.0,
+        max_w_mm_pagina=50.0,
+        is_t=False,
+        n_barras_pele=n_barras_pele,
+        phi_pele_mm=phi_pele,
+    )
 
 
 def desenhar_secao_t(
@@ -1465,232 +1265,29 @@ def desenhar_secao_t(
     phi_pele: float = 0,
     layout_convergido=None,
 ):
-    s = min(80.0 / (h_cm * 10.0), 60.0 / (bf_cm * 10.0), 0.5)
-    h = h_cm * 10.0
-    bw = bw_cm * 10.0
-    bf = bf_cm * 10.0
-    hf = hf_cm * 10.0
-    c = cob_mm
-    ox = ML + 30.0
+    """Desenha seção T via BeamDetailer unificado (EP-04.4)."""
+    px = ML + 30.0
     py = pdf.get_y() + 6
-    oy = py + h * s
-
-    def sx(x):
-        return ox + x * s
-
-    def sy(y):
-        return oy - y * s
-
-    # 1. Contorno concreto (polígono 8 vértices)
-    pdf.set_fill_color(243, 244, 246)
-    pdf.rect(sx(-bf / 2), sy(h), bf * s, hf * s, style="F")
-    pdf.rect(sx(-bw / 2), sy(h - hf), bw * s, (h - hf) * s, style="F")
-    pdf.set_draw_color(*C_GRAY300)
-    pdf.set_line_width(0.4)
-    pts = [
-        (-bw / 2, 0),
-        (bw / 2, 0),
-        (bw / 2, h - hf),
-        (bf / 2, h - hf),
-        (bf / 2, h),
-        (-bf / 2, h),
-        (-bf / 2, h - hf),
-        (-bw / 2, h - hf),
-    ]
-    for i in range(len(pts)):
-        x1, y1 = pts[i]
-        x2, y2 = pts[(i + 1) % len(pts)]
-        pdf.line(sx(x1), sy(y1), sx(x2), sy(y2))
-
-    # 2. Estribo (usando convenção do sample: ex_start = -bw/2 + c, cover to centerline)
-    ex_start = -bw / 2 + c
-    estribo_w = bw - 2 * c
-    estribo_h = h - 2 * c
-    pdf.set_draw_color(*C_PORTICA)
-    pdf.set_line_width(0.6)
-    pdf.rect(sx(ex_start), sy(c + estribo_h), estribo_w * s, estribo_h * s, style="D")
-
-    # 3. Barras principais
-    pdf.set_fill_color(31, 41, 55)
-    pdf.set_draw_color(255, 255, 255)
-    pdf.set_line_width(0.15)
-
-    def _circle(xc, yc, r):
-        pdf.ellipse(xc - r, yc - r, r * 2, r * 2, style="FD")
-
-    n_i1, n_i2 = _split_layers(n_barras_inf, phi_barra_inf, bw_cm, cob_mm, phi_estribo)
-    n_s1, n_s2 = _split_layers(n_barras_sup, phi_barra_sup, bw_cm, cob_mm, phi_estribo)
-
-    gap = (max(phi_barra_inf, phi_barra_sup) + 20) * s
-    r_inf = max(phi_barra_inf * s * 0.65, 0.5)
-    r_sup = max(phi_barra_sup * s * 0.65, 0.5)
-
-    # Y das barras (convenção sample: c + phi_est + phi/2)
-    y_inf = sy(c + phi_estribo + phi_barra_inf / 2)
-    y_sup = sy(h - c - phi_estribo - phi_barra_sup / 2)
-
-    # X: barras distribuídas dentro do estribo
-    x_left = sx(ex_start)
-    x_right = sx(ex_start + estribo_w)
-
-    def _bar_xs(n, phi):
-        """Retorna lista de X em PDF para n barras de diâmetro phi."""
-        if n <= 0:
-            return []
-        if n == 1:
-            return [sx(0.0)]
-        first = x_left + (phi_estribo + phi / 2) * s
-        last = x_right - (phi_estribo + phi / 2) * s
-        return [first + i * (last - first) / (n - 1) for i in range(n)]
-
-    # Draw top bars
-    for xs, yc, r in [
-        (_bar_xs(n_s1, phi_barra_sup), y_sup, r_sup),
-        (_bar_xs(n_s2, phi_barra_sup), y_sup + gap, r_sup),
-    ]:
-        for x in xs:
-            _circle(x, yc, r)
-
-    if n_s2 > 0:
-        _desenhar_grampos_segunda_camada(
-            pdf, n_s2, phi_barra_sup, phi_estribo, x_left, x_right, y_sup + gap, s, True
-        )
-
-    # Draw bottom bars
-    if layout_convergido:
-        pdf.set_fill_color(31, 41, 55)
-        pdf.set_draw_color(255, 255, 255)
-        pdf.set_line_width(0.15)
-        for bar in layout_convergido.bar_positions:
-            if bar.is_corner_bar:
-                continue
-            if bar.layer >= 0:
-                x_c = sx(bar.x - layout_convergido.bf / 2.0)
-                y_c = sy(bar.y)
-                _circle(x_c, y_c, r_inf)
-
-        for layer in layout_convergido.layers:
-            if layer.index >= 1 and layer.bar_count >= 3:
-                y_layer_c = sy(layer.y_centroid)
-                _desenhar_grampos_segunda_camada(
-                    pdf,
-                    layer.bar_count,
-                    phi_barra_inf,
-                    phi_estribo,
-                    x_left,
-                    x_right,
-                    y_layer_c,
-                    s,
-                    False,
-                )
-    else:
-        for xs, yc, r in [
-            (_bar_xs(n_i1, phi_barra_inf), y_inf, r_inf),
-            (_bar_xs(n_i2, phi_barra_inf), y_inf - gap, r_inf),
-        ]:
-            for x in xs:
-                _circle(x, yc, r)
-
-        if n_i2 > 0:
-            _desenhar_grampos_segunda_camada(
-                pdf, n_i2, phi_barra_inf, phi_estribo, x_left, x_right, y_inf - gap, s, False
-            )
-
-    # 4. Armadura de pele (na alma)
-    if n_barras_pele > 0 and phi_pele > 0:
-        pdf.set_fill_color(197, 90, 17)
-        pdf.set_draw_color(255, 255, 255)
-        pdf.set_line_width(0.15)
-        r_p = max(phi_pele * s * 0.65, 0.5)
-        x_pe = x_left + (phi_estribo + phi_pele / 2) * s
-        x_pd = x_right - (phi_estribo + phi_pele / 2) * s
-
-        # Determinar limites brutos (sem gaps) medidos em mm a partir do fundo da viga
-        layer_count_inf = (
-            layout_convergido.layer_count
-            if layout_convergido
-            else (2 if n_i2 > 0 else 1 if n_barras_inf > 0 else 0)
-        )
-        ev_min_inf_mm = (
-            layout_convergido.ev_min
-            if (layout_convergido and hasattr(layout_convergido, "ev_min"))
-            else max(20.0, phi_barra_inf, 22.8)
-        )
-
-        y_bottom_raw_mm = cob_mm + phi_estribo
-        if layout_convergido:
-            bottom_bars_tops = []
-            for bar in layout_convergido.bar_positions:
-                if not bar.is_corner_bar and bar.layer >= 0:
-                    bottom_bars_tops.append(bar.y + phi_barra_inf / 2.0)
-            if bottom_bars_tops:
-                y_bottom_raw_mm = max(bottom_bars_tops)
-        elif layer_count_inf > 0:
-            y_bottom_raw_mm += (
-                layer_count_inf * phi_barra_inf + (layer_count_inf - 1) * ev_min_inf_mm
-            )
-
-        y_top_raw_mm = (h_cm - hf_cm) * 10.0 - (cob_mm + phi_estribo)
-
-        ev_min_mm = ev_min_inf_mm
-        h_free_mm = y_top_raw_mm - y_bottom_raw_mm
-        phi_pele_mm = phi_pele
-        d_livre_mm = (h_free_mm - n_barras_pele * phi_pele_mm) / (n_barras_pele + 1.0)
-
-        if d_livre_mm >= ev_min_mm:
-            ys_mm = [
-                y_bottom_raw_mm + (i + 1) * d_livre_mm + (i + 0.5) * phi_pele_mm
-                for i in range(n_barras_pele)
-            ]
-        else:
-            # Fallback
-            y_top_estribo = (h_cm - hf_cm) * 10.0 - (cob_mm + phi_estribo)
-            y_bottom_estribo = cob_mm + phi_estribo
-            s_pele_fb = (y_top_estribo - y_bottom_estribo) / (n_barras_pele + 1.0)
-            ys_mm = [y_bottom_estribo + (i + 1) * s_pele_fb for i in range(n_barras_pele)]
-
-        for fx in [x_pe, x_pd]:
-            for y_bar_domain in ys_mm:
-                _circle(fx, sy(y_bar_domain), r_p)
-
-    # 5. Armadura de costura (mesa)
-    y_cs = sy(h - c)
-    y_ci = sy(h - hf + c)
-    x_me = sx(-bf / 2 + c)
-    x_md = sx(bf / 2 - c)
-    pdf.set_draw_color(44, 160, 44)
-    pdf.set_line_width(0.5)
-    pdf.set_dash_pattern(dash=2, gap=2)
-    pdf.line(x_me, y_cs, x_md, y_cs)
-    pdf.line(x_me, y_ci, x_md, y_ci)
-    pdf.set_dash_pattern()
-
-    # 6. Cotas
-    pdf.set_draw_color(*C_GRAY400)
-    pdf.set_line_width(0.2)
-    pdf.set_font("Courier", "", 7.5)
-    pdf.set_text_color(*C_GRAY600)
-    y_cota = oy + 4
-    pdf.line(sx(-bw / 2), y_cota, sx(bw / 2), y_cota)
-    pdf.set_xy(sx(-bw / 2), y_cota + 1.2)
-    pdf.cell(bw * s, 4, f"bw={bw_cm:g} cm", border=0, align="C")
-    x_ch = sx(bf / 2) + 4
-    pdf.line(x_ch, sy(h), x_ch, sy(0))
-    pdf.set_xy(x_ch + 1.5, sy(h / 2) - 2)
-    pdf.cell(15, 4, f"h={h_cm:g} cm", border=0, align="L")
-    cx_hf = sx(-bf / 2) - 4
-    pdf.line(cx_hf, sy(h), cx_hf, sy(h - hf))
-    pdf.set_xy(cx_hf - 15.5, sy(h - hf / 2) - 2)
-    pdf.cell(15, 4, f"hf={hf_cm:g} cm", border=0, align="R")
-    cy_bf = py - 4
-    pdf.line(sx(-bf / 2), cy_bf, sx(bf / 2), cy_bf)
-    pdf.set_xy(sx(-bf / 2), cy_bf - 4.5)
-    pdf.cell(bf * s, 4, f"bf={bf_cm:g} cm", border=0, align="C")
-    cx_c = sx(-bw / 2) - 4
-    pdf.line(cx_c, sy(0), cx_c, sy(c))
-    pdf.set_xy(cx_c - 15.5, sy(c / 2) - 2)
-    pdf.cell(15, 4, f"c={c / 10:.1f} cm", border=0, align="R")
-    return None
+    return desenhar_secao_com_detailer(
+        pdf=pdf,
+        h_cm=h_cm,
+        bw_cm=bw_cm,
+        cob_mm=cob_mm,
+        phi_estribo_mm=phi_estribo,
+        phi_barra_inf_mm=phi_barra_inf,
+        n_barras_inf=n_barras_inf,
+        phi_barra_sup_mm=phi_barra_sup,
+        n_barras_sup=n_barras_sup,
+        px=px,
+        py=py,
+        max_h_mm_pagina=80.0,
+        max_w_mm_pagina=60.0,
+        is_t=True,
+        bf_cm=bf_cm,
+        hf_cm=hf_cm,
+        n_barras_pele=n_barras_pele,
+        phi_pele_mm=phi_pele,
+    )
 
 
 def _legenda_secao(
@@ -2077,7 +1674,7 @@ def gerar_relatorio_viga_comum(
                 layout_c = r.layout_convergido
                 break
 
-    desenhar_secao_retangular(
+    layout_desenho = desenhar_secao_retangular(
         pdf,
         h_cm,
         bw_cm,
@@ -2093,10 +1690,7 @@ def gerar_relatorio_viga_comum(
     )
 
     # Legenda ao lado do desenho
-    # Determina se havera grampo (2a camada de sup ou inf com 3+ barras)
-    n_ic1_leg, n_ic2_leg = _split_layers(n_inf_desenho, phi_inf_adot, bw_cm, cob_mm, phi_estribo_mm)
-    n_sc1_leg, n_sc2_leg = _split_layers(n_sup_desenho, phi_sup_adot, bw_cm, cob_mm, phi_estribo_mm)
-    tem_grampo = (n_ic2_leg >= 3) or (n_sc2_leg >= 3)
+    tem_grampo = getattr(layout_desenho, "requires_supplementary_stirrup", False)
     _legenda_secao(
         pdf,
         cob_mm,
@@ -2441,7 +2035,7 @@ def gerar_relatorio_viga_t(
                 layout_c = r.layout_convergido
                 break
 
-    desenhar_secao_t(
+    layout_desenho = desenhar_secao_t(
         pdf,
         h_cm,
         bw_cm,
@@ -2458,9 +2052,7 @@ def gerar_relatorio_viga_t(
         layout_convergido=layout_c,
     )
 
-    n_ic1_leg, n_ic2_leg = _split_layers(n_inf_desenho, phi_inf_adot, bw_cm, cob_mm, phi_estribo_mm)
-    n_sc1_leg, n_sc2_leg = _split_layers(n_sup_desenho, phi_sup_adot, bw_cm, cob_mm, phi_estribo_mm)
-    tem_grampo = (n_ic2_leg >= 3) or (n_sc2_leg >= 3)
+    tem_grampo = getattr(layout_desenho, "requires_supplementary_stirrup", False)
 
     _legenda_secao(
         pdf,

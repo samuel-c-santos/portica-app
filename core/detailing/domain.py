@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
+from typing import Any
 
 # ══════════════════════════════════════════════════════════════════════════════
 # Entidades de Domínio
@@ -43,9 +44,13 @@ class BarPosition:
     y: float
     layer: int
     is_corner_bar: bool = False
+    phi_mm: float | None = None
+    is_skin_bar: bool = False
 
     def __repr__(self) -> str:
-        tipo = "CANTO" if self.is_corner_bar else f"cam{self.layer}"
+        tipo = (
+            "CANTO" if self.is_corner_bar else ("PELE" if self.is_skin_bar else f"cam{self.layer}")
+        )
         return f"Bar({tipo} x={self.x:.1f} y={self.y:.1f})"
 
 
@@ -126,6 +131,10 @@ class SectionLayoutData:
     bf: float = 0.0  # Largura da mesa (mm)
     hf: float = 0.0  # Altura da mesa (mm)
     warnings: list[str] = field(default_factory=list)
+    skin_bar_positions: list[BarPosition] = field(default_factory=list)
+    total_bars_sup: int = 0
+    phi_barra_sup: float | None = None
+    phi_canto: float | None = None
 
     # ── Propriedades derivadas (para o Painter) ───────────────────────────────
     @property
@@ -520,3 +529,331 @@ class BeamDetailer:
             + f" barras (máx {n_max} por camada com e_h normativo)."
         )
         return layers
+
+
+# ── Posicionamento Único de Armadura de Pele (EP-04.4) ────────────────────────
+
+
+def posicionar_armadura_pele(
+    h_mm: float,
+    bw_mm: float,
+    cob_mm: float,
+    phi_estribo_mm: float,
+    n_barras_pele_face: int,
+    phi_pele_mm: float,
+    bar_positions: list[Any] | None = None,
+    is_t: bool = False,
+    bf_mm: float = 0.0,
+    hf_mm: float = 0.0,
+    d_max_agregado_mm: float = 19.0,
+    phi_barra_inf_mm: float = 16.0,
+    phi_barra_sup_mm: float = 10.0,
+) -> tuple[float, float, list[float]]:
+    """Calcula as coordenadas (x_face_esq, x_face_dir, [y1, y2, ...]) em mm para armadura de pele.
+
+    EP-04.4: fonte única de verdade do posicionamento da armadura de pele (NBR 6118).
+    Substitui as 4 implementações divergentes anteriores.
+    Retorna coordenadas em mm, com origem no canto inferior-esquerdo (Y para cima).
+    """
+    if n_barras_pele_face <= 0 or phi_pele_mm <= 0:
+        return 0.0, 0.0, []
+
+    # 1. Posições X nas duas faces da alma
+    alma_x0 = (bf_mm - bw_mm) / 2.0 if (is_t and bf_mm > bw_mm) else 0.0
+    e_off = cob_mm + phi_estribo_mm / 2.0
+    bar_off = phi_estribo_mm / 2.0 + phi_pele_mm / 2.0
+    x_face_esq = alma_x0 + e_off + bar_off
+    x_face_dir = alma_x0 + bw_mm - e_off - bar_off
+
+    # 2. Posições Y entre a última camada inferior e a primeira superior
+    topo_bottom_bars = None
+    fundo_top_bars = None
+
+    if bar_positions:
+        bottom_tops = []
+        top_bottoms = []
+        for b in bar_positions:
+            by = b.get("y") if isinstance(b, dict) else getattr(b, "y", None)
+            blayer = b.get("layer") if isinstance(b, dict) else getattr(b, "layer", None)
+            is_corner = (
+                b.get("is_corner_bar")
+                if isinstance(b, dict)
+                else getattr(b, "is_corner_bar", False)
+            )
+            is_skin = (
+                b.get("is_skin_bar") if isinstance(b, dict) else getattr(b, "is_skin_bar", False)
+            )
+            bphi = (b.get("phi_mm") if isinstance(b, dict) else getattr(b, "phi_mm", None)) or (
+                phi_barra_sup_mm if blayer is not None and blayer < 0 else phi_barra_inf_mm
+            )
+            if by is None or is_skin:
+                continue
+
+            # Classifica como inferior ou superior
+            if blayer is not None:
+                if blayer >= 0 and not is_corner:
+                    bottom_tops.append(by + bphi / 2.0)
+                else:
+                    top_bottoms.append(by - bphi / 2.0)
+            else:
+                if by < h_mm / 2.0:
+                    bottom_tops.append(by + bphi / 2.0)
+                else:
+                    top_bottoms.append(by - bphi / 2.0)
+
+        if bottom_tops:
+            topo_bottom_bars = max(bottom_tops)
+        if top_bottoms:
+            fundo_top_bars = min(top_bottoms)
+
+    ev_min = ev_min_mm(d_max_agregado_mm, max(phi_barra_inf_mm, phi_barra_sup_mm))
+
+    y_bottom_raw = topo_bottom_bars if topo_bottom_bars is not None else (cob_mm + phi_estribo_mm)
+    if fundo_top_bars is not None:
+        y_top_raw = fundo_top_bars
+    else:
+        if is_t and hf_mm > 0:
+            y_top_raw = h_mm - hf_mm
+        else:
+            y_top_raw = h_mm - (cob_mm + phi_estribo_mm)
+
+    h_free = y_top_raw - y_bottom_raw
+    d_livre = (h_free - n_barras_pele_face * phi_pele_mm) / (n_barras_pele_face + 1.0)
+
+    if d_livre >= ev_min:
+        ys = [
+            y_bottom_raw + (i + 1) * d_livre + (i + 0.5) * phi_pele_mm
+            for i in range(n_barras_pele_face)
+        ]
+    else:
+        # Fallback uniforme entre estribos (ou alma para viga T)
+        y_bottom_est = cob_mm + phi_estribo_mm
+        y_top_est = (h_mm - hf_mm) if (is_t and hf_mm > 0) else (h_mm - cob_mm - phi_estribo_mm)
+        s_fb = (y_top_est - y_bottom_est) / (n_barras_pele_face + 1.0)
+        ys = [y_bottom_est + (i + 1) * s_fb for i in range(n_barras_pele_face)]
+
+    return x_face_esq, x_face_dir, ys
+
+
+# ── Detalhamento Consolidado da Seção Completa (EP-04.4) ──────────────────────
+
+
+def detalhar_secao_completa(
+    h_cm: float,
+    bw_cm: float,
+    cob_mm: float,
+    phi_estribo_mm: float,
+    phi_barra_inf_mm: float,
+    n_barras_inf: int,
+    phi_barra_sup_mm: float = 0.0,
+    n_barras_sup: int = 0,
+    d_max_agregado_mm: float = 19.0,
+    is_t: bool = False,
+    bf_cm: float = 0.0,
+    hf_cm: float = 0.0,
+    n_barras_pele: int = 0,
+    phi_pele_mm: float = 0.0,
+    layout_convergido: SectionLayoutData | None = None,
+) -> SectionLayoutData:
+    """Consolida o detalhamento completo de armação da seção transversal (EP-04.4).
+
+    Gera a seção com todas as barras inferiores, superiores, pele e grampos.
+    Única fonte de geometria para PDF, Flet e DXF.
+    """
+    h_mm = h_cm * 10.0
+    bw_mm = bw_cm * 10.0
+    bf_mm = bf_cm * 10.0 if is_t else bw_mm
+    hf_mm = hf_cm * 10.0 if is_t else 0.0
+    detailer = BeamDetailer()
+
+    # 1. Armadura inferior
+    if layout_convergido is not None and isinstance(layout_convergido, SectionLayoutData):
+        data_inf = layout_convergido
+    else:
+        inp_inf = BeamDetailingInput(
+            bw=bw_mm,
+            h=h_mm,
+            c_nom=cob_mm,
+            phi_estribo=phi_estribo_mm,
+            phi_barra=phi_barra_inf_mm,
+            d_max_agregado=d_max_agregado_mm,
+            total_bars=max(1, n_barras_inf),
+            is_t=is_t,
+            bf_cm=bf_cm,
+            hf_cm=hf_cm,
+            is_superior=False,
+        )
+        try:
+            data_inf = detailer.detail(inp_inf)
+        except ValueError as err:
+            # Seção recusada geometricamente (ex: relatório de viga que NÃO CABE).
+            # Para fins de desenho esquemático, tenta detalhar com a quantidade máxima de barras que cabem.
+            data_inf = None
+            for n_try in range(min(n_barras_inf, 8), 0, -1):
+                try:
+                    inp_try = BeamDetailingInput(
+                        bw=bw_mm,
+                        h=h_mm,
+                        c_nom=cob_mm,
+                        phi_estribo=phi_estribo_mm,
+                        phi_barra=phi_barra_inf_mm,
+                        d_max_agregado=d_max_agregado_mm,
+                        total_bars=n_try,
+                        is_t=is_t,
+                        bf_cm=bf_cm,
+                        hf_cm=hf_cm,
+                        is_superior=False,
+                    )
+                    data_inf = detailer.detail(inp_try)
+                    data_inf.warnings.append(str(err))
+                    break
+                except ValueError:
+                    continue
+            if data_inf is None:
+                raise err
+
+    all_bars: list[BarPosition] = []
+    # Copia as barras inferiores principais
+    for b in data_inf.bar_positions:
+        if not b.is_corner_bar:
+            all_bars.append(
+                BarPosition(
+                    x=b.x,
+                    y=b.y,
+                    layer=b.layer,
+                    is_corner_bar=False,
+                    phi_mm=phi_barra_inf_mm,
+                )
+            )
+
+    all_grampos: list[SupplementaryStirrup] = list(data_inf.supplementary_stirrup_positions)
+    requires_grampos = data_inf.requires_supplementary_stirrup
+
+    # 2. Armadura superior
+    if n_barras_sup > 0 and phi_barra_sup_mm > 0:
+        inp_sup = BeamDetailingInput(
+            bw=bw_mm,
+            h=h_mm,
+            c_nom=cob_mm,
+            phi_estribo=phi_estribo_mm,
+            phi_barra=phi_barra_sup_mm,
+            d_max_agregado=d_max_agregado_mm,
+            total_bars=n_barras_sup,
+            is_t=is_t,
+            bf_cm=bf_cm,
+            hf_cm=hf_cm,
+            is_superior=True,
+        )
+        try:
+            data_sup = detailer.detail(inp_sup)
+        except ValueError:
+            data_sup = None
+            for n_try in range(min(n_barras_sup, 8), 0, -1):
+                try:
+                    inp_try = BeamDetailingInput(
+                        bw=bw_mm,
+                        h=h_mm,
+                        c_nom=cob_mm,
+                        phi_estribo=phi_estribo_mm,
+                        phi_barra=phi_barra_sup_mm,
+                        d_max_agregado=d_max_agregado_mm,
+                        total_bars=n_try,
+                        is_t=is_t,
+                        bf_cm=bf_cm,
+                        hf_cm=hf_cm,
+                        is_superior=True,
+                    )
+                    data_sup = detailer.detail(inp_try)
+                    break
+                except ValueError:
+                    continue
+        if data_sup is not None:
+            for b in data_sup.bar_positions:
+                if not b.is_corner_bar:
+                    y_mirrored = h_mm - b.y
+                    layer_sup = -(b.layer + 1)
+                    all_bars.append(
+                        BarPosition(
+                            x=b.x,
+                            y=round(y_mirrored, 3),
+                            layer=layer_sup,
+                            is_corner_bar=False,
+                            phi_mm=phi_barra_sup_mm,
+                        )
+                    )
+            if data_sup.requires_supplementary_stirrup:
+                requires_grampos = True
+                for gs in data_sup.supplementary_stirrup_positions:
+                    all_grampos.append(SupplementaryStirrup(x=gs.x, layer=-(gs.layer + 1)))
+        else:
+            for b in data_inf.bar_positions:
+                if b.is_corner_bar:
+                    all_bars.append(b)
+    else:
+        # Se não há armadura superior, mantém as barras de canto construtivas de data_inf
+        for b in data_inf.bar_positions:
+            if b.is_corner_bar:
+                all_bars.append(b)
+
+    # 3. Armadura de pele
+    skin_bars: list[BarPosition] = []
+    if n_barras_pele > 0 and phi_pele_mm > 0:
+        x_esq, x_dir, ys = posicionar_armadura_pele(
+            h_mm=h_mm,
+            bw_mm=bw_mm,
+            cob_mm=cob_mm,
+            phi_estribo_mm=phi_estribo_mm,
+            n_barras_pele_face=n_barras_pele,
+            phi_pele_mm=phi_pele_mm,
+            bar_positions=all_bars,
+            is_t=is_t,
+            bf_mm=bf_mm,
+            hf_mm=hf_mm,
+            d_max_agregado_mm=d_max_agregado_mm,
+            phi_barra_inf_mm=phi_barra_inf_mm,
+            phi_barra_sup_mm=phi_barra_sup_mm if phi_barra_sup_mm > 0 else phi_barra_inf_mm,
+        )
+        for y_bar in ys:
+            b_esq = BarPosition(
+                x=round(x_esq, 3),
+                y=round(y_bar, 3),
+                layer=-99,
+                is_corner_bar=False,
+                is_skin_bar=True,
+                phi_mm=phi_pele_mm,
+            )
+            b_dir = BarPosition(
+                x=round(x_dir, 3),
+                y=round(y_bar, 3),
+                layer=-99,
+                is_corner_bar=False,
+                is_skin_bar=True,
+                phi_mm=phi_pele_mm,
+            )
+            skin_bars.extend([b_esq, b_dir])
+
+    return SectionLayoutData(
+        bw=bw_mm,
+        h=h_mm,
+        c_nom=cob_mm,
+        phi_estribo=phi_estribo_mm,
+        phi_barra=phi_barra_inf_mm,
+        d_max_agregado=d_max_agregado_mm,
+        total_bars=n_barras_inf,
+        eh_min=data_inf.eh_min,
+        ev_min=data_inf.ev_min,
+        layer_count=data_inf.layer_count,
+        layers=data_inf.layers,
+        bar_positions=all_bars,
+        requires_supplementary_stirrup=requires_grampos,
+        supplementary_stirrup_positions=all_grampos,
+        y_cg=data_inf.y_cg,
+        d_efetiva=data_inf.d_efetiva,
+        is_t=is_t,
+        bf=bf_mm,
+        hf=hf_mm,
+        warnings=data_inf.warnings,
+        skin_bar_positions=skin_bars,
+        total_bars_sup=n_barras_sup,
+        phi_barra_sup=phi_barra_sup_mm,
+    )
