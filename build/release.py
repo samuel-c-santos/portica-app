@@ -121,6 +121,8 @@ def versoes_no_texto(texto: str) -> list[tuple[int, str]]:
     """Todas as menções `v?X.Y.Z` do texto como (linha 1-based, versão)."""
     achados: list[tuple[int, str]] = []
     for m in re.finditer(rf"\bv?({SEMVER})\b", texto):
+        if not m.group(0).startswith("v") and re.fullmatch(r"\d{1,3}\.\d{3}\.\d{3}", m.group(1)):
+            continue
         linha = texto.count("\n", 0, m.start()) + 1
         achados.append((linha, m.group(1)))
     return achados

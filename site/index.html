@@ -61,10 +61,10 @@
           </a>
         </div>
         <ul class="tag-row" role="list">
-          <li><span class="aipim-tag"><span>Windows 10/11</span></span></li>
+          <li><span class="aipim-tag"><span>Windows 10/11 x64</span></span></li>
           <li><span class="aipim-tag"><span>Apache-2.0</span></span></li>
           <li><span class="aipim-tag"><span>Sem cadastro</span></span></li>
-          <li><span class="aipim-tag"><span>Offline</span></span></li>
+          <li><span class="aipim-tag"><span>Código aberto</span></span></li>
         </ul>
       </div>
       <div>
@@ -365,68 +365,55 @@
         <div class="section-head">
           <p class="overline">Download</p>
           <h2>Executável pronto para Windows</h2>
-          <p class="lede">Dois assets para Windows 10/11 x64. A diferença é o cliente gráfico do Flet.</p>
+          <p class="lede">Baixe o pacote completo para rodar 100% offline desde a primeira execução — sem instalador, sem cadastro e sem depender de conexão externa ou rede corporativa.</p>
         </div>
 
-        <div class="aipim-alert aipim-alert--warning" role="status">
+        <article class="aipim-card">
+          <div class="aipim-card__body">
+            <div class="aipim-card__header">
+              <span class="aipim-badge aipim-badge--tint aipim-badge--square" aria-hidden="true">
+                <svg class="aipim-icon" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-check"></use></svg>
+              </span>
+              <div class="aipim-card__heading">
+                <p class="aipim-card__eyebrow">100% offline desde o 1º uso · Windows 10/11 x64 · v1.0.1</p>
+                <h3 class="aipim-card__title">Pacote completo (.zip)</h3>
+              </div>
+              <span class="aipim-tag aipim-tag--accent"><span>Recomendado</span></span>
+            </div>
+            <p class="aipim-card__text">
+              Roda offline desde a primeira execução. Contém <code>portica.exe</code> + <code>SHA256SUMS.txt</code>. Descompacte e execute.
+            </p>
+            <div class="hero__cta" style="align-items: center;">
+              <a class="aipim-button aipim-button--lg" href="https://github.com/samuel-c-santos/portica-app/releases/download/v1.0.1/portica-v1.0.1-windows-x64.zip" target="_blank" rel="noopener noreferrer">
+                <svg class="aipim-icon aipim-button__icon-leading" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-download"></use></svg>
+                <span>Baixar .zip (v1.0.1 · Windows 10/11 x64 · 96,3 MB)</span>
+              </a>
+              <span style="color: var(--aipim-text-secondary); font-size: var(--aipim-text-body-sm-size);">
+                96,3 MB (101.001.262 bytes) · SHA-256: <code>2569694bac2a7450d0848af6ab2dbbb9b49588de53f543a5e96c80705b9bfb74</code>
+              </span>
+            </div>
+          </div>
+        </article>
+
+        <p style="margin-top: var(--aipim-space-16); color: var(--aipim-text-secondary);">
+          Prefere um download menor? Use a
+          <a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app/releases/download/v1.0.1/portica-v1.0.1-windows-x64.exe" target="_blank" rel="noopener noreferrer"><strong>variante leve (.exe, 58,1 MB)</strong></a>
+          — precisa de internet <strong>apenas na 1ª execução</strong> (baixa ~30 MB do GitHub) e depois abre offline.
+          SHA-256: <code>5ee20685d26c46aebeb20b017d25f0ac7da01c179fc1d63af15311232ee4fd5c</code>.
+        </p>
+
+        <p style="margin-top: var(--aipim-space-12); color: var(--aipim-text-secondary); font-size: var(--aipim-text-body-sm-size);">
+          Todos os arquivos e notas de versão também estão na aba
+          <a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app/releases" target="_blank" rel="noopener noreferrer">Releases do repositório</a>.
+        </p>
+
+        <div class="aipim-alert aipim-alert--warning" role="status" style="margin-top: var(--aipim-space-24);">
           <svg class="aipim-icon aipim-alert__icon" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-warning"></use></svg>
           <div class="aipim-alert__content">
             <p class="aipim-alert__title">Ferramenta de apoio</p>
             <p class="aipim-alert__message">Os resultados devem ser verificados por engenheiro civil habilitado, com ART, antes de qualquer uso em projeto. Veja <a class="aipim-link" href="#limitacoes">limitações e responsabilidade</a>.</p>
           </div>
         </div>
-
-        <div class="grid grid--2" style="margin-top: var(--aipim-space-24);">
-          <article class="aipim-card">
-            <div class="aipim-card__body">
-              <div class="aipim-card__header">
-                <span class="aipim-badge aipim-badge--tint aipim-badge--square" aria-hidden="true">
-                  <svg class="aipim-icon" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-download"></use></svg>
-                </span>
-                <div class="aipim-card__heading">
-                  <h3 class="aipim-card__title">Versão leve (.exe)</h3>
-                </div>
-              </div>
-              <p class="aipim-card__text">
-                ≈ 58 MB. O cliente Flet (~30 MB) é baixado uma única vez no primeiro uso
-                e fica em cache; a partir da segunda execução, abre offline.
-              </p>
-              <a class="aipim-button" href="https://github.com/samuel-c-santos/portica-app/releases/download/v1.0.1/portica-v1.0.1-windows-x64.exe" target="_blank" rel="noopener noreferrer" style="margin-top: var(--aipim-space-16);">
-                <svg class="aipim-icon aipim-button__icon-leading" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-download"></use></svg>
-                <span>Baixar .exe (leve)</span>
-              </a>
-            </div>
-          </article>
-          <article class="aipim-card">
-            <div class="aipim-card__body">
-              <div class="aipim-card__header">
-                <span class="aipim-badge aipim-badge--tint aipim-badge--square" aria-hidden="true">
-                  <svg class="aipim-icon" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-check"></use></svg>
-                </span>
-                <div class="aipim-card__heading">
-                  <h3 class="aipim-card__title">Versão offline (.zip)</h3>
-                </div>
-              </div>
-              <p class="aipim-card__text">
-                ≈ 96 MB. O cliente Flet já vem embutido: roda offline desde a primeira
-                execução. Descompacte e execute o <code>portica.exe</code>.
-              </p>
-              <a class="aipim-button aipim-button--outline" href="https://github.com/samuel-c-santos/portica-app/releases/download/v1.0.1/portica-v1.0.1-windows-x64.zip" target="_blank" rel="noopener noreferrer" style="margin-top: var(--aipim-space-16);">
-                <svg class="aipim-icon aipim-button__icon-leading" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-download"></use></svg>
-                <span>Baixar .zip (offline)</span>
-              </a>
-            </div>
-          </article>
-        </div>
-
-        <p style="margin-top: var(--aipim-space-24);">
-          Todos os downloads também estão na aba
-          <a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app/releases" target="_blank" rel="noopener noreferrer">Releases do repositório</a>.
-          Recomendação: use o <code>.zip</code> se a máquina estiver offline na primeira execução; senão, o <code>.exe</code> leve é menor e se torna offline a partir da segunda vez.
-        </p>
-        <p style="margin-top: var(--aipim-space-12); color: var(--aipim-text-secondary); font-size: var(--aipim-text-body-sm-size);">
-          Os checksums SHA-256 de cada arquivo estão nas <a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app/releases" target="_blank" rel="noopener noreferrer">notas da release</a>.
-        </p>
       </div>
     </section>
 
@@ -528,7 +515,7 @@
             <svg class="aipim-icon aipim-accordion__chevron" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-chevron-down"></use></svg>
           </summary>
           <div class="aipim-accordion__panel">
-            <p>Depende da versão. A versão <strong>offline (.zip)</strong> já vem com o cliente Flet embutido e roda sem internet desde a primeira execução. A versão <strong>leve (.exe)</strong> baixa o cliente gráfico do Flet (~30 MB) uma única vez no primeiro uso; depois disso, fica em cache e o app abre offline a partir da segunda execução. O cálculo em si (dimensionamento, PDF e DXF) é sempre 100% local, sem conta e sem internet.</p>
+            <p>Para rodar 100% offline desde a primeira execução, baixe o pacote recomendado <strong>.zip (96,3 MB)</strong>: ele já traz todos os componentes embutidos e funciona imediatamente sem internet ou em redes corporativas restritas. Se preferir um download inicial menor e tiver acesso liberado ao GitHub na primeira abertura, use a variante leve <strong>.exe (58,1 MB)</strong>, que baixa ~30 MB apenas no 1º uso e abre offline nas execuções seguintes. O motor de cálculo, o relatório PDF e a exportação DXF rodam sempre 100% na máquina local.</p>
           </div>
         </details>
 
