@@ -30,12 +30,20 @@
     }
   }
 
+  function syncToggleButton(theme) {
+    var btn = document.getElementById("theme-toggle");
+    if (btn) {
+      btn.setAttribute("aria-pressed", theme === "dark" ? "true" : "false");
+    }
+  }
+
   function apply(theme, persist) {
     root.setAttribute("data-theme", theme);
     if (persist) {
       try { window.localStorage.setItem(KEY, theme); } catch (e) { /* ok */ }
     }
     swapImages(theme);
+    syncToggleButton(theme);
   }
 
   // 1) Tema inicial, antes do primeiro paint (evita "flash").
@@ -45,6 +53,7 @@
   function boot() {
     var theme = root.getAttribute("data-theme") || resolve();
     swapImages(theme);
+    syncToggleButton(theme);
 
     var btn = document.getElementById("theme-toggle");
     if (btn) {

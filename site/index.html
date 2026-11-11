@@ -71,7 +71,7 @@
         <a class="aipim-link" href="calculo.html">Modelo de cálculo</a>
         <a class="aipim-link" href="#faq">FAQ</a>
         <a class="aipim-link" href="#doar">Doar</a>
-        <button class="aipim-icon-button" type="button" id="theme-toggle" aria-label="Alternar tema claro/escuro">
+        <button class="aipim-icon-button" type="button" id="theme-toggle" aria-label="Alternar tema escuro" aria-pressed="false">
           <svg class="aipim-icon theme-toggle__moon" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-moon"></use></svg>
           <svg class="aipim-icon theme-toggle__sun" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-sun"></use></svg>
         </button>
@@ -183,7 +183,7 @@
                   <svg class="aipim-icon" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-check"></use></svg>
                 </span>
                 <div class="aipim-card__heading">
-                  <h3 class="aipim-card__title">Flexão</h3>
+                  <h3 class="aipim-card__title"><span class="aipim-visually-hidden">Verificação incluída: </span>Flexão</h3>
                 </div>
               </div>
               <p class="aipim-card__text">Seção retangular e seção T (mesa colaborante), com verificação dos domínios de deformação.</p>
@@ -196,7 +196,7 @@
                   <svg class="aipim-icon" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-check"></use></svg>
                 </span>
                 <div class="aipim-card__heading">
-                  <h3 class="aipim-card__title">Cisalhamento</h3>
+                  <h3 class="aipim-card__title"><span class="aipim-visually-hidden">Verificação incluída: </span>Cisalhamento</h3>
                 </div>
               </div>
               <p class="aipim-card__text">Modelo I da NBR 6118, com contribuição do concreto e do aço, estribos trecho a trecho.</p>
@@ -209,7 +209,7 @@
                   <svg class="aipim-icon" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-file"></use></svg>
                 </span>
                 <div class="aipim-card__heading">
-                  <h3 class="aipim-card__title">Relatório PDF</h3>
+                  <h3 class="aipim-card__title"><span class="aipim-visually-hidden">Exportação incluída: </span>Relatório PDF</h3>
                 </div>
               </div>
               <p class="aipim-card__text">Capa, dados de entrada, tabelas, diagramas M(x)/V(x), esquema da seção e campos de CREA/CAU.</p>
@@ -222,7 +222,7 @@
                   <svg class="aipim-icon" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-success"></use></svg>
                 </span>
                 <div class="aipim-card__heading">
-                  <h3 class="aipim-card__title">Armadura dupla</h3>
+                  <h3 class="aipim-card__title"><span class="aipim-visually-hidden">Verificação incluída: </span>Armadura dupla</h3>
                 </div>
               </div>
               <p class="aipim-card__text">Solução com armadura de compressão quando o momento excede o limite do domínio 3.</p>
@@ -235,7 +235,7 @@
                   <svg class="aipim-icon" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-check"></use></svg>
                 </span>
                 <div class="aipim-card__heading">
-                  <h3 class="aipim-card__title">Armadura de pele</h3>
+                  <h3 class="aipim-card__title"><span class="aipim-visually-hidden">Verificação incluída: </span>Armadura de pele</h3>
                 </div>
               </div>
               <p class="aipim-card__text">Dimensionamento automático das costelas para vigas com h ≥ 60 cm.</p>
@@ -248,7 +248,7 @@
                   <svg class="aipim-icon" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-clock"></use></svg>
                 </span>
                 <div class="aipim-card__heading">
-                  <h3 class="aipim-card__title">ELS: flecha e fissuração</h3>
+                  <h3 class="aipim-card__title"><span class="aipim-visually-hidden">Verificação incluída: </span>ELS: flecha e fissuração</h3>
                 </div>
               </div>
               <p class="aipim-card__text">Flecha imediata e diferida por integração numérica da curvatura; abertura de fissuras wk por classe de agressividade.</p>
@@ -261,7 +261,7 @@
                   <svg class="aipim-icon" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-image"></use></svg>
                 </span>
                 <div class="aipim-card__heading">
-                  <h3 class="aipim-card__title">Exportação DXF</h3>
+                  <h3 class="aipim-card__title"><span class="aipim-visually-hidden">Exportação incluída: </span>Exportação DXF</h3>
                 </div>
               </div>
               <p class="aipim-card__text">Desenho da seção R/T com layers e grampos, pronto para o CAD.</p>
@@ -274,7 +274,7 @@
                   <svg class="aipim-icon" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-upload"></use></svg>
                 </span>
                 <div class="aipim-card__heading">
-                  <h3 class="aipim-card__title">Importação FTOOL</h3>
+                  <h3 class="aipim-card__title"><span class="aipim-visually-hidden">Integração incluída: </span>Importação FTOOL</h3>
                 </div>
               </div>
               <p class="aipim-card__text">Leitura dos <code>.txt</code> exportados (momento, cortante, deformações), seções críticas e dimensionamento automático.</p>
@@ -287,7 +287,7 @@
                   <svg class="aipim-icon" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-folder"></use></svg>
                 </span>
                 <div class="aipim-card__heading">
-                  <h3 class="aipim-card__title">Projetos .ptc</h3>
+                  <h3 class="aipim-card__title"><span class="aipim-visually-hidden">Persistência incluída: </span>Projetos .ptc</h3>
                 </div>
               </div>
               <p class="aipim-card__text">Salvar e carregar o projeto completo: geometria, materiais, esforços e ajustes.</p>
@@ -323,31 +323,31 @@
         </div>
         <div class="figure-grid">
           <figure class="fig">
-            <div class="fig-media"><img src="img/01-tela-inicial.png" alt="Tela inicial com os dois tipos de seção (retangular e T)" loading="lazy"></div>
+            <div class="fig-media"><img src="img/01-tela-inicial.png" alt="Tela inicial com os dois tipos de seção (retangular e T)" loading="lazy" width="1920" height="1140"></div>
             <figcaption>Tela inicial: escolha da seção.</figcaption>
           </figure>
           <figure class="fig">
-            <div class="fig-media"><img src="img/02-entrada-manual.png" alt="Tela da viga com entrada manual de trechos de flexão e cisalhamento" loading="lazy"></div>
+            <div class="fig-media"><img src="img/02-entrada-manual.png" alt="Tela da viga com entrada manual de trechos de flexão e cisalhamento" loading="lazy" width="1920" height="1140"></div>
             <figcaption>Entrada manual de trechos.</figcaption>
           </figure>
           <figure class="fig">
-            <div class="fig-media"><img src="img/03-importacao-ftool.png" alt="Painel de importação do FTOOL com os arquivos de esforços carregados" loading="lazy"></div>
+            <div class="fig-media"><img src="img/03-importacao-ftool.png" alt="Painel de importação do FTOOL com os arquivos de esforços carregados" loading="lazy" width="1920" height="1140"></div>
             <figcaption>Importação de esforços do FTOOL.</figcaption>
           </figure>
           <figure class="fig">
-            <div class="fig-media"><img src="img/04-secoes.png" alt="Seções dimensionadas" loading="lazy"></div>
+            <div class="fig-media"><img src="img/04-secoes.png" alt="Seções dimensionadas" loading="lazy" width="1920" height="1140"></div>
             <figcaption>Seções dimensionadas.</figcaption>
           </figure>
           <figure class="fig">
-            <div class="fig-media"><img src="img/05-resultados-flexao.png" alt="Resultados da flexão: armadura adotada, bitolas e verificações" loading="lazy"></div>
+            <div class="fig-media"><img src="img/05-resultados-flexao.png" alt="Resultados da flexão: armadura adotada, bitolas e verificações" loading="lazy" width="1920" height="1140"></div>
             <figcaption>Resultados da flexão.</figcaption>
           </figure>
           <figure class="fig">
-            <div class="fig-media"><img src="img/06-relatorio-pdf.png" alt="Relatório PDF gerado (capa, tabelas e esquema da seção)" loading="lazy"></div>
+            <div class="fig-media"><img src="img/06-relatorio-pdf.png" alt="Relatório PDF gerado (capa, tabelas e esquema da seção)" loading="lazy" width="1920" height="1035"></div>
             <figcaption>Relatório PDF.</figcaption>
           </figure>
           <figure class="fig">
-            <div class="fig-media"><img src="img/07-desenho_dxf.png" alt="Desenho DXF da seção exportada" loading="lazy"></div>
+            <div class="fig-media"><img src="img/07-desenho_dxf.png" alt="Desenho DXF da seção exportada" loading="lazy" width="1920" height="1140"></div>
             <figcaption>Desenho DXF da seção.</figcaption>
           </figure>
         </div>
@@ -447,7 +447,7 @@
           <a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app/releases" target="_blank" rel="noopener noreferrer">Releases do repositório</a>.
         </p>
 
-        <div class="aipim-alert aipim-alert--warning" role="status" style="margin-top: var(--aipim-space-24);">
+        <div class="aipim-alert aipim-alert--warning" role="alert" style="margin-top: var(--aipim-space-24);">
           <svg class="aipim-icon aipim-alert__icon" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-warning"></use></svg>
           <div class="aipim-alert__content">
             <p class="aipim-alert__title">Ferramenta de apoio</p>
@@ -465,7 +465,7 @@
           <h2>Ferramenta de apoio, não de decisão</h2>
         </div>
 
-        <div class="aipim-alert aipim-alert--warning" role="status">
+        <div class="aipim-alert aipim-alert--warning" role="alert">
           <svg class="aipim-icon aipim-alert__icon" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-warning"></use></svg>
           <div class="aipim-alert__content">
             <p class="aipim-alert__title">Aviso</p>
@@ -688,7 +688,7 @@
             </div>
           </div>
           <div>
-            <img class="qr" src="img/qr-pix.png" alt="QR Code Pix para doação" width="512" height="512">
+            <img class="qr" src="img/qr-pix.png" alt="QR Code Pix para doação" width="1724" height="1724">
           </div>
         </div>
       </div>
