@@ -3,6 +3,7 @@
 EP-04.3: extraido de ui/viga.py; funcoes recebem `ctx` (ViewContext) explicito.
 """
 
+import logging
 import os
 from functools import partial
 
@@ -31,6 +32,8 @@ from ui.theme import (
     title_medium,
     title_small,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def processar_ftool(ctx):
@@ -80,8 +83,9 @@ def processar_ftool(ctx):
                 ctx.state.get(k) and os.path.exists(ctx.state[k])
                 for k in ("ftool_momento_path", "ftool_cortante_path", "ftool_deformacao_path")
             )
-        except Exception:
-            pass
+        except (OSError, TypeError, ValueError) as err:
+            logger.debug("Falha ao checar arquivos FTOOL no disco: %s", err)
+            arquivos_existem = False
 
         if arquivos_existem:
             # Força a re-leitura do disco para garantir sincronia com os arquivos mais recentes
@@ -124,7 +128,8 @@ def processar_ftool(ctx):
                             deformacoes = parse_deformacao(os.path.join(base, candidates[0]))
                     if deformacoes:
                         ctx.state["ftool_deformacoes"] = deformacoes
-                except Exception:
+                except (OSError, ValueError, KeyError, IndexError) as err:
+                    logger.debug("Falha ao carregar deformacoes de fallback: %s", err)
                     deformacoes = []
             if not deformacoes:
                 deformacoes = []
@@ -679,7 +684,8 @@ def processar_ftool(ctx):
                             show_msg,
                         )
 
-                except Exception as ex:
+                except (ValueError, KeyError, TypeError, ZeroDivisionError, RuntimeError) as ex:
+                    logger.error("Erro ao recalcular ajustes manuais ELS: %s", ex, exc_info=True)
                     show_msg(f"Erro ao recalcular: {ex}", Palette.ERROR)
 
             # Retornar controles do painel
@@ -801,7 +807,8 @@ def processar_ftool(ctx):
                     ctx.page,
                     ctx.show_msg,
                 )
-            except Exception as ex:
+            except (ValueError, KeyError, TypeError, ZeroDivisionError, RuntimeError) as ex:
+                logger.error("Erro no dimensionamento FTOOL: %s", ex, exc_info=True)
                 ctx.page.pop_dialog()  # Fecha loading
                 ctx.show_msg(f"Erro no dimensionamento: {ex}", Palette.ERROR)
 
@@ -844,10 +851,11 @@ def processar_ftool(ctx):
                 shape=ft.RoundedRectangleBorder(radius=br_all(Radius.LG)),
             )
         )
-    except Exception as ex:
+    except (ValueError, KeyError, TypeError, OSError, IndexError, RuntimeError) as ex:
+        logger.error("Erro ao processar FTOOL: %s", ex, exc_info=True)
         try:
             ctx.page.pop_dialog()  # Fecha loading se ainda estiver aberto
-        except Exception:
+        except (IndexError, RuntimeError, AttributeError):
             pass
         ctx.show_msg(f"Erro ao processar FTOOL: {ex}", Palette.ERROR)
 

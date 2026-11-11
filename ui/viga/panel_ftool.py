@@ -3,6 +3,7 @@
 EP-04.3: extraido de ui/viga.py; funcoes recebem `ctx` (ViewContext) explicito.
 """
 
+import logging
 import os
 from functools import partial
 
@@ -31,6 +32,8 @@ from ui.theme import (
     surface_card,
     title_medium,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def update_combs_ui(ctx):
@@ -511,7 +514,8 @@ def on_calcular_envelope_click(ctx, e):
                     shape=ft.RoundedRectangleBorder(radius=br_all(Radius.LG)),
                 )
                 ctx.page.show_dialog(results_dlg)
-            except Exception as ex:
+            except (ValueError, KeyError, TypeError, ZeroDivisionError, RuntimeError) as ex:
+                logger.error("Erro no dimensionamento do envelope: %s", ex, exc_info=True)
                 ctx.show_msg(f"Erro no dimensionamento do envelope: {ex}", Palette.ERROR)
 
         env_dlg = ft.AlertDialog(
@@ -554,7 +558,8 @@ def on_calcular_envelope_click(ctx, e):
         )
         ctx.page.show_dialog(env_dlg)
 
-    except Exception as ex:
+    except (ValueError, KeyError, TypeError, AttributeError, RuntimeError) as ex:
+        logger.error("Erro ao processar envelope: %s", ex, exc_info=True)
         ctx.show_msg(f"Erro ao processar envelope: {ex}", Palette.ERROR)
 
 

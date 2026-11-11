@@ -933,11 +933,7 @@ class PorticaPDF(FPDF):
                     )
                 lines.append("")
 
-                # EP-01.9: o espaçamento impresso é o do MOTOR
-                # (eh_suportado do detalhamento convergido). O algoritmo
-                # alternativo que recalculava eh aqui (e o b_disponivel que
-                # só o servia) foram removidos — seu resultado era
-                # descartado em favor de eh_suportado.
+                # Espaçamento horizontal livre obtido diretamente do detalhamento convergido do motor
                 eh_suportado_val = getattr(r, "eh_suportado", 0.0)
 
                 lines.extend(

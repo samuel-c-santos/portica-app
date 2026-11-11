@@ -4,6 +4,7 @@ EP-04.3: extraido de ui/viga.py; funcoes recebem `ctx` (ViewContext) explicito.
 """
 
 import json
+import logging
 import os
 import platform
 import subprocess
@@ -44,6 +45,8 @@ from ui.theme import (
     surface_card,
 )
 from ui.viga.form_trechos import ler_sinais
+
+logger = logging.getLogger(__name__)
 
 
 # ── Status e mensagens ───────────────────────────────────────────────
@@ -297,7 +300,8 @@ async def on_save_project_click(ctx, e):
             json.dump(proj_data, f, indent=2, ensure_ascii=False)
         add_recent(out_path, modo=ctx.modo)
         ctx.show_msg("Projeto salvo com sucesso", Palette.SUCCESS)
-    except Exception as ex:
+    except (OSError, TypeError, ValueError) as ex:
+        logger.error("Erro ao salvar projeto em '%s': %s", out_path, ex, exc_info=True)
         ctx.show_msg(f"Erro ao salvar projeto: {ex}", Palette.ERROR)
 
 
@@ -447,7 +451,8 @@ async def on_load_project_click(ctx, e):
             ctx.show_msg(msg_aviso, Palette.WARNING)
         else:
             ctx.show_msg("Projeto importado com sucesso", Palette.SUCCESS)
-    except Exception as ex:
+    except (json.JSONDecodeError, OSError, KeyError, ValueError, TypeError) as ex:
+        logger.error("Erro ao carregar projeto de '%s': %s", file_path, ex, exc_info=True)
         ctx.show_msg(f"Erro ao carregar projeto: {ex}", Palette.ERROR)
 
 
@@ -938,7 +943,8 @@ async def on_exportar_dxf(ctx, e):
 
         ctx.show_msg(f"Arquivo DXF exportado com sucesso: {out}", Palette.SUCCESS)
 
-    except Exception as ex:
+    except (OSError, ValueError, TypeError, RuntimeError, AttributeError) as ex:
+        logger.error("Erro ao exportar DXF: %s", ex, exc_info=True)
         ctx.show_msg(f"Erro ao exportar DXF: {ex}", Palette.ERROR)
     finally:
         ctx.btn_exportar_dxf.disabled = False

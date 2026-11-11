@@ -58,6 +58,11 @@ GAMMA_F_TABLE = {
 
 # Diâmetros de barra disponíveis (mm)
 DIAM_BARRAS = [5, 6.3, 8, 10, 12.5, 16, 20, 25, 32]  # estribos e pele
+
+# Sentinela numérico interno para seções com momento excessivo ou raiz inexistente (EP-04.6)
+# Encapsulado internamente; a saída pública do cálculo sempre converte para None ou 0.0.
+_SENTINELA_BX = 999.0
+
 DIAM_BARRAS_LONG = [10, 12.5, 16, 20, 25, 32]  # armadura longitudinal (NBR 6118: φ≥10mm)
 
 
@@ -1036,11 +1041,11 @@ def calcular_flexao_viga_comum(
         else:
             x_ln, x1, x2 = _resolver_ln(Md_kNcm, fck_mpa, bw_cm, d_cm)
             if x_ln is None or x_ln <= 0:
-                bx = 999.0
+                bx = _SENTINELA_BX
                 bx_passa = "NÃO"
                 ks = 0.0
                 as_req = 0.0
-                x_cm = 999.0 * d_cm
+                x_cm = _SENTINELA_BX * d_cm
                 alerta = (
                     f"Seção insuficiente para o momento Mk={Mk_kNm:+.1f} kN·m "
                     f"(Md={Md_kNm:.1f} kN·m, γf={gamma_f}). "
@@ -1125,7 +1130,7 @@ def calcular_flexao_viga_comum(
                 x2=round(x2, 4),
                 bx=round(bx, 4),
                 bx_passa=bx_passa,
-                x_cm=round(x_cm, 2) if x_cm < 999.0 else None,
+                x_cm=round(x_cm, 2) if x_cm < _SENTINELA_BX else None,
                 ks=round(ks, 3),
                 as_req_cm2=round(as_req, 3),
                 asmin_cm2=round(asmin, 3),
@@ -1674,8 +1679,8 @@ def calcular_flexao_viga_t(
                     else:
                         x_alma, x1w, x2w = _resolver_ln(Md2_kNcm, fck_mpa, bw_cm, d_cm)
                         if x_alma is None or x_alma <= 0:
-                            bx = 999.0
-                            x_cm = 999.0 * d_cm
+                            bx = _SENTINELA_BX
+                            x_cm = _SENTINELA_BX * d_cm
                             as_req = 0.0
                             alerta = (
                                 f"Seção insuficiente na alma para o momento "
@@ -1735,8 +1740,8 @@ def calcular_flexao_viga_t(
             else:
                 x_neg, x1n, x2n = _resolver_ln(Md_kNcm, fck_mpa, bw_cm, d_cm)
                 if x_neg is None or x_neg <= 0:
-                    bx = 999.0
-                    x_cm = 999.0 * d_cm
+                    bx = _SENTINELA_BX
+                    x_cm = _SENTINELA_BX * d_cm
                     as_req = 0.0
                     alerta = (
                         f"Seção insuficiente para o momento negativo "
@@ -1827,10 +1832,10 @@ def calcular_flexao_viga_t(
                 x2=round(x2 if "x2" in locals() else 0.0, 4),
                 bx=round(bx, 4),
                 bx_passa=bx_passa,
-                x_cm=round(x_cm, 2) if x_cm < 999.0 else None,
+                x_cm=round(x_cm, 2) if x_cm < _SENTINELA_BX else None,
                 linha_neutra_condiz=ln_condiz,
                 bf_efetivo_cm=round(bf_efetivo, 2),
-                ks=round(1.0 / (fyd * (1.0 - 0.4 * bx)) if bx < 999.0 else 0.0, 3),
+                ks=round(1.0 / (fyd * (1.0 - 0.4 * bx)) if bx < _SENTINELA_BX else 0.0, 3),
                 as_req_cm2=round(as_req, 3),
                 asmin_cm2=round(asmin, 3),
                 as_necessaria_cm2=round(as_necessaria, 3),

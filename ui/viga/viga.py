@@ -4,6 +4,7 @@ EP-04.3: extraido de ui/viga.py; funcoes recebem `ctx` (ViewContext) explicito.
 """
 
 import json
+import logging
 import os
 from functools import partial
 
@@ -35,6 +36,8 @@ from ui.viga import (
     results_view,
 )
 from ui.viga.state import ViewContext
+
+logger = logging.getLogger(__name__)
 
 
 def _setup_topbar(ctx):
@@ -296,7 +299,13 @@ def _setup_carga_inicial(ctx):
                     ctx.show_msg(msg_aviso, Palette.WARNING)
                 else:
                     ctx.show_msg("Projeto importado com sucesso", Palette.SUCCESS)
-            except Exception as ex:
+            except (json.JSONDecodeError, OSError, KeyError, ValueError, TypeError) as ex:
+                logger.error(
+                    "Erro ao carregar projeto inicial '%s': %s",
+                    ctx.initial_file,
+                    ex,
+                    exc_info=True,
+                )
                 ctx.show_msg(f"Erro ao carregar projeto: {ex}", Palette.ERROR)
 
         ctx.page.run_task(ctx._auto_load)
