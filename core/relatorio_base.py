@@ -856,13 +856,18 @@ class PorticaPDF(FPDF):
                 self.set_text_color(*C_GRAY900)
 
                 d_lin = cob_mm / 10 + phi_estribo_mm / 10 + r.diametro_mm / 20
-                d_cm = h_cm - d_lin
+                d_estimada = h_cm - d_lin
+                # EP-01.9: o PDF imprime a d que o MOTOR usou (convergida no
+                # laço de bitola), não a estimativa de 1 camada recalculada
+                # aqui — a linha do Kc tem que reproduzir o Kc do motor.
+                d_cm = r.d_cm_real if r.d_cm_real > 0 else d_estimada
 
                 lines = [
                     "1. Altura util (d):",
                     "   d' = cobrimento + phi_estribo + phi_barra/2",
                     f"   d' = {cob_mm / 10:.2f} + {phi_estribo_mm / 10:.2f} + {r.diametro_mm / 20:.2f} = {d_lin:.2f} cm",
-                    f"   d  = h - d' = {h_cm:.1f} - {d_lin:.2f} = {d_cm:.2f} cm",
+                    f"   d (estimativa 1 camada) = {h_cm:.1f} - {d_lin:.2f} = {d_estimada:.2f} cm",
+                    f"   d (convergida no laco, usada no calculo) = {d_cm:.2f} cm",
                     "",
                 ]
 
@@ -919,32 +924,12 @@ class PorticaPDF(FPDF):
                     ]
                 )
 
-                c_cm = cob_mm / 10
-                est_cm = phi_estribo_mm / 10
-                if is_t and r.tipo == "NEGATIVO":
-                    b_disponivel = bf_cm if bf_cm is not None else bw_cm
-                else:
-                    b_disponivel = bw_cm
-                espaco_disp_local = b_disponivel - 2 * c_cm - 2 * est_cm
-
-                if r.qtd_barras <= 1:
-                    eh_val = espaco_disp_local - (r.diametro_mm / 10)
-                else:
-                    eh_1 = (espaco_disp_local - r.qtd_barras * (r.diametro_mm / 10)) / (
-                        r.qtd_barras - 1
-                    )
-                    if eh_1 >= 1.95:
-                        eh_val = eh_1
-                    else:
-                        n_max_layer = math.ceil(r.qtd_barras / 2)
-                        if n_max_layer <= 1:
-                            eh_val = espaco_disp_local - (r.diametro_mm / 10)
-                        else:
-                            eh_val = (espaco_disp_local - n_max_layer * (r.diametro_mm / 10)) / (
-                                n_max_layer - 1
-                            )
-
-                eh_suportado_val = getattr(r, "eh_suportado", eh_val)
+                # EP-01.9: o espaçamento impresso é o do MOTOR
+                # (eh_suportado do detalhamento convergido). O algoritmo
+                # alternativo que recalculava eh aqui (e o b_disponivel que
+                # só o servia) foram removidos — seu resultado era
+                # descartado em favor de eh_suportado.
+                eh_suportado_val = getattr(r, "eh_suportado", 0.0)
 
                 lines.extend(
                     [
@@ -1039,7 +1024,10 @@ class PorticaPDF(FPDF):
                 vrd2 = 0.27 * lam * fcd * bw_cm * d_cm / 10
                 vc = 0.6 * fctd * bw_cm * d_cm
                 vsw = r.vsd_kn - vc if r.vsd_kn > vc else 0
-                fywd = fyk_estribo_kn_cm2 / 1.15
+                # EP-01.9: cap de 43,5 kN/cm² (435 MPa) igual ao do motor —
+                # antes o PDF imprimia fywd = 52,17 kN/cm² para CA-60
+                # (521,7 MPa), valor proibido pela NBR 6118:17.4.2.3.
+                fywd = min(fyk_estribo_kn_cm2 / 1.15, 43.5)
 
                 if vsw > 0 and fywd > 0 and d_cm > 0:
                     asw_req_m = (vsw / (fywd * d_cm)) * 100
@@ -1072,7 +1060,11 @@ class PorticaPDF(FPDF):
                     "",
                     "4. Calculo da armadura transversal (Asw/s):",
                     "   Asw/s,req = Vsw / (fywd * d)",
-                    f"   fywd = fyk_estribo / 1.15 = {fyk_estribo_kn_cm2:g} / 1.15 = {fywd:.2f} kN/cm^2",
+                    (
+                        f"   fywd = min(fyk_estribo / 1.15, 43.5) = min({fyk_estribo_kn_cm2:g} / 1.15, 43.5) = {fywd:.2f} kN/cm^2 (cap NBR 6118:17.4.2.3)"
+                        if fyk_estribo_kn_cm2 / 1.15 > 43.5
+                        else f"   fywd = fyk_estribo / 1.15 = {fyk_estribo_kn_cm2:g} / 1.15 = {fywd:.2f} kN/cm^2"
+                    ),
                     f"   Asw/s,req = {vsw:.2f} / ({fywd:.2f} * {d_cm:.2f}) * 100 = {asw_req_m:.3f} cm^2/m",
                     f"   Asw/s,min = {r.asw_s_min_cm2_m:.3f} cm^2/m",
                     f"   Asw/s,adot = max(Asw/s,req, Asw/s,min) = {r.asw_usado_cm2_m:.3f} cm^2/m",
