@@ -49,9 +49,13 @@ pre-commit install
   arquivadas em 2026-11-11 nas tags `archive/main-2026-11-11`,
   `archive/feat-ftool-import-2026-11-11` e `archive/oss-unificacao-2026-11-11`;
   nada nelas precisa ser mesclado.
-- **`gh-pages`** só recebe conteúdo de `site/` (via `git subtree split`), e
-  nunca é editada à mão. Arquivos de documentação interna (README, notas de
-  build) não entram no deploy.
+- **`gh-pages`** só recebe conteúdo de `site/`, e nunca é editada à mão: o
+  workflow `.github/workflows/pages.yml` publica a pasta a cada push em
+  `public-main` (mesmo efeito do `git subtree split` usado antes). Arquivos de
+  documentação interna (README, notas de build) não entram no deploy.
+- O CSS do site é servido de um único `site/bundle.css`, gerado por
+  `python tools/build_site_css.py`; `tests/test_site_css.py` falha se o bundle
+  ficar defasado das fontes (`theme.css`, `base.css` e o Aipim).
 - `samples/` deve conter **apenas** os exemplos versionados: os `.txt` de
   esforços do FTOOL e `samples/exemplo_projeto.ptc`. Projetos `.ptc` de
   trabalho, PDFs e DXFs gerados são descartados localmente (já estão no

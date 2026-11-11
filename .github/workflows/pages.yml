@@ -1,0 +1,68 @@
+# Publica o site na branch `gh-pages` (EP-06).
+#
+# O GitHub Pages serve https://samuel-c-santos.github.io/portica-app/ a partir
+# da branch `gh-pages` (raiz). Até o EP-06 essa branch era sincronizada à mão
+# com `git subtree split`, o que deixou a página pública parada na versão
+# anterior mesmo depois do merge em `public-main`.
+#
+# Este workflow mantém a publicação automática: todo push em `public-main` que
+# altere `site/` regenera `gh-pages` com o conteúdo exato de `site/` (mesmo
+# efeito do subtree split, sem branch auxiliar no repositório).
+#
+# Requisito de repositório: Settings > Pages > Source =
+# "Deploy from a branch" / branch `gh-pages` / pasta `/(root)`.
+
+name: Publica o site
+
+on:
+  push:
+    branches: [public-main]
+    paths:
+      - "site/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  publicar:
+    name: gh-pages a partir de site/
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Confere se bundle.css está sincronizado com as fontes
+        run: |
+          python - <<'PY'
+          from tools import build_site_css
+
+          atual = build_site_css.DESTINO.read_text(encoding="utf-8")
+          if atual != build_site_css.gerar():
+              raise SystemExit(
+                  "site/bundle.css desatualizado: rode `python tools/build_site_css.py`"
+              )
+          print("[OK] bundle.css sincronizado")
+          PY
+
+      - name: Envia site/ para gh-pages
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          rm -rf /tmp/site && mkdir -p /tmp/site
+          cp -a site/. /tmp/site/
+
+          git checkout --orphan "gh-pages-${GITHUB_RUN_ID}"
+          git rm -rf . > /dev/null 2>&1 || true
+          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cp -a /tmp/site/. .
+
+          git add -A
+          git commit -m "site: publica ${GITHUB_SHA::7}"
+          git push --force origin HEAD:gh-pages
