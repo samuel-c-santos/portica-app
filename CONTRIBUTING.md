@@ -1,7 +1,7 @@
 # Contribuindo com o Pórtica App
 
 Obrigado pelo interesse. Este projeto é mantido por uma pessoa, no tempo
-disponível. O guia abaixo existe para que sua contribuição seja-reviewed de
+disponível. O guia abaixo existe para que sua contribuição seja revisada de
 forma rápida e sem atrito.
 
 ## Como rodar os testes
@@ -11,7 +11,7 @@ Requisitos: Python 3.10 ou superior.
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
+pip install -r requirements.txt -r requirements-dev.txt
 ```
 
 Rodar a suíte completa:
@@ -27,8 +27,35 @@ python -m pytest tests\test_relatorio.py -q
 python -m pytest tests\test_relatorio.py::test_gerar_pdf -q
 ```
 
-Antes de abrir um *pull request*, a suíte precisa passar inteira. Não há
-serviço de CI configurado no momento; a verificação é local.
+Antes de abrir um *pull request*, a suíte precisa passar inteira. O CI
+(GitHub Actions, workflow `tests.yml`) roda pytest em Python 3.10/3.11/3.12
+e um *build smoke* em Windows; um PR com teste quebrado fica vermelho.
+
+Hooks locais (recomendado, valida lint e encoding antes de cada commit):
+
+```powershell
+pre-commit install
+```
+
+## Branches e repositórios
+
+- A branch **canônica de código é `public-main`**, publicada no remote
+  `public` (<https://github.com/samuel-c-santos/portica-app>). Pull requests
+  abrem contra ela.
+- O remote `origin` (`portica.git`) é o repositório legado pré-open-source:
+  não recebemos trabalho por lá e ele pode ser removido do seu clone
+  (`git remote remove origin`).
+- As branches antigas (`main`, `feat/ftool-import`, `oss/unificacao`) foram
+  arquivadas em 2026-11-11 nas tags `archive/main-2026-11-11`,
+  `archive/feat-ftool-import-2026-11-11` e `archive/oss-unificacao-2026-11-11`;
+  nada nelas precisa ser mesclado.
+- **`gh-pages`** só recebe conteúdo de `site/` (via `git subtree split`), e
+  nunca é editada à mão. Arquivos de documentação interna (README, notas de
+  build) não entram no deploy.
+- `samples/` deve conter **apenas** os exemplos versionados: os `.txt` de
+  esforços do FTOOL e `samples/exemplo_projeto.ptc`. Projetos `.ptc` de
+  trabalho, PDFs e DXFs gerados são descartados localmente (já estão no
+  `.gitignore`).
 
 ## Padrão de commit (*Conventional Commits*)
 
@@ -85,7 +112,7 @@ esperado.
   chave.
 - **Refatoração de interface sem issue prévia**. Discuta primeiro em uma
   *issue*. Mudanças grandes de UI são caras de revisar para um maintainer
-  único e tends a conflitar.
+  único e tende a conflitar.
 - Mudanças no motor de cálculo (`core/calculos`) sem teste de regressão.
 - Dependências novas sem necessidade clara e sem atualização do `THIRD_PARTY.md`.
 - Commits com segredos, credenciais, dados de cliente ou arquivos gerados
@@ -108,8 +135,8 @@ Para falhas de cálculo, o procedimento está detalhado em
 
 ## Código de conduta
 
-Não há um código de conduta formal. Treatamento basicamente decente com os
-demais é o mínimo esperado: nada de assédio, Discriminação ou ataques
+Não há um código de conduta formal. Tratamento basicamente decente com os
+demais é o mínimo esperado: nada de assédio, discriminação ou ataques
 pessoais.
 
 ## Licença das contribuições
