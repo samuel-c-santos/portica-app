@@ -338,6 +338,8 @@ class ResultadoFlexao:
     d_cm_real: float = 0.0
     camadas_adotadas: int = 1
     status_bitola: str = "CABE"
+    # EP-01.2: convergência declarada do laço de bitola (False = recusado)
+    convergiu: bool = True
     layout_convergido: object | None = None
     tabela_bitolas: list = None
 
@@ -362,6 +364,10 @@ class ResultadoBitola:
     layout: SectionLayoutData | None
     iteracoes: int
     cabe: bool
+    # EP-01.2: o laço de bitola declara a própria convergência. False quando
+    # esgotou max_iter sem |d₀ − d_real| < tol ou quando a sequência de d
+    # oscilou (não-monótona). Resultado com convergiu=False não é adotável.
+    convergiu: bool = False
 
 
 def dimensionar_bitola_iterativa(
@@ -391,6 +397,8 @@ def dimensionar_bitola_iterativa(
     layout_final = None
     as_req_final = 0.0
     qtd_barras = 0
+    d_real_historico: list[float] = []
+    convergiu_por_tol = False
 
     for it in range(1, max_iter + 1):
         iteracoes_feitas = it
@@ -476,11 +484,19 @@ def dimensionar_bitola_iterativa(
 
         layout_final = layout
         d_real_cm = layout.d_efetiva / 10.0
+        d_real_historico.append(d_real_cm)
 
         if abs(d_cm * 10.0 - layout.d_efetiva) < tol_mm:
             d_cm = d_real_cm
+            convergiu_por_tol = True
             break
         d_cm = d_real_cm
+
+    # EP-01.2: convergência declarada — |d₀ − d_real| < tol E sequência de d
+    # sem oscilação (diferenças sucessivas nunca mudam de sinal). O laço que
+    # oscila entre dois layouts aceitáveis (4↔5 barras, d 54.24↔54.59 cm)
+    # esgotava max_iter e adotava a última iteração em silêncio.
+    convergiu = convergiu_por_tol and _d_sem_oscilacao(d_real_historico)
 
     a_bar = area_barra(diam_barra_mm)
     if layout_final is None:
@@ -497,6 +513,25 @@ def dimensionar_bitola_iterativa(
             layout=None,
             iteracoes=iteracoes_feitas,
             cabe=False,
+            convergiu=False,
+        )
+
+    if not convergiu:
+        # Recusar a seção: nunca devolver o último iterado como resultado.
+        return ResultadoBitola(
+            diametro_mm=diam_barra_mm,
+            qtd_barras=qtd_barras,
+            as_adotado_cm2=0.0,
+            as_req_cm2=round(as_req_final, 3),
+            d_inicial_cm=round(d_inicial_cm, 2),
+            d_real_cm=round(d_cm, 2),
+            camadas=0,
+            status_bitola="NÃO CONVERGIU",
+            eh_real_mm=0.0,
+            layout=None,
+            iteracoes=iteracoes_feitas,
+            cabe=False,
+            convergiu=False,
         )
 
     camadas = layout_final.layer_count
@@ -528,7 +563,22 @@ def dimensionar_bitola_iterativa(
         layout=layout_final,
         iteracoes=iteracoes_feitas,
         cabe=cabe,
+        convergiu=True,
     )
+
+
+def _d_sem_oscilacao(valores: list[float]) -> bool:
+    """EP-01.2: True se a sequência de d não oscila.
+
+    Oscilação = as diferenças sucessivas mudam de sinal (ex.: d alternando
+    entre dois layouts com contagem de barras diferente). Zeros são
+    ignorados; sequências com menos de 2 passos são triviais.
+    """
+    diffs = [b - a for a, b in zip(valores, valores[1:], strict=False) if abs(b - a) > 1e-9]
+    if len(diffs) < 2:
+        return True
+    sinais = [1 if d > 0 else -1 for d in diffs]
+    return all(s == sinais[0] for s in sinais)
 
 
 def calcular_flexao_viga_comum(
@@ -610,6 +660,13 @@ def calcular_flexao_viga_comum(
 
         # Adota a altura útil convergida no cálculo final
         d_cm = res_bitola.d_real_cm
+        if d_cm <= 0:
+            raise ValueError(
+                f"Altura útil efetiva não positiva (d={d_cm:.2f} cm) para "
+                f"Mk={Mk_kNm:+.1f} kN·m (Md={Md_kNm:.1f} kN·m, γf={gamma_f}) "
+                f"na seção {bw_cm:.0f}×{h_cm:.0f} cm. A seção não suporta a "
+                f"armadura; aumente h ou bw."
+            )
 
         # KC = bw·d² / Md
         # Formula empirica (coef 0.192/0.48) exige Md em kN·cm e fcd em kN/cm².
@@ -789,6 +846,7 @@ def calcular_flexao_viga_comum(
                 d_cm_real=round(res_bitola.d_real_cm, 2),
                 camadas_adotadas=res_bitola.camadas,
                 status_bitola=res_bitola.status_bitola,
+                convergiu=res_bitola.convergiu,
                 layout_convergido=res_bitola.layout,
                 tabela_bitolas=tabela_bitolas,
             )
@@ -984,6 +1042,8 @@ class ResultadoFlexaoT:
     d_cm_real: float = 0.0
     camadas_adotadas: int = 1
     status_bitola: str = "CABE"
+    # EP-01.2: convergência declarada do laço de bitola (False = recusado)
+    convergiu: bool = True
     layout_convergido: object | None = None
     tabela_bitolas: list = None
 
@@ -1118,6 +1178,14 @@ def calcular_flexao_viga_t(
                 tabela_bitolas.append(res_cand)
 
         d_cm = res_bitola.d_real_cm
+        if d_cm <= 0:
+            raise ValueError(
+                f"Altura útil efetiva não positiva (d={d_cm:.2f} cm) para "
+                f"Mk={Mk_kNm:+.1f} kN·m (Md={Md_kNm:.1f} kN·m, γf={gamma_f}) "
+                f"na seção T {bw_cm:.0f}×{h_cm:.0f} cm (bf={bf_cm:.0f} cm, "
+                f"hf={hf_cm:.0f} cm). A seção não suporta a armadura; "
+                f"aumente h ou bw."
+            )
 
         # Fator eta de profundidade para classes de concreto
         if fck_mpa <= 50:
@@ -1434,6 +1502,7 @@ def calcular_flexao_viga_t(
                 d_cm_real=round(d_cm, 2),
                 camadas_adotadas=camadas,
                 status_bitola=status_bitola,
+                convergiu=res_bitola.convergiu,
                 layout_convergido=layout,
                 tabela_bitolas=tabela_bitolas,
                 as_linha_cm2=round(as_linha_cm2, 3),

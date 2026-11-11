@@ -75,6 +75,89 @@ def test_integ_flexao_comum_retorna_layout_e_tabela():
     assert len(res.tabela_bitolas) > 0
 
 
+def test_oscilacao_entre_2_layouts_e_recusada():
+    """EP-01.2: o laço de bitola deve declarar não-convergência.
+
+    Caso verificado por execução (auditoria 2026-11-11): viga 15×60, Ø10,
+    Mk=50 kN·m faz o laço oscilar entre 4 e 5 barras (d_real alternando
+    54.24 ↔ 54.59 cm) pelas 5 iterações, e a ÚLTIMA iteração era adotada
+    em silêncio como se convergida fosse.
+    """
+    res = dimensionar_bitola_iterativa(
+        h_cm=60.0,
+        bw_calculo_cm=15.0,
+        cob_mm=30.0,
+        diam_estribo_mm=5.0,
+        diam_barra_mm=10.0,
+        fck_mpa=30.0,
+        fyk_mpa=50.0,
+        Md_kNm=50.0 * 1.4,
+        bw_detalhamento_cm=15.0,
+    )
+    assert res.convergiu is False
+    assert res.cabe is False
+    assert res.status_bitola == "NÃO CONVERGIU"
+    # nunca devolver o último iterado como se fosse resultado
+    assert res.layout is None
+
+
+def test_caso_h50_bw15_mk400_oscilador_e_recusado():
+    """EP-01.2: caso da auditoria (h=50, bw=15, Mk=400) não emite resultado.
+
+    No código pré-EP-01 a última iteração era adotada com as_req = −8,58
+    cm² (ou +116,58 cm², alternando). Com a recusa por camadas (EP-01.1)
+    ou por não-convergência (EP-01.2), o motor não devolve bitola válida.
+    """
+    res = dimensionar_bitola_iterativa(
+        h_cm=50.0,
+        bw_calculo_cm=15.0,
+        cob_mm=30.0,
+        diam_estribo_mm=5.0,
+        diam_barra_mm=16.0,
+        fck_mpa=30.0,
+        fyk_mpa=50.0,
+        Md_kNm=400.0 * 1.4,
+        bw_detalhamento_cm=15.0,
+    )
+    assert res.cabe is False
+    assert res.status_bitola in ("NÃO CABE", "NÃO CONVERGIU")
+    assert res.layout is None
+
+
+def test_convergencia_normal_expone_flag():
+    """Caso que converge deve expor convergiu=True (e o resultado normal)."""
+    res = dimensionar_bitola_iterativa(
+        h_cm=50.0,
+        bw_calculo_cm=20.0,
+        cob_mm=30.0,
+        diam_estribo_mm=5.0,
+        diam_barra_mm=12.5,
+        fck_mpa=30.0,
+        fyk_mpa=50.0,
+        Md_kNm=45.0,
+        bw_detalhamento_cm=20.0,
+    )
+    assert res.convergiu is True
+    assert res.cabe is True
+    assert res.status_bitola == "CABE"
+
+
+def test_resultado_flexao_expone_convergencia():
+    """ResultadoFlexao deve expor a convergência do laço de forma verificável."""
+    resultados = calcular_flexao_viga_comum(
+        h_cm=50.0,
+        bw_cm=20.0,
+        caa=2,
+        fck_mpa=30.0,
+        diam_estribo_mm=5.0,
+        diam_barra_mm=12.5,
+        fyk_mpa=50.0,
+        momentos=[60.0],
+    )
+    res = resultados[0]
+    assert res.convergiu is True
+
+
 def test_integ_flexao_viga_t_retorna_layout_e_tabela():
     """Verifica que calcular_flexao_viga_t retorna os novos campos preenchidos."""
     resultados = calcular_flexao_viga_t(
