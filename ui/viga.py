@@ -2087,6 +2087,7 @@ def build_viga_screen(
                 combs_parsed.append({"nome": c["nome"], "momentos": m_pts, "cortantes": v_pts})
 
             from ui.ftool.envelope import (
+                aplicar_curvas_envelope_ao_state,
                 calcular_envelope,
                 detectar_secoes_envelope,
                 gerar_relatorio_envelope,
@@ -2095,8 +2096,9 @@ def build_viga_screen(
             env = calcular_envelope(combs_parsed)
             secoes = detectar_secoes_envelope(combs_parsed, env)
 
-            state["ftool_momentos"] = {"max": env["momentos_max"], "min": env["momentos_min"]}
-            state["ftool_cortantes"] = {"max": env["cortantes_max"], "min": env["cortantes_min"]}
+            # EP-01.5: state["ftool_momentos"/"ftool_cortantes"] são SEMPRE
+            # listas de tuplas; as curvas max/min ficam em chaves próprias.
+            aplicar_curvas_envelope_ao_state(state, env)
             state["ftool_secoes_criticas"] = secoes
 
             rows = []

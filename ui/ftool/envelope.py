@@ -8,6 +8,27 @@ from typing import Any
 from ui.ftool.secoes_criticas import SecaoCritica, interpolar_y
 
 
+def aplicar_curvas_envelope_ao_state(state: dict[str, Any], env: dict[str, Any]) -> None:
+    """EP-01.5: grava as curvas do envelope no state da tela FTOOL.
+
+    state["ftool_momentos"] e state["ftool_cortantes"] são SEMPRE listas de
+    tuplas (x, valor) — são consumidas por detectar_pontos_momento_nulo(),
+    calcular_flecha(), o PDF e o DXF, que fazem unpack de pares. Antes este
+    fluxo gravava {"max": …, "min": …} (dict) e o Envelope nunca produzia
+    resultado (ValueError: too many values to unpack).
+
+    As curvas separadas ficam em chaves próprias (ftool_envelope_*).
+    """
+    state["ftool_envelope_momentos"] = {"max": env["momentos_max"], "min": env["momentos_min"]}
+    state["ftool_envelope_cortantes"] = {"max": env["cortantes_max"], "min": env["cortantes_min"]}
+    state["ftool_momentos"] = sorted(
+        list(env["momentos_max"]) + list(env["momentos_min"]), key=lambda p: p[0]
+    )
+    state["ftool_cortantes"] = sorted(
+        list(env["cortantes_max"]) + list(env["cortantes_min"]), key=lambda p: p[0]
+    )
+
+
 def calcular_envelope(combinacoes: list[dict[str, Any]]) -> dict[str, Any]:
     """
     Recebe uma lista de dicionários, cada um com "momentos" e "cortantes" (listas de (x, valor)).
