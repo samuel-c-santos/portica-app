@@ -12,6 +12,7 @@ from typing import Any
 
 from fpdf import FPDF
 
+from core import APP_TITLE
 from core.calculos.engenharia import (
     BX_LIM_DUCTILIDADE_ACIMA_50,
     BX_LIM_DUCTILIDADE_ATE_50,
@@ -149,11 +150,11 @@ class PorticaPDF(FPDF):
             logo_path = os.path.join(os.path.dirname(__file__), "assets", "logo.png")
         if os.path.exists(logo_path):
             self.image(logo_path, x=logo_x, y=logo_y, w=logo_w, h=logo_h)
-        # Agora o título "Portica App" e subtítulo
+        # Agora o título do app e subtítulo
         self.set_xy(ML + 15, MT)
         self.set_font("Helvetica", "B", 18)
         self.set_text_color(*C_GRAY900)
-        self.cell(80, 6, "Portica App", border=0)
+        self.cell(80, 6, APP_TITLE, border=0)
 
         self.set_xy(ML + 15, MT + 6.5)
         self.set_font("Helvetica", "B", 6)
@@ -185,7 +186,7 @@ class PorticaPDF(FPDF):
         self.set_y(MT - 8)
         self.set_font("Helvetica", "B", 8)
         self.set_text_color(*C_PORTICA)
-        self.cell(30, 5, "Portica App", border=0)
+        self.cell(30, 5, APP_TITLE, border=0)
         self.set_text_color(*C_GRAY500)
         self.set_font("Helvetica", "", 8)
         # Truncar nome para caber antes do timestamp
@@ -227,7 +228,7 @@ class PorticaPDF(FPDF):
         self.cell(
             IW - 40,
             4,
-            "Gerado pelo Portica App - Válido apenas com assinatura do Eng. Responsável.",
+            f"Gerado pelo {APP_TITLE} - Válido apenas com assinatura do Eng. Responsável.",
             border=0,
             align="L",
         )

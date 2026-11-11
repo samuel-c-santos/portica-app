@@ -985,7 +985,7 @@ def setup_card_acoes(ctx):
 
     # Botao Abrir PDF - inicia desabilitado, so habilita apos gerar PDF
     ctx.btn_abrir_pdf = outlined_button(
-        "Abrir ultimo PDF",
+        "Abrir último PDF",
         icon=ft.Icons.OPEN_IN_NEW,
         on_click=ctx.on_abrir_pdf,
         expand=True,

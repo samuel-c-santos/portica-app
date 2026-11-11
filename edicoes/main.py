@@ -15,14 +15,13 @@ if _proj_root not in sys.path:
 
 import flet as ft
 
+from core import APP_TITLE
 from core.utils_tempfile import resource_path
 from ui.home import build_home
 from ui.sidebar import ROUTE_HOME, ROUTE_SOBRE, ROUTE_VIGA, build_sidebar
 from ui.sobre import build_sobre
 from ui.theme import Palette, apply_dark, apply_light, is_dark
 from ui.viga import build_viga_screen
-
-APP_TITLE = "Pórtica App"
 
 LOGO_LIGHT = resource_path(os.path.join("core", "assets", "logo.png"))
 LOGO_DARK = resource_path(os.path.join("core", "assets", "logo_dark.png"))

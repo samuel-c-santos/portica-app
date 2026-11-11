@@ -50,17 +50,17 @@ def _setup_topbar(ctx):
                 ft.IconButton(
                     icon=ft.Icons.ARROW_BACK,
                     icon_color=Palette.TEXT_PRIMARY,
-                    tooltip="Voltar para o inicio",
+                    tooltip="Voltar para o início",
                     on_click=lambda e: ctx.on_back(),
                 ),
                 ft.Container(width=Spacing.SM),
                 ft.Column(
                     controls=[
-                        overline("MODO DE CALCULO", color=Palette.TEXT_SECONDARY),
+                        overline("MODO DE CÁLCULO", color=Palette.TEXT_SECONDARY),
                         title_large(
-                            "Viga Comum - Flexao e Cisalhamento"
+                            "Viga Comum - Flexão e Cisalhamento"
                             if not ctx.is_t
-                            else "Viga T - Flexao e Cisalhamento",
+                            else "Viga T - Flexão e Cisalhamento",
                             color=Palette.TEXT_PRIMARY,
                         ),
                     ],
@@ -79,7 +79,7 @@ def _setup_topbar(ctx):
                     ),
                     padding=pad_sym(horizontal=Spacing.MD, vertical=Spacing.XS),
                     border_radius=br_all(Radius.PILL),
-                    bgcolor=Palette.SUCCESS_BG,
+                    bgcolor=Palette.SURFACE_VARIANT,
                 ),
             ],
             vertical_alignment=ft.CrossAxisAlignment.CENTER,

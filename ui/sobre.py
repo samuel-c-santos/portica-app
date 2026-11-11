@@ -4,6 +4,7 @@ Pórtica App - Tela Sobre.
 
 import flet as ft
 
+from core import APP_NAME, APP_TITLE
 from core.version import APP_VERSION
 from ui.theme import (
     Palette,
@@ -51,11 +52,11 @@ def build_sobre(page, on_back):
                 ft.Container(height=Spacing.LG),
                 overline("SOBRE O APLICATIVO", color=Palette.PRIMARY),
                 ft.Container(height=Spacing.XS),
-                display_large("Pórtica", color=Palette.TEXT_PRIMARY),
+                display_large(APP_NAME, color=Palette.TEXT_PRIMARY),
                 ft.Container(height=Spacing.SM),
                 body_large(
                     "Calculadora estrutural para dimensionamento de vigas de concreto armado. "
-                    "Implementa verificacoes de flexao e cisalhamento conforme a NBR 6118:2023.",
+                    "Implementa verificações de flexão e cisalhamento conforme a NBR 6118:2023.",
                     color=Palette.TEXT_SECONDARY,
                 ),
             ],
@@ -69,8 +70,8 @@ def build_sobre(page, on_back):
             ft.Container(
                 info_card(
                     ft.Icons.CALCULATE_OUTLINED,
-                    "Calculo estrutural",
-                    "Flexao e cisalhamento para vigas de secao retangular e secao T, com verificacao automatica dos dominios de deformacao, espaçamentos minimos e taxas de armadura.",
+                    "Cálculo estrutural",
+                    "Flexão e cisalhamento para vigas de seção retangular e seção T, com verificação automática dos domínios de deformação, espaçamentos mínimos e taxas de armadura.",
                     Palette.PRIMARY,
                 ),
                 col={"xs": 12, "md": 6, "lg": 6},
@@ -79,8 +80,8 @@ def build_sobre(page, on_back):
             ft.Container(
                 info_card(
                     ft.Icons.PICTURE_AS_PDF,
-                    "Relatorio PDF",
-                    "Geracao automatica de relatorio tecnico em PDF, com capa personalizada, tabelas de dimensionamento, esquema da secao e validacoes visuais.",
+                    "Relatório PDF",
+                    "Geração automática de relatório técnico em PDF, com cabeçalho personalizado, tabelas de dimensionamento, esquema da seção e validações visuais.",
                     Palette.SECONDARY,
                 ),
                 col={"xs": 12, "md": 6, "lg": 6},
@@ -90,7 +91,7 @@ def build_sobre(page, on_back):
                 info_card(
                     ft.Icons.DARK_MODE_OUTLINED,
                     "Interface moderna",
-                    "Design Material 3 com suporte a tema claro e escuro, navegacao por sidebar e componentes responsivos.",
+                    "Design Material 3 com suporte a tema claro e escuro, navegação por sidebar e componentes responsivos.",
                     Palette.INFO,
                 ),
                 col={"xs": 12, "md": 6, "lg": 6},
@@ -100,7 +101,7 @@ def build_sobre(page, on_back):
                 info_card(
                     ft.Icons.WARNING_AMBER,
                     "Aviso legal",
-                    "Este software e uma ferramenta auxiliar. NAO substitui o julgamento tecnico de engenheiro civil habilitado. Sempre valide os resultados com o projeto estrutural completo e as normas vigentes.",
+                    "Este software é uma ferramenta auxiliar. NÃO substitui o julgamento técnico de engenheiro civil habilitado. Sempre valide os resultados com o projeto estrutural completo e as normas vigentes.",
                     Palette.WARNING,
                 ),
                 col={"xs": 12, "md": 6, "lg": 6},
@@ -118,7 +119,7 @@ def build_sobre(page, on_back):
     version_card = surface_card(
         ft.Column(
             controls=[
-                title_medium("Informações tecnicas", color=Palette.TEXT_PRIMARY),
+                title_medium("Informações técnicas", color=Palette.TEXT_PRIMARY),
                 ft.Container(height=Spacing.SM),
                 ft.Row(
                     controls=[
@@ -136,7 +137,7 @@ def build_sobre(page, on_back):
                         ft.Container(
                             content=ft.Column(
                                 controls=[
-                                    overline("TIPOS DE SECAO", color=Palette.TEXT_SECONDARY),
+                                    overline("TIPOS DE SEÇÃO", color=Palette.TEXT_SECONDARY),
                                     body_medium("Retangular e T", color=Palette.TEXT_PRIMARY),
                                 ],
                                 spacing=2,
@@ -147,7 +148,7 @@ def build_sobre(page, on_back):
                         ft.Container(
                             content=ft.Column(
                                 controls=[
-                                    overline("VERSAO", color=Palette.TEXT_SECONDARY),
+                                    overline("VERSÃO", color=Palette.TEXT_SECONDARY),
                                     body_medium(APP_VERSION, color=Palette.TEXT_PRIMARY),
                                 ],
                                 spacing=2,
@@ -195,7 +196,7 @@ def build_sobre(page, on_back):
                 ),
                 ft.Container(height=Spacing.SM),
                 body_small(
-                    "O Pórtica App é uma ferramenta de apoio ao dimensionamento de vigas de concreto armado "
+                    f"O {APP_TITLE} é uma ferramenta de apoio ao dimensionamento de vigas de concreto armado "
                     "conforme a ABNT NBR 6118. Os resultados devem ser verificados por engenheiro civil "
                     "habilitado, com ART/RRT, antes de qualquer uso em projeto executivo. O software é "
                     'fornecido "como está", sem garantia de adequação a um caso concreto. Os autores não '

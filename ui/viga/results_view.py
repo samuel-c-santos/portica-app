@@ -466,7 +466,7 @@ def open_resultados_modal(ctx):
     flex_section = ft.Column(
         controls=[
             section_header(
-                "Flexao (Dimensionamento de Armaduras)",
+                "Flexão (Dimensionamento de Armaduras)",
                 icon=ft.Icon(ft.Icons.SQUARE_OUTLINED, size=16, color=Palette.PRIMARY),
             ),
             ft.Container(height=Spacing.SM),
@@ -546,7 +546,7 @@ def open_resultados_modal(ctx):
             controls=[
                 ft.Icon(ft.Icons.CHECK_CIRCLE, color=Palette.PRIMARY),
                 ft.Container(width=Spacing.SM),
-                title_medium("Resultados do calculo"),
+                title_medium("Resultados do cálculo"),
             ],
             vertical_alignment=ft.CrossAxisAlignment.CENTER,
         ),
@@ -836,7 +836,7 @@ def setup_viewer(ctx):
 
     ctx.tab_bar = ft.TabBar(
         tabs=[
-            ft.Tab(label="Flexao", icon=ft.Icons.SQUARE_OUTLINED),
+            ft.Tab(label="Flexão", icon=ft.Icons.SQUARE_OUTLINED),
             ft.Tab(label="Cisalhamento", icon=ft.Icons.SWAP_VERT),
         ],
         indicator_color=Palette.PRIMARY,

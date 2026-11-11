@@ -13,6 +13,7 @@ from datetime import datetime
 
 import flet as ft
 
+from core import APP_NAME
 from core.utils_tempfile import resource_path
 from ui.recent_projects import get_recent, remove_recent
 from ui.theme import (
@@ -83,6 +84,7 @@ def _mode_card(
         src=illustration_asset,
         fit=ft.BoxFit.CONTAIN,
         width=220,
+        height=180,
         opacity=0.90,
     )
 
@@ -138,10 +140,9 @@ def _mode_card(
         bgcolor=Palette.SURFACE_VARIANT,
     )
 
-    # Botão iniciar — cor adaptável ao tema
-    dark = is_dark(page)
-    btn_bg = accent if dark else "#0F1728"
-    btn_color = Palette.TEXT_ON_DARK
+    # Botão iniciar — primário azul em ambos os temas (EP-05.6)
+    btn_bg = Palette.PRIMARY
+    btn_color = Palette.ON_PRIMARY
 
     btn = ft.Container(
         content=ft.Row(
@@ -345,15 +346,15 @@ def build_home(page, on_select_mode, on_open_recent=None, on_open_file=None):
     hero_badge = ft.Container(
         content=ft.Row(
             controls=[
-                ft.Container(width=7, height=7, border_radius=br_all(4), bgcolor=Palette.SUCCESS),
+                ft.Container(width=7, height=7, border_radius=br_all(4), bgcolor=Palette.PRIMARY),
                 ft.Container(width=6),
-                overline("ABNT NBR 6118:2023", color=Palette.SUCCESS),
+                overline("ABNT NBR 6118:2023", color=Palette.TEXT_SECONDARY),
             ],
             tight=True,
         ),
         padding=pad_sym(horizontal=Spacing.MD, vertical=Spacing.XS),
         border_radius=br_all(Radius.PILL),
-        bgcolor=Palette.SUCCESS_BG,
+        bgcolor=Palette.SURFACE_VARIANT,
     )
 
     header = ft.Container(
@@ -361,7 +362,7 @@ def build_home(page, on_select_mode, on_open_recent=None, on_open_file=None):
             controls=[
                 ft.Column(
                     controls=[
-                        display_large("Pórtica", color=Palette.TEXT_PRIMARY),
+                        display_large(APP_NAME, color=Palette.TEXT_PRIMARY),
                         ft.Container(height=Spacing.XS),
                         body_medium(
                             "Calculadora estrutural de vigas de concreto armado. "

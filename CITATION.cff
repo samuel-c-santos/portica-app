@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "Se você usa este software, cite-o assim:"
-title: "Portica App"
+title: "Pórtica App"
 abstract: >-
   Calculadora estrutural de vigas de concreto armado conforme a ABNT NBR
   6118:2023, com flexao, cisalhamento, armadura dupla, armadura de pele,
@@ -33,7 +33,7 @@ keywords:
   - "open source"
 preferred-citation:
   type: software
-  title: "Portica App: calculadora estrutural de vigas de concreto armado (NBR 6118:2023)"
+  title: "Pórtica App: calculadora estrutural de vigas de concreto armado (NBR 6118:2023)"
   authors:
     - family-names: "dos Santos"
       given-names: "Samuel da Costa"

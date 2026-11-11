@@ -248,7 +248,7 @@ def setup_calculo_manual(ctx):
 
     ctx.manual_tab_bar = ft.TabBar(
         tabs=[
-            ft.Tab(label="Flexao", icon=ft.Icons.SQUARE_OUTLINED),
+            ft.Tab(label="Flexão", icon=ft.Icons.SQUARE_OUTLINED),
             ft.Tab(label="Cisalhamento", icon=ft.Icons.SWAP_VERT),
         ],
         indicator_color=Palette.PRIMARY,

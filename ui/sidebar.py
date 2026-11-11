@@ -31,7 +31,7 @@ def build_sidebar(page, current_route, on_navigate, on_toggle_theme=None):
 
     def nav_item(route, label, icon_name, accent=Palette.PRIMARY):
         is_active = current_route == route
-        bg = Palette.PRIMARY if is_active else Palette.SURFACE
+        bg = accent if is_active else Palette.SURFACE
         fg = Palette.ON_PRIMARY if is_active else Palette.TEXT_SECONDARY
         icon_color = Palette.ON_PRIMARY if is_active else Palette.TEXT_SECONDARY
         return ft.Container(
@@ -41,7 +41,7 @@ def build_sidebar(page, current_route, on_navigate, on_toggle_theme=None):
                     ft.Container(
                         content=ft.Text(
                             label,
-                            size=10,
+                            size=12,
                             weight=ft.FontWeight.W_600,
                             color=fg,
                             text_align=ft.TextAlign.CENTER,
@@ -57,7 +57,7 @@ def build_sidebar(page, current_route, on_navigate, on_toggle_theme=None):
             border_radius=br_all(Radius.MD),
             bgcolor=bg,
             alignment=ft.Alignment.CENTER,
-            ink=True,
+            ink=is_active,
             on_click=lambda e, r=route: on_navigate(r),
         )
 
@@ -77,7 +77,7 @@ def build_sidebar(page, current_route, on_navigate, on_toggle_theme=None):
     # Itens de navegação
     items = ft.Column(
         controls=[
-            nav_item(ROUTE_HOME, "Inicio", ft.Icons.HOME_OUTLINED),
+            nav_item(ROUTE_HOME, "Início", ft.Icons.HOME_OUTLINED),
             ft.Container(height=Spacing.SM),
             nav_item(ROUTE_VIGA, "Viga", ft.Icons.CALCULATE_OUTLINED),
             ft.Container(height=Spacing.SM),
