@@ -445,7 +445,9 @@
         </p>
 
         <p style="margin-top: var(--aipim-space-12); color: var(--aipim-text-secondary); font-size: var(--aipim-text-body-sm-size);">
-          Todos os arquivos e notas de versão também estão na aba
+          Cálculo estrutural precisa ser auditável: você também pode
+          <a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app/archive/refs/tags/v1.0.1.zip" target="_blank" rel="noopener noreferrer"><strong>baixar o código-fonte (v1.0.1 .zip)</strong></a>
+          ou consultar todos os arquivos na aba
           <a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app/releases" target="_blank" rel="noopener noreferrer">Releases do repositório</a>.
         </p>
 
@@ -499,12 +501,24 @@
         </div>
         <p class="lede">O modelo de cálculo tem página própria. Todo o resto (README, mapa do código, changelog, licença e como contribuir) está no repositório.</p>
 
-        <div style="margin-top: var(--aipim-space-24);">
+        <div class="grid grid--2" style="margin-top: var(--aipim-space-24);">
           <article class="aipim-card aipim-card--interactive">
             <div class="aipim-card__body">
               <h3 class="aipim-card__title"><a class="aipim-card__link" href="calculo.html">Modelo de cálculo</a></h3>
               <p class="aipim-card__text">Fórmulas e critérios da NBR 6118:2023 implementados: flexão, cisalhamento, viga T, armadura dupla, armadura de pele e ELS.</p>
               <span class="aipim-card__action">Ler o modelo</span>
+            </div>
+          </article>
+          <article class="aipim-card" id="changelog">
+            <div class="aipim-card__body">
+              <p class="aipim-card__eyebrow">Changelog · v1.0.1</p>
+              <h3 class="aipim-card__title">Novidades da versão atual (v1.0.1)</h3>
+              <p class="aipim-card__text">Correção da reconstrução e sincronização do painel de importação do FTOOL ao carregar arquivos de projeto (<code>.ptc</code>) quando o painel estava recolhido, além da publicação sob licença Apache-2.0 com memória de cálculo PDF, exportação DXF e testes automatizados.</p>
+              <p style="margin-top: var(--aipim-space-12); font-size: var(--aipim-text-body-sm-size);">
+                <a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app/blob/public-main/docs/CHANGELOG.md" target="_blank" rel="noopener noreferrer">Ver histórico completo no CHANGELOG.md</a>
+                ·
+                <a class="aipim-link" href="https://github.com/samuel-c-santos/portica-app/archive/refs/tags/v1.0.1.zip" target="_blank" rel="noopener noreferrer">Baixar o código-fonte (.zip)</a>
+              </p>
             </div>
           </article>
         </div>
@@ -675,15 +689,15 @@
           <div>
             <p>Dois jeitos de contribuir, ambos sem cadastro e sem CNPJ:</p>
             <ul style="margin-top: var(--aipim-space-8);">
-              <li><strong>Pix</strong>: escaneie o QR ao lado (chave do autor).</li>
+              <li><strong>Pix</strong>: escaneie o QR ao lado ou copie a chave Pix (e-mail): <code>samuelsantosambiental@gmail.com</code></li>
               <li><strong>Ko-fi</strong>: doação pontual ou recorrente pela plataforma.</li>
             </ul>
             <div class="hero__cta">
-              <a class="aipim-button" href="https://ko-fi.com/samuelsantosportica" target="_blank" rel="noopener noreferrer">
+              <a class="aipim-button aipim-button--outline" href="https://ko-fi.com/samuelsantosportica" target="_blank" rel="noopener noreferrer">
                 <svg class="aipim-icon aipim-button__icon-leading" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-heart"></use></svg>
                 <span>Doar via Ko-fi</span>
               </a>
-              <a class="aipim-button aipim-button--outline" href="https://github.com/samuel-c-santos/portica-app" target="_blank" rel="noopener noreferrer">
+              <a class="aipim-button aipim-button--ghost" href="https://github.com/samuel-c-santos/portica-app" target="_blank" rel="noopener noreferrer">
                 <svg class="aipim-icon aipim-button__icon-leading" aria-hidden="true"><use href="vendor/aipim/sprite.svg#aipim-star"></use></svg>
                 <span>Dar estrela no GitHub</span>
               </a>
@@ -691,6 +705,9 @@
           </div>
           <div>
             <img class="qr" src="img/qr-pix.png" alt="QR Code Pix para doação" width="1724" height="1724">
+            <p style="margin-top: var(--aipim-space-8); color: var(--aipim-text-secondary); font-size: var(--aipim-text-body-sm-size);">
+              Chave Pix (e-mail): <code>samuelsantosambiental@gmail.com</code>
+            </p>
           </div>
         </div>
       </div>
@@ -711,6 +728,7 @@
         Fontes <em>Antonio</em> e <em>Karla</em> (SIL OFL 1.1). Ícones <em>Hugeicons Free</em> (MIT).
       </p>
       <p>Ferramenta de apoio: não substitui a verificação de engenheiro civil habilitado, com ART.</p>
+      <p>Privacidade: sem rastreadores, sem cookies e sem telemetria — esta página usa apenas <code>localStorage["portica-theme"]</code> para salvar a preferência de tema claro/escuro.</p>
     </div>
   </footer>
 
