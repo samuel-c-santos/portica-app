@@ -298,7 +298,7 @@ def on_add_comb_click(ctx, e):
         )
         ctx.page.pop_dialog()
         ctx.update_combs_ui()
-        ctx.show_msg(f"Combinação '{nome}' adicionada", Palette.SUCCESS)
+        ctx.show_msg(f"Combinação '{nome}' adicionada", Palette.PRIMARY)
 
     add_dlg = ft.AlertDialog(
         modal=True,
@@ -471,7 +471,7 @@ def on_calcular_envelope_click(ctx, e):
                     modal=True,
                     title=ft.Row(
                         controls=[
-                            ft.Icon(ft.Icons.CHECK_CIRCLE, color=Palette.SUCCESS),
+                            ft.Icon(ft.Icons.CHECK_CIRCLE, color=Palette.PRIMARY),
                             ft.Container(width=Spacing.SM),
                             title_medium("Dimensionamento Automático - Envelope"),
                         ],
@@ -658,7 +658,7 @@ def update_ftool_preview(ctx):
             height=140,
             fit=ft.BoxFit.CONTAIN,
         )
-        ctx.drop_zone_content.border = ft.Border.all(2, Palette.SUCCESS)
+        ctx.drop_zone_content.border = ft.Border.all(2, Palette.PRIMARY)
         ctx.drop_zone_content.bgcolor = Palette.SURFACE
         ctx.ftool_filename_text.value = ctx.state["ftool_filename"]
         ctx.ftool_filename_text.color = Palette.TEXT_SECONDARY

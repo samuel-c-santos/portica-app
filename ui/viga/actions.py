@@ -40,8 +40,8 @@ from ui.theme import (
     Spacing,
     is_dark,
     outlined_button,
+    primary_button,
     section_header,
-    success_button,
     surface_card,
 )
 from ui.viga.form_trechos import ler_sinais
@@ -50,7 +50,7 @@ logger = logging.getLogger(__name__)
 
 
 # ── Status e mensagens ───────────────────────────────────────────────
-def show_msg(ctx, msg, color=Palette.SUCCESS):
+def show_msg(ctx, msg, color=Palette.PRIMARY):
     is_error_or_warn = color in (Palette.ERROR, Palette.WARNING)
     duration = 6000 if is_error_or_warn else 3000
     action = "OK" if is_error_or_warn else None
@@ -184,7 +184,7 @@ def on_calculate(ctx, e):
     ctx.btn_gerar_pdf.disabled = False
     ctx.btn_exportar_dxf.disabled = False
     ctx.page.update()
-    ctx.show_msg("Cálculos concluídos com sucesso", Palette.SUCCESS)
+    ctx.show_msg("Cálculos concluídos com sucesso", Palette.PRIMARY)
     ctx.open_resultados_modal()
 
 
@@ -299,7 +299,7 @@ async def on_save_project_click(ctx, e):
         with open(out_path, "w", encoding="utf-8") as f:
             json.dump(proj_data, f, indent=2, ensure_ascii=False)
         add_recent(out_path, modo=ctx.modo)
-        ctx.show_msg("Projeto salvo com sucesso", Palette.SUCCESS)
+        ctx.show_msg("Projeto salvo com sucesso", Palette.PRIMARY)
     except (OSError, TypeError, ValueError) as ex:
         logger.error("Erro ao salvar projeto em '%s': %s", out_path, ex, exc_info=True)
         ctx.show_msg(f"Erro ao salvar projeto: {ex}", Palette.ERROR)
@@ -450,7 +450,7 @@ async def on_load_project_click(ctx, e):
         if msg_aviso:
             ctx.show_msg(msg_aviso, Palette.WARNING)
         else:
-            ctx.show_msg("Projeto importado com sucesso", Palette.SUCCESS)
+            ctx.show_msg("Projeto importado com sucesso", Palette.PRIMARY)
     except (json.JSONDecodeError, OSError, KeyError, ValueError, TypeError) as ex:
         logger.error("Erro ao carregar projeto de '%s': %s", file_path, ex, exc_info=True)
         ctx.show_msg(f"Erro ao carregar projeto: {ex}", Palette.ERROR)
@@ -621,7 +621,7 @@ async def on_gerar_pdf(ctx, e):
         ctx.btn_abrir_pdf.disabled = False
         ctx.page.update()
         # B11: feedback de sucesso claro e persistente
-        ctx.show_msg(f"PDF gerado com sucesso: {out}", Palette.SUCCESS)
+        ctx.show_msg(f"PDF gerado com sucesso: {out}", Palette.PRIMARY)
 
         # Abre o PDF gerado automaticamente
         ctx.on_abrir_pdf(None)
@@ -941,7 +941,7 @@ async def on_exportar_dxf(ctx, e):
             nome_arquivo=out,
         )
 
-        ctx.show_msg(f"Arquivo DXF exportado com sucesso: {out}", Palette.SUCCESS)
+        ctx.show_msg(f"Arquivo DXF exportado com sucesso: {out}", Palette.PRIMARY)
 
     except (OSError, ValueError, TypeError, RuntimeError, AttributeError) as ex:
         logger.error("Erro ao exportar DXF: %s", ex, exc_info=True)
@@ -966,7 +966,7 @@ def setup_card_acoes(ctx):
     """Passo de construcao: setup_card_acoes."""
 
     # Botao Gerar PDF - inicia desabilitado, so habilita apos calcular
-    ctx.btn_gerar_pdf = success_button(
+    ctx.btn_gerar_pdf = primary_button(
         "Gerar PDF",
         icon=ft.Icons.PICTURE_AS_PDF,
         on_click=ctx.on_gerar_pdf,
@@ -975,7 +975,7 @@ def setup_card_acoes(ctx):
     )
 
     # Botao Exportar DXF - inicia desabilitado, so habilita apos calcular
-    ctx.btn_exportar_dxf = success_button(
+    ctx.btn_exportar_dxf = outlined_button(
         "Exportar DXF",
         icon=ft.Icons.DOWNLOAD,
         on_click=ctx.on_exportar_dxf,

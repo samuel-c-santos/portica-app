@@ -298,7 +298,7 @@ def _setup_carga_inicial(ctx):
                 if msg_aviso:
                     ctx.show_msg(msg_aviso, Palette.WARNING)
                 else:
-                    ctx.show_msg("Projeto importado com sucesso", Palette.SUCCESS)
+                    ctx.show_msg("Projeto importado com sucesso", Palette.PRIMARY)
             except (json.JSONDecodeError, OSError, KeyError, ValueError, TypeError) as ex:
                 logger.error(
                     "Erro ao carregar projeto inicial '%s': %s",

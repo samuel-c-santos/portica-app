@@ -555,7 +555,7 @@ def processar_ftool(ctx):
                     modal=True,
                     title=ft.Row(
                         [
-                            ft.Icon(ft.Icons.CHECK_CIRCLE, color=Palette.SUCCESS),
+                            ft.Icon(ft.Icons.CHECK_CIRCLE, color=Palette.PRIMARY),
                             ft.Container(width=Spacing.SM),
                             title_medium("Resultados do dimensionamento FTOOL"),
                         ],

@@ -91,7 +91,7 @@ def build_sobre(page, on_back):
                     ft.Icons.DARK_MODE_OUTLINED,
                     "Interface moderna",
                     "Design Material 3 com suporte a tema claro e escuro, navegacao por sidebar e componentes responsivos.",
-                    Palette.SUCCESS,
+                    Palette.INFO,
                 ),
                 col={"xs": 12, "md": 6, "lg": 6},
                 padding=Spacing.MD,
