@@ -90,8 +90,22 @@ def area_barra(d_mm: float) -> float:
     return (math.pi * (d_mm / 10) ** 2) / 4
 
 
+def alpha_c(fck_mpa: float) -> float:
+    """Fator αc do diagrama retangular (NBR 6118:2023, §8.2.10).
+
+    αc = 0,85 para fck ≤ 50 MPa; αc = 0,85·[1 − (fck − 50)/200] para
+    fck > 50 MPa. EP-01.7: função única usada por flexão, cisalhamento,
+    viga T e relatório — antes αc era fixo 0,85 em alguns caminhos,
+    inflando Vrd2 e Vc em ~25% para C55–C90.
+    """
+    if fck_mpa <= 50:
+        return ALPHA_C
+    return ALPHA_C * (1.0 - (fck_mpa - 50.0) / 200.0)
+
+
 def fcd_mpa(fck: float) -> float:
-    return ALPHA_C * fck / GAMMA_C
+    """Resistência de cálculo do concreto (MPa) com αc da classe (EP-01.7)."""
+    return alpha_c(fck) * fck / GAMMA_C
 
 
 def fyd_kn_cm2(fyk_kn_cm2: float) -> float:
@@ -1381,10 +1395,8 @@ def calcular_flexao_viga_t(
             else:
                 ln_condiz = "NÃO"
                 # Linha neutra na alma: decomposição do momento fletor
-                alpha_c = 0.85
-                if fck_mpa > 50:
-                    alpha_c = 0.85 * (1.0 - (fck_mpa - 50) / 200.0)
-                stress_block_fcd = alpha_c * (fck_mpa / 1.4) / 10.0  # kN/cm^2
+                # EP-01.7: αc da classe via função única (era duplicado aqui)
+                stress_block_fcd = fcd_mpa(fck_mpa) / 10.0  # kN/cm^2
 
                 Md1_kNcm = stress_block_fcd * (bf_efetivo - bw_cm) * hf_cm * (d_cm - hf_cm / 2.0)
 

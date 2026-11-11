@@ -18,6 +18,26 @@ class TestConversaoUnidades:
         """fcd = alpha_c * fck / gamma_c = 0.85 * 30 / 1.4 = 18.21."""
         assert abs(fcd_mpa(30) - 18.214) < 0.01
 
+    def test_fcd_mpa_reducao_alpha_c_c55_c90(self):
+        """EP-01.7: fck > 50 MPa usa αc = 0,85·[1 − (fck−50)/200].
+
+        Verificado por execução na auditoria: fcd_mpa(90) = 54,64 MPa
+        (αc fixo 0,85) contra 43,71 MPa normativo — Vrd2 e Vc 25% inflados
+        para C55–C90.
+        """
+        # fcd(90) = 0.85·(1−(90−50)/200)·90/1.4 = 43.71 MPa
+        assert abs(fcd_mpa(90) - 43.714) < 0.01
+        assert abs(fcd_mpa(55) - (0.85 * (1 - 5 / 200) * 55 / 1.4)) < 0.01
+        # αc = 0,85 até C50
+        assert abs(fcd_mpa(50) - 0.85 * 50 / 1.4) < 0.01
+
+    def test_alpha_c_valores(self):
+        from core.calculos.engenharia import alpha_c
+
+        assert alpha_c(50) == 0.85
+        assert abs(alpha_c(90) - 0.68) < 1e-9
+        assert abs(alpha_c(55) - 0.85 * (1 - 5 / 200)) < 1e-9
+
     def test_fyd_kn_cm2(self):
         """fyd = fyk / gamma_s. fyk=50 (kN/cm2) -> fyd=43.48 kN/cm2."""
         assert abs(fyd_kn_cm2(50) - 43.478) < 0.01

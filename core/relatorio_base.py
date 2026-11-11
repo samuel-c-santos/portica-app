@@ -17,7 +17,9 @@ from core.calculos.engenharia import (
     ResultadoCisalhamento,
     ResultadoFlexao,
     ResultadoFlexaoT,
+    alpha_c,
     area_barra,
+    fcd_mpa,
 )
 from core.utils_tempfile import temp_path
 
@@ -1026,7 +1028,9 @@ class PorticaPDF(FPDF):
                 d_cm = h_cm - d_lin
 
                 lam = min(0.80, 1.0 - fck_mpa / 250.0)
-                fcd = 0.85 * fck_mpa / 1.4
+                # EP-01.7: fcd do motor (αc da classe) — antes αc fixo 0,85,
+                # inflando Vrd2 e Vc para C55–C90.
+                fcd = fcd_mpa(fck_mpa)
 
                 fctm = 0.30 * fck_mpa ** (2 / 3)
                 fctkinf = 0.7 * fctm
@@ -1049,7 +1053,11 @@ class PorticaPDF(FPDF):
                     "1. Resistencia do concreto comprimido (Vrd2):",
                     "   Vrd2 = 0.27 * lambda * fcd * bw * d",
                     f"   lambda = 1 - fck/250 (max 0.80) = {lam:.2f}",
-                    f"   fcd = 0.85 * {fck_mpa:g} / 1.4 = {fcd:.2f} MPa = {fcd / 10:.3f} kN/cm^2",
+                    (
+                        f"   fcd = alpha_c * fck / 1.4 = {alpha_c(fck_mpa):.3f} * {fck_mpa:g} / 1.4 = {fcd:.2f} MPa = {fcd / 10:.3f} kN/cm^2"
+                        if fck_mpa > 50
+                        else f"   fcd = 0.85 * {fck_mpa:g} / 1.4 = {fcd:.2f} MPa = {fcd / 10:.3f} kN/cm^2"
+                    ),
                     f"   Vrd2 = 0.27 * {lam:.2f} * {fcd / 10:.3f} * {bw_cm:.1f} * {d_cm:.2f} = {vrd2:.2f} kN",
                     f"   Verificacao da biela de compressao: Vsd = {r.vsd_kn:.2f} kN < Vrd2 = {vrd2:.2f} kN ({'PASSA' if r.passa_vrd2 == 'SIM' else 'ALERTA'})",
                     "",

@@ -399,6 +399,11 @@ fcd' = αc · fck / (1,4 · 10)    (kN/cm²)
 Md1 = fcd' · (bf,ef - bw) · hf · (d - hf/2)    (kN·cm)
 ```
 
+> **EP-01.7**: a redução de αc para fck > 50 MPa vale para **todos** os
+> caminhos de cálculo — flexão (via `fcd_mpa()`/`alpha_c()`), cisalhamento
+> (`Vrd2` e `Vc` no motor e no PDF) e a viga T (`fcd'` acima). Antes, alguns
+> caminhos usavam αc fixo 0,85, inflando `Vrd2` e `Vc` em ~25% para C55–C90.
+
 **Parcela 2: momento resistido pela alma (Md2)**
 
 ```
