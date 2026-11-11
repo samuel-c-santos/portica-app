@@ -1931,15 +1931,14 @@ def gerar_relatorio_viga_comum(
     # Disclaimer no final da página 1
     pdf.disclaimer()
 
-    # Determinar se ha Premium. Se sim, as secoes Premium (3, 4, 5)
+    # Fluxo com diagramas: as secoes 3, 4, 5 (Diagramas, Detalhamento, ELS)
     # vem ANTES das comuns, e as comuns sao renumeradas (+3).
-    tem_premium = on_add_diagrams is not None
-    if tem_premium:
-        # Premium usa secoes 3, 4, 5 (Diagramas, Detalhamento, ELS)
+    tem_diagramas = on_add_diagrams is not None
+    if tem_diagramas:
         on_add_diagrams(pdf, sec_num_inicial=3)
         sec_comum = 6  # Flexao, Secao Transversal, Cisalhamento, Memoria
     else:
-        # Sem Premium, secoes comuns comecam em 3
+        # Sem diagramas, secoes comuns comecam em 3
         sec_comum = 3
 
     # Flexao
@@ -2299,10 +2298,10 @@ def gerar_relatorio_viga_t(
     # Disclaimer
     pdf.disclaimer()
 
-    # Determinar se ha Premium. Se sim, as secoes Premium (3, 4, 5)
-    # vem ANTES das comuns, e as comuns sao renumeradas (+3).
-    tem_premium = on_add_diagrams is not None
-    if tem_premium:
+    # Fluxo com diagramas: as secoes 3, 4, 5 vem ANTES das comuns,
+    # e as comuns sao renumeradas (+3).
+    tem_diagramas = on_add_diagrams is not None
+    if tem_diagramas:
         on_add_diagrams(pdf, sec_num_inicial=3)
         sec_comum = 6
     else:

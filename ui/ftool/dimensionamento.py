@@ -276,7 +276,9 @@ def dimensionar_trechos_ftool(
     }
 
 
-def gerar_relatorio_premium(dados_viga: dict[str, Any], resultados: list[dict[str, Any]]) -> str:
+def gerar_resumo_dimensionamento(
+    dados_viga: dict[str, Any], resultados: list[dict[str, Any]]
+) -> str:
     """
     Gera um resumo em formato de texto estruturado detalhando os resultados
     das seções calculadas para apresentação na UI ou exportação rápida.
@@ -337,7 +339,7 @@ def gerar_relatorio_premium(dados_viga: dict[str, Any], resultados: list[dict[st
     return "\n".join(lines)
 
 
-def gerar_relatorio_viga_comum_premium(
+def gerar_relatorio_viga_comum_com_diagramas(
     filepath: str,
     *,
     momentos: list[tuple[float, float]] = None,
@@ -509,7 +511,7 @@ def gerar_relatorio_viga_comum_premium(
     )
 
 
-def gerar_relatorio_viga_t_premium(
+def gerar_relatorio_viga_t_com_diagramas(
     filepath: str,
     *,
     momentos: list[tuple[float, float]] = None,

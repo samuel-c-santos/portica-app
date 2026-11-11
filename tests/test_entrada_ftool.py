@@ -3,7 +3,7 @@
 Cobre:
 - .ptc antigo (sem a chave "entrada") carrega como "manual" (retrocompatibilidade);
 - .ptc com "entrada": "ftool" ajusta estado e visibilidade do painel FTOOL;
-- "edicao": "standard" e "edicao": "premium" sao ambos aceitos na carga;
+- os valores legados do campo "edicao" sao aceitos na carga;
 - o painel FTOOL fica recolhido por padrao e pode ser revelado/fechado;
 - o caminho manual (tabela de trechos + Calcular) continua acessivel.
 """
@@ -16,6 +16,8 @@ from types import SimpleNamespace
 import pytest
 
 from ui.entrada import (
+    EDICAO_ATUAL,
+    EDICAO_LEGADA_PAGA,
     ENTRADA_FTOOL,
     ENTRADA_MANUAL,
     aplicar_entrada_projeto,
@@ -31,7 +33,6 @@ SAMPLES_DIR = os.path.join(ROOT, "samples")
 
 # Amostra real do repositorio (projeto gravado antes do eixo "entrada")
 AMOSTRA_STANDARD = os.path.join(SAMPLES_DIR, "exemplo_projeto.ptc")
-AMOSTRA_PREMIUM = AMOSTRA_STANDARD
 
 
 # ── Logica pura (sem UI) ─────────────────────────────────────────────────────
@@ -51,7 +52,7 @@ def test_entrada_de_projeto_valores_desconhecidos_caem_para_manual():
     assert entrada_de_projeto({"entrada": 42}) == ENTRADA_MANUAL
 
 
-@pytest.mark.parametrize("arquivo", [AMOSTRA_STANDARD, AMOSTRA_PREMIUM])
+@pytest.mark.parametrize("arquivo", [AMOSTRA_STANDARD, AMOSTRA_STANDARD])
 def test_amostras_ptc_sem_entrada_carregam_como_manual(arquivo):
     with open(arquivo, encoding="utf-8") as f:
         proj_data = json.load(f)
@@ -81,14 +82,16 @@ def test_ftool_visivel_depende_da_fonte_de_entrada():
     assert ftool_visivel(ENTRADA_MANUAL) is False
 
 
-def test_edicoes_standard_e_premium_sao_aceitas():
+def test_edicao_legada_e_qualquer_valor_sao_aceitos():
     assert edicao_aceita("standard") is True
-    assert edicao_aceita("premium") is True
+    assert edicao_aceita(EDICAO_LEGADA_PAGA) is True
     assert edicao_aceita("Standard") is True
+    assert edicao_aceita(EDICAO_ATUAL) is True
+    assert edicao_aceita("valor-desconhecido") is True
 
 
 def test_aviso_edicao_e_informativo_e_nao_bloqueia():
-    assert aviso_edicao("premium") is None
+    assert aviso_edicao(EDICAO_LEGADA_PAGA) is None
     aviso_standard = aviso_edicao("standard")
     assert aviso_standard is not None
     assert "Standard" in aviso_standard
@@ -277,7 +280,7 @@ def test_salvar_grava_a_fonte_de_entrada(ui, tmp_path):
     with open(out_manual, encoding="utf-8") as f:
         data = json.load(f)
     assert data["entrada"] == ENTRADA_MANUAL
-    assert data["edicao"] == "premium"
+    assert data["edicao"] == EDICAO_ATUAL
     assert data["modo"] == "comum"
 
     # Alterna para a fonte FTOOL e salva de novo
@@ -305,7 +308,7 @@ def test_carregar_ptc_antigo_sem_entrada_abre_sem_erro(ui):
 
 
 def test_carregar_ptc_com_entrada_ftool_revela_o_painel(ui, tmp_path):
-    with open(AMOSTRA_PREMIUM, encoding="utf-8") as f:
+    with open(AMOSTRA_STANDARD, encoding="utf-8") as f:
         proj_data = json.load(f)
     proj_data["entrada"] = ENTRADA_FTOOL
     destino = tmp_path / "projeto_ftool.ptc"
@@ -320,8 +323,8 @@ def test_carregar_ptc_com_entrada_ftool_revela_o_painel(ui, tmp_path):
     assert _find_button(screen, "Importar do FTOOL") is None
 
 
-@pytest.mark.parametrize("edicao", ["standard", "premium"])
-def test_edicao_standard_e_premium_sao_ambos_aceitos(ui, tmp_path, edicao):
+@pytest.mark.parametrize("edicao", ["standard", EDICAO_LEGADA_PAGA])
+def test_edicao_legada_sao_ambos_aceitos(ui, tmp_path, edicao):
     with open(AMOSTRA_STANDARD, encoding="utf-8") as f:
         proj_data = json.load(f)
     proj_data["edicao"] = edicao
@@ -336,7 +339,7 @@ def test_edicao_standard_e_premium_sao_ambos_aceitos(ui, tmp_path, edicao):
     # Nenhum erro e nenhuma mensagem de bloqueio; no maximo uma nota.
     assert not [m for m in page.messages if m.startswith("Erro ao carregar projeto")]
     for mensagem in page.messages:
-        assert "licença Premium" not in mensagem
+        assert "bloquead" not in mensagem.lower()
     if edicao == "standard":
         assert any("Standard" in m for m in page.messages)
     else:

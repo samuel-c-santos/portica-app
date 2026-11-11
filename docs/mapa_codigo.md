@@ -9,7 +9,7 @@
 
 ```
 portica_app/
-├── core/                          # Motor compartilhado (Standard + Premium)
+├── core/                          # Motor compartilhado (edição única)
 │   ├── calculos/
 │   │   └── engenharia.py          # Motor NBR 6118 (flexão, cisalhamento, pele)
 │   ├── detailing/
@@ -200,9 +200,9 @@ portica_app/
 | Função | Linha | Responsabilidade |
 |--------|-------|-----------------|
 | `dimensionar_trechos_ftool(...)` | 16 | Dimensiona todas as seções críticas (flexão + ELS + pele) |
-| `gerar_relatorio_premium(...)` | 230 | Texto do relatório Premium |
-| `gerar_relatorio_viga_comum_premium(...)` | 281 | PDF Premium (viga retangular) |
-| `gerar_relatorio_viga_t_premium(...)` | 434 | PDF Premium (viga T) |
+| `gerar_resumo_dimensionamento(...)` | 279 | Texto do resumo do dimensionamento (FTOOL) |
+| `gerar_relatorio_viga_comum_com_diagramas(...)` | 340 | PDF completo com diagramas (viga retangular) |
+| `gerar_relatorio_viga_t_com_diagramas(...)` | 512 | PDF completo com diagramas (viga T) |
 
 ### els.py: Estado Limite de Serviço
 
@@ -310,7 +310,7 @@ viga.py:build_viga_screen
   → dxf_export.py:exportar_secao_dxf
 ```
 
-### Fluxo Premium (FTOOL)
+### Fluxo FTOOL (PDF com diagramas)
 ```
 viga.py:build_viga_screen
   → parser.py:parse_momento / parse_cortante / parse_deformacao
@@ -320,7 +320,7 @@ viga.py:build_viga_screen
     → detailing/domain.py:BeamDetailer.detail (layout de camadas)
     → els.py:calcular_flecha / calcular_fissuracao
   → diagrama.py:gerar_diagrama_esforcos
-  → dimensionamento.py:gerar_relatorio_viga_t_premium (ou gerar_relatorio_viga_comum_premium)
+  → dimensionamento.py:gerar_relatorio_viga_t_com_diagramas (ou gerar_relatorio_viga_comum_com_diagramas)
     → relatorio_base.py:desenhar_secao_t (ou desenhar_secao_retangular)
   → dxf_export.py:exportar_secao_dxf
 ```

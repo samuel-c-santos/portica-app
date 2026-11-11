@@ -71,10 +71,9 @@ Mudanças aceitas e ainda não publicadas em uma versão.
 
 ### Removido
 
-- Scripts e specs obsoletos de build (`build_all.py`, `build_standard*.py`,
-  `build_premium*.py`, `portica-standard.spec`, `portica-premium.spec`): havia
-  duas árvores de build para as edições Standard e Premium, que não existem
-  mais desde a unificação do app.
+- Scripts e specs obsoletos de build das duas edições antigas (gratuita e
+  paga), incluídos `build_all.py` e as specs por edição: havia duas árvores
+  de build que não existem mais desde a unificação do app.
 - Licença proprietária do código-fonte e seção de licença paga do README.
 - Documentos de licença de uso final do produto (`docs/eula.md`) e demais
   documentos internos de planejamento, movidos para fora do repositório

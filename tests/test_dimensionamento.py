@@ -8,7 +8,7 @@ import pytest
 
 from ui.ftool.dimensionamento import (
     dimensionar_trechos_ftool,
-    gerar_relatorio_premium,
+    gerar_resumo_dimensionamento,
 )
 from ui.ftool.parser import parse_cortante, parse_momento
 from ui.ftool.secoes_criticas import SecaoCritica, detectar_todas_secoes
@@ -99,12 +99,12 @@ def test_4_secao_apoio_interno_cisalhamento(secoes_reais):
     assert rc.dist_estribos_cm > 0.0
 
 
-def test_5_gerar_relatorio_premium(secoes_reais):
+def test_5_gerar_resumo_dimensionamento(secoes_reais):
     """5. Testa a geração do relatório resumo textual e seus elementos."""
     dados_viga, secoes = secoes_reais
     sec_results = dimensionar_trechos_ftool(dados_viga, secoes)["secoes"]
 
-    relatorio = gerar_relatorio_premium(dados_viga, sec_results)
+    relatorio = gerar_resumo_dimensionamento(dados_viga, sec_results)
     assert isinstance(relatorio, str)
     assert "PÓRTICA APP" in relatorio
     assert "RESUMO DE DIMENSIONAMENTO" in relatorio

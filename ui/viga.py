@@ -25,6 +25,7 @@ from core.calculos import (
 from core.relatorio_base import gerar_relatorio_viga_comum, gerar_relatorio_viga_t
 from core.utils_tempfile import temp_path
 from ui.entrada import (
+    EDICAO_ATUAL,
     ENTRADA_FTOOL,
     ENTRADA_MANUAL,
     aplicar_entrada_projeto,
@@ -34,8 +35,8 @@ from ui.entrada import (
 )
 from ui.ftool.dimensionamento import (
     dimensionar_trechos_ftool,
-    gerar_relatorio_viga_comum_premium,
-    gerar_relatorio_viga_t_premium,
+    gerar_relatorio_viga_comum_com_diagramas,
+    gerar_relatorio_viga_t_com_diagramas,
 )
 from ui.ftool.parser import validate_file_type
 from ui.ftool.secoes_criticas import detectar_todas_secoes
@@ -2193,7 +2194,7 @@ def build_viga_screen(
                             controls=[
                                 ft.Icon(ft.Icons.CHECK_CIRCLE, color=Palette.SUCCESS),
                                 ft.Container(width=Spacing.SM),
-                                title_medium("Dimensionamento Premium - Envelope"),
+                                title_medium("Dimensionamento Automático - Envelope"),
                             ],
                             vertical_alignment=ft.CrossAxisAlignment.CENTER,
                         ),
@@ -2327,7 +2328,7 @@ def build_viga_screen(
 
         # Coletar dados
         proj_data = {
-            "edicao": "premium",
+            "edicao": EDICAO_ATUAL,
             "viga_nome": viga_nome_tf.control.value,
             "modo": modo,
             "entrada": entrada_para_salvar(state),
@@ -2410,7 +2411,7 @@ def build_viga_screen(
                 )
                 return
 
-            # Edição de origem: standard e premium são aceitas (nota informativa)
+            # Edição de origem (legado): qualquer valor é aceito, com nota informativa
             edicao = proj_data.get("edicao", "")
             msg_aviso = aviso_edicao(edicao)
 
@@ -3128,7 +3129,7 @@ def build_viga_screen(
                 bf = float(bf_tf.control.value or 0)
                 hf = float(hf_tf.control.value or 0)
                 if state.get("ftool_momentos"):
-                    gerar_relatorio_viga_t_premium(
+                    gerar_relatorio_viga_t_com_diagramas(
                         out,
                         nome_viga=state["tipo_viga"],
                         h_cm=float(h_tf.control.value or 0),
@@ -3180,7 +3181,7 @@ def build_viga_screen(
                     )
             else:
                 if state.get("ftool_momentos"):
-                    gerar_relatorio_viga_comum_premium(
+                    gerar_relatorio_viga_comum_com_diagramas(
                         out,
                         nome_viga=state["tipo_viga"],
                         h_cm=float(h_tf.control.value or 0),

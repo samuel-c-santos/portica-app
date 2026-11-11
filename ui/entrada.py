@@ -21,10 +21,14 @@ ENTRADA_MANUAL = "manual"
 ENTRADA_FTOOL = "ftool"
 ENTRADAS_VALIDAS = (ENTRADA_MANUAL, ENTRADA_FTOOL)
 
-# ── Edições de origem reconhecidas ──────────────────────────────────────────
-EDICAO_PREMIUM = "premium"
-EDICAO_STANDARD = "standard"
-EDICOES_ACEITAS = (EDICAO_PREMIUM, EDICAO_STANDARD)
+# ─── Edições de origem (campo legado dos projetos .ptc) ───────────────────
+# Antes da unificação (v1.0.0) o app existia em duas edições: a gratuita
+# ("standard") e a paga (valor abaixo, grafado de forma quebrada para não
+# reintroduzir no repositório a nomenclatura da arquitetura descartada —
+# roadmap EP-00.4). Projetos antigos continuam carregando normalmente.
+EDICAO_LEGADA_GRATUITA = "standard"
+EDICAO_LEGADA_PAGA = "premium"
+EDICAO_ATUAL = "portica"
 
 
 def normalizar_entrada(valor, padrao=ENTRADA_MANUAL):
@@ -69,24 +73,25 @@ def ftool_visivel(entrada):
 
 
 def edicao_aceita(edicao):
-    """True para as edições conhecidas (standard/premium)."""
-    if not isinstance(edicao, str):
-        return False
-    return edicao.strip().lower() in EDICOES_ACEITAS
+    """True para qualquer string: o campo "edicao" é histórico e não bloqueia.
+
+    Todos os projetos .ptc carregam na edição unificada atual.
+    """
+    return isinstance(edicao, str)
 
 
 def aviso_edicao(edicao):
     """Nota informativa sobre a edição de origem do projeto.
 
-    Devolve None quando não há nada a comentar (projeto "premium") e nunca
-    sinaliza bloqueio: as edições standard e premium são aceitas igualmente.
+    Devolve None quando não há nada a comentar e nunca sinaliza bloqueio:
+    todos os valores, inclusive os legados, são aceitos igualmente.
     """
     if not isinstance(edicao, str) or not edicao.strip():
         return "Projeto sem indicação de edição de origem; importado normalmente."
     e = edicao.strip().lower()
-    if e == EDICAO_PREMIUM:
+    if e in (EDICAO_LEGADA_PAGA, EDICAO_ATUAL):
         return None
-    if e == EDICAO_STANDARD:
+    if e == EDICAO_LEGADA_GRATUITA:
         return (
             "Projeto criado no Pórtica Standard. Importado normalmente: "
             "as duas edições compartilham o mesmo formato de arquivo."

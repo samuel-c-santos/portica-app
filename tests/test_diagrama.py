@@ -11,8 +11,8 @@ from fpdf import FPDF
 from ui.ftool.diagrama import gerar_diagrama_esforcos
 from ui.ftool.dimensionamento import (
     dimensionar_trechos_ftool,
-    gerar_relatorio_viga_comum_premium,
-    gerar_relatorio_viga_t_premium,
+    gerar_relatorio_viga_comum_com_diagramas,
+    gerar_relatorio_viga_t_com_diagramas,
 )
 from ui.ftool.parser import parse_cortante, parse_momento
 from ui.ftool.secoes_criticas import detectar_todas_secoes
@@ -58,8 +58,8 @@ def test_1_desenhar_diagrama_direto_no_pdf(ftool_data):
         os.remove(pdf_path)
 
 
-def test_2_gerar_relatorio_viga_comum_premium(ftool_data):
-    """2. Testa o wrapper premium da viga comum para garantir que ele gera o PDF com os diagramas."""
+def test_2_gerar_relatorio_viga_comum_com_diagramas(ftool_data):
+    """2. Testa o wrapper da viga comum com diagramas (PDF completo do fluxo FTOOL)."""
     momentos, cortantes, secoes = ftool_data
 
     dados_viga = {
@@ -84,9 +84,9 @@ def test_2_gerar_relatorio_viga_comum_premium(ftool_data):
         pdf_path = tmp.name
 
     try:
-        gerar_relatorio_viga_comum_premium(
+        gerar_relatorio_viga_comum_com_diagramas(
             pdf_path,
-            nome_viga="Viga Teste Premium",
+            nome_viga="Viga Teste",
             h_cm=70.0,
             bw_cm=20.0,
             caa=2,
@@ -112,8 +112,8 @@ def test_2_gerar_relatorio_viga_comum_premium(ftool_data):
         os.remove(pdf_path)
 
 
-def test_3_gerar_relatorio_viga_t_premium(ftool_data):
-    """3. Testa o wrapper premium da viga T para garantir que o PDF seja gerado corretamente."""
+def test_3_gerar_relatorio_viga_t_com_diagramas(ftool_data):
+    """3. Testa o wrapper da viga T com diagramas (PDF completo do fluxo FTOOL)."""
     momentos, cortantes, secoes = ftool_data
 
     # Para viga T, precisamos adaptar os resultados de flexão para ResultadoFlexaoT
@@ -157,9 +157,9 @@ def test_3_gerar_relatorio_viga_t_premium(ftool_data):
         pdf_path = tmp.name
 
     try:
-        gerar_relatorio_viga_t_premium(
+        gerar_relatorio_viga_t_com_diagramas(
             pdf_path,
-            nome_viga="Viga T Teste Premium",
+            nome_viga="Viga T Teste",
             h_cm=70.0,
             bw_cm=20.0,
             bf_cm=60.0,
