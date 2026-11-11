@@ -1,0 +1,83 @@
+# Suíte de testes e smoke de build do Pórtica App.
+#
+# - `tests`: pytest na matriz Python 3.10/3.11/3.12 + smoke de importação.
+# - `build-smoke`: build do executável em runner Windows; falha se
+#   `dist/portica.exe` não for gerado ou se um PDF normativo (docs/nbr)
+#   acabar no bundle.
+#
+# A badge de testes do README aponta para este workflow; substitui o badge
+# estático que não refletia o CI real.
+
+name: Testes
+
+on:
+  push:
+    branches: [main, public-main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    name: pytest (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Instala dependências
+        run: pip install -r requirements.txt -r requirements-dev.txt
+
+      - name: Roda a suíte de testes
+        run: python -m pytest tests -q
+
+      - name: Smoke de importação
+        run: python -c "import core.calculos.engenharia, ui.theme"
+
+  build-smoke:
+    name: build-smoke (Windows)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Instala dependências
+        run: pip install -r requirements.txt "pyinstaller>=6.0"
+
+      - name: Build do executável
+        run: python build/build_portica.py
+
+      - name: Falha se dist/portica.exe não foi gerado
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "dist/portica.exe")) {
+            Write-Error "O build não produziu dist/portica.exe."
+            exit 1
+          }
+
+      - name: Garante que PDFs normativos (docs/nbr) não entraram no bundle
+        shell: pwsh
+        run: |
+          # O TOC do PyInstaller guarda os nomes dos arquivos empacotados em
+          # texto plano; se "nbr-6118" aparecer no binário, um PDF da ABNT
+          # entrou no bundle.
+          $texto = [System.Text.Encoding]::ASCII.GetString(
+            [System.IO.File]::ReadAllBytes("dist/portica.exe"))
+          if ($texto.Contains("nbr-6118")) {
+            Write-Error "PDF normativo (docs/nbr) encontrado no bundle."
+            exit 1
+          }
