@@ -208,10 +208,37 @@ def processar_ftool(ctx):
                     }
                 )
 
+            # Deduplica seções adjacentes de platô com mesmo momento/armadura (ex.: x=3,70 e x=3,80 m)
+            flex_groups = []
             for item in sec_results:
                 r = item["resultado_flexao"]
                 if r is None:
                     continue
+                if flex_groups:
+                    prev = flex_groups[-1]
+                    pr = prev["resultado_flexao"]
+                    if (
+                        item["tipo"] == prev["tipo"]
+                        and item["descricao"] == prev["descricao"]
+                        and abs(item["momento"] - prev["momento"]) < 1e-6
+                        and abs(r.as_req_cm2 - pr.as_req_cm2) < 1e-6
+                        and r.qtd_barras == pr.qtd_barras
+                        and r.diametro_mm == pr.diametro_mm
+                        and r.bx_passa == pr.bx_passa
+                    ):
+                        prev["x_fim"] = item["x"]
+                        continue
+                flex_groups.append({**item, "x_fim": item["x"]})
+
+            for item in flex_groups:
+                r = item["resultado_flexao"]
+                passa_flex = r.bx_passa == "SIM"
+                sinal_tipo = getattr(r, "tipo", "POSITIVO" if item["momento"] >= 0 else "NEGATIVO")
+                x_label = (
+                    f"x = {fmt_num(item['x'], 2, unidade='m')}"
+                    if abs(item["x_fim"] - item["x"]) < 1e-6
+                    else f"x = {fmt_num(item['x'], 2)}–{fmt_num(item['x_fim'], 2, unidade='m')}"
+                )
                 card = ft.Container(
                     width=220,
                     padding=pad_all(Spacing.SM),
@@ -220,14 +247,33 @@ def processar_ftool(ctx):
                     border_radius=br_all(Radius.SM),
                     content=ft.Column(
                         [
-                            ft.Text(
-                                f"{item['descricao']}",
-                                size=11,
-                                weight=ft.FontWeight.BOLD,
-                                color=Palette.PRIMARY,
+                            ft.Row(
+                                [
+                                    ft.Text(
+                                        f"{item['descricao']}",
+                                        size=11,
+                                        weight=ft.FontWeight.BOLD,
+                                        color=Palette.PRIMARY,
+                                        expand=True,
+                                    ),
+                                    ft.Container(
+                                        content=ft.Text(
+                                            sinal_tipo,
+                                            size=9,
+                                            weight=ft.FontWeight.BOLD,
+                                            color=Palette.ON_PRIMARY,
+                                        ),
+                                        bgcolor=Palette.PRIMARY
+                                        if sinal_tipo == "POSITIVO"
+                                        else Palette.SECONDARY,
+                                        padding=pad_sym(horizontal=4, vertical=1),
+                                        border_radius=br_all(3),
+                                    ),
+                                ],
+                                alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                             ),
                             ft.Text(
-                                f"x = {fmt_num(item['x'], 2, unidade='m')}",
+                                x_label,
                                 size=10,
                                 color=Palette.TEXT_SECONDARY,
                             ),
@@ -272,8 +318,8 @@ def processar_ftool(ctx):
                                 [
                                     ft.Text("Status:", size=10, color=Palette.TEXT_SECONDARY),
                                     status_chip(
-                                        "OK" if r.bx_passa else "NÃO PASSA",
-                                        "ok" if r.bx_passa else "error",
+                                        "OK" if passa_flex else "NÃO PASSA",
+                                        "ok" if passa_flex else "error",
                                     ),
                                 ],
                                 alignment=ft.MainAxisAlignment.SPACE_BETWEEN,

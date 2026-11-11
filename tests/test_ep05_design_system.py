@@ -205,3 +205,43 @@ def test_ep05_4_dialogos_dark_mode():
         assert flex_card.bgcolor == DARK_COLORS["SURFACE"]
     finally:
         apply_light()
+
+
+def test_ep05_8_sem_card_duplicado_no_modal_resultados():
+    """EP-05.8: Seções críticas de platô adjacentes (x=3,70 m e x=3,80 m) são fundidas num único card com badge POSITIVO/NEGATIVO."""
+    import os
+
+    from ui.entrada import ENTRADA_FTOOL
+
+    base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    samples = os.path.join(base, "samples")
+    page = _FakePage()
+    ctx = montar_contexto(page, "t", lambda: None, None, None, None, None, None)
+    ctx.state["entrada"] = ENTRADA_FTOOL
+    ctx.state["ftool_momento_path"] = os.path.join(samples, "test-t-momento.txt")
+    ctx.state["ftool_cortante_path"] = os.path.join(samples, "test-t-cortantes.txt")
+    ctx.state["ftool_deformacao_path"] = os.path.join(samples, "test-t-deformacoes.txt")
+    ctx.h_tf.control.value = "60"
+    ctx.bw_tf.control.value = "20"
+    ctx.bf_tf.control.value = "80"
+    ctx.hf_tf.control.value = "12"
+    ctx.phi_bar_dd.control.value = "16"
+
+    ctx.processar_ftool()
+    dlg_secoes = page.dialogs[-1]
+    btn_calc = next(
+        a
+        for a in dlg_secoes.actions
+        if getattr(a, "content", None) == "Calcular" or getattr(a, "text", None) == "Calcular"
+    )
+    btn_calc.on_click(None)
+
+    dlg_res = page.dialogs[-1]
+    flex_cards_row = dlg_res.content.content.controls[2]
+    # Platô 3,70 e 3,80 m consolidado em um único card "x = 3,70–3,80 m"
+    assert len(flex_cards_row.controls) == 1
+    card_col = flex_cards_row.controls[0].content
+    badge_txt = card_col.controls[0].controls[1].content.value
+    x_txt = card_col.controls[1].value
+    assert badge_txt == "POSITIVO"
+    assert x_txt == "x = 3,70–3,80 m"
