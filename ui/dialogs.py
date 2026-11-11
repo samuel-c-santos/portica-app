@@ -27,6 +27,7 @@ from ui.theme import (
     pad_all,
     pad_only,
     pad_sym,
+    themed_dialog,
     title_medium,
     title_small,
 )
@@ -94,15 +95,14 @@ def _build_table(data):
     )
 
 
-def open_image_preview(page, img_path, title="Visualizacao da imagem"):
+def open_image_preview(page, img_path, title="Visualização da imagem"):
     """Exibe um dialogo modal com a imagem em tamanho expandido."""
-    dialog = ft.AlertDialog(
-        modal=True,
+    dialog = themed_dialog(
         title=ft.Row(
             controls=[
                 ft.Icon(ft.Icons.ZOOM_IN, color=Palette.PRIMARY),
                 ft.Container(width=Spacing.SM),
-                title_medium(title),
+                title_medium(title, color=Palette.TEXT_PRIMARY),
             ],
             vertical_alignment=ft.CrossAxisAlignment.CENTER,
         ),
@@ -122,9 +122,6 @@ def open_image_preview(page, img_path, title="Visualizacao da imagem"):
                 style=ft.ButtonStyle(color=Palette.PRIMARY),
             ),
         ],
-        actions_alignment=ft.MainAxisAlignment.END,
-        bgcolor=Palette.SURFACE,
-        shape=ft.RoundedRectangleBorder(radius=br_all(Radius.LG)),
     )
     page.show_dialog(dialog)
 
@@ -156,13 +153,12 @@ def build_info_dialog(page, data):
                 )
             )
 
-    dialog = ft.AlertDialog(
-        modal=True,
+    dialog = themed_dialog(
         title=ft.Row(
             controls=[
                 ft.Icon(ft.Icons.MENU_BOOK, color=Palette.PRIMARY),
                 ft.Container(width=Spacing.SM),
-                title_medium("Informacao tecnica"),
+                title_medium("Informação técnica", color=Palette.TEXT_PRIMARY),
             ],
             vertical_alignment=ft.CrossAxisAlignment.CENTER,
         ),
@@ -181,9 +177,6 @@ def build_info_dialog(page, data):
                 style=ft.ButtonStyle(color=Palette.PRIMARY),
             ),
         ],
-        actions_alignment=ft.MainAxisAlignment.END,
-        bgcolor=Palette.SURFACE,
-        shape=ft.RoundedRectangleBorder(radius=br_all(Radius.LG)),
     )
     page.show_dialog(dialog)
 
@@ -259,13 +252,12 @@ def build_text_dialog(page, data):
                 )
             )
 
-    dialog = ft.AlertDialog(
-        modal=True,
+    dialog = themed_dialog(
         title=ft.Row(
             controls=[
                 ft.Icon(ft.Icons.MENU_BOOK, color=Palette.PRIMARY),
                 ft.Container(width=Spacing.SM),
-                title_medium("Informacao tecnica"),
+                title_medium("Informação técnica", color=Palette.TEXT_PRIMARY),
             ],
             vertical_alignment=ft.CrossAxisAlignment.CENTER,
         ),
@@ -284,9 +276,6 @@ def build_text_dialog(page, data):
                 style=ft.ButtonStyle(color=Palette.PRIMARY),
             ),
         ],
-        actions_alignment=ft.MainAxisAlignment.END,
-        bgcolor=Palette.SURFACE,
-        shape=ft.RoundedRectangleBorder(radius=br_all(Radius.LG)),
     )
     page.show_dialog(dialog)
 

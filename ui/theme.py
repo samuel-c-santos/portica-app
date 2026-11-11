@@ -87,14 +87,133 @@ class Palette:
     pass
 
 
+_ACTIVE_DIALOGS: list = []
+
+
+def _build_color_maps(to_dark: bool):
+    src = LIGHT_COLORS if to_dark else DARK_COLORS
+    dst = DARK_COLORS if to_dark else LIGHT_COLORS
+    fg_map = {
+        src[k]: dst[k]
+        for k in src
+        if k
+        not in (
+            "SURFACE",
+            "TEXT_ON_DARK",
+            "ON_PRIMARY",
+            "ON_SECONDARY",
+            "ON_SUCCESS",
+            "ON_WARNING",
+            "ON_ERROR",
+        )
+    }
+    bg_map = {
+        src[k]: dst[k]
+        for k in (
+            "BG",
+            "SURFACE",
+            "SURFACE_VARIANT",
+            "SURFACE_HOVER",
+            "PRIMARY",
+            "SECONDARY",
+            "SUCCESS",
+            "SUCCESS_BG",
+            "WARNING",
+            "WARNING_BG",
+            "ERROR",
+            "ERROR_BG",
+            "INFO",
+            "INFO_BG",
+        )
+    }
+    return fg_map, bg_map
+
+
+def retheme_control_tree(root, to_dark: bool | None = None):
+    """Atualiza recursivamente as cores de um diálogo/controle para a Palette ativa."""
+    if root is None:
+        return
+    if to_dark is None:
+        to_dark = getattr(Palette, "BG", "") == DARK_COLORS["BG"]
+    fg_map, bg_map = _build_color_maps(to_dark)
+    visited = set()
+
+    def _walk(node):
+        if node is None or id(node) in visited:
+            return
+        visited.add(id(node))
+
+        for attr in ("bgcolor", "heading_row_color"):
+            val = getattr(node, attr, None)
+            if isinstance(val, str) and val in bg_map:
+                setattr(node, attr, bg_map[val])
+
+        for attr in (
+            "color",
+            "icon_color",
+            "border_color",
+            "focused_border_color",
+            "cursor_color",
+            "indicator_color",
+            "label_color",
+        ):
+            val = getattr(node, attr, None)
+            if isinstance(val, str) and val in fg_map:
+                setattr(node, attr, fg_map[val])
+
+        style = getattr(node, "style", None)
+        if style is not None:
+            sc = getattr(style, "color", None)
+            if isinstance(sc, str) and sc in fg_map:
+                style.color = fg_map[sc]
+            sbg = getattr(style, "bgcolor", None)
+            if isinstance(sbg, str) and sbg in bg_map:
+                style.bgcolor = bg_map[sbg]
+
+        border = getattr(node, "border", None)
+        if border is not None:
+            for side_name in ("top", "right", "bottom", "left"):
+                side = getattr(border, side_name, None)
+                if side is not None:
+                    sc = getattr(side, "color", None)
+                    if isinstance(sc, str) and sc in fg_map:
+                        side.color = fg_map[sc]
+
+        for line_attr in ("vertical_lines", "horizontal_lines"):
+            line = getattr(node, line_attr, None)
+            if line is not None:
+                lc = getattr(line, "color", None)
+                if isinstance(lc, str) and lc in fg_map:
+                    line.color = fg_map[lc]
+
+        for child_attr in ("content", "title", "leading", "trailing"):
+            child = getattr(node, child_attr, None)
+            if child is not None:
+                _walk(child)
+
+        for list_attr in ("controls", "actions", "rows", "cells", "columns", "tabs"):
+            items = getattr(node, list_attr, None)
+            if items:
+                for item in items:
+                    _walk(item)
+                    if hasattr(item, "label_control"):
+                        _walk(item.label_control)
+
+    _walk(root)
+
+
 def apply_light():
     for k, v in LIGHT_COLORS.items():
         setattr(Palette, k, v)
+    for dlg in list(_ACTIVE_DIALOGS):
+        retheme_control_tree(dlg, to_dark=False)
 
 
 def apply_dark():
     for k, v in DARK_COLORS.items():
         setattr(Palette, k, v)
+    for dlg in list(_ACTIVE_DIALOGS):
+        retheme_control_tree(dlg, to_dark=True)
 
 
 # Inicializa com tema claro
@@ -329,11 +448,11 @@ def text(
     overflow=None,
     **kwargs,
 ):
-    style = ft.TextStyle(size=size, weight=weight)
-    if color is not None:
-        style.color = color
+    c = color if color is not None else Palette.TEXT_PRIMARY
+    style = ft.TextStyle(size=size, weight=weight, color=c)
     return ft.Text(
         content,
+        color=c,
         style=style,
         text_align=text_align,
         max_lines=max_lines,
@@ -511,12 +630,41 @@ def info_button(on_click, *, tooltip="Ver tabela"):
 
 
 # ── Icone em pílula colorida (para cards de modo) ─────────────────────────
-def icon_pill(icon_name, *, bg=Palette.PRIMARY, fg=Palette.ON_PRIMARY, size=28):
+def icon_pill(icon_name, *, bg=None, fg=None, size=28):
+    bg_color = bg if bg is not None else Palette.PRIMARY
+    fg_color = fg if fg is not None else Palette.ON_PRIMARY
     return ft.Container(
-        content=ft.Icon(icon_name, color=fg, size=size),
+        content=ft.Icon(icon_name, color=fg_color, size=size),
         width=56,
         height=56,
         border_radius=br_all(28),
-        bgcolor=bg,
+        bgcolor=bg_color,
         alignment=ft.Alignment.CENTER,
     )
+
+
+# ── Diálogo modal padronizado e reativo ao tema ───────────────────────────
+def themed_dialog(
+    *,
+    title=None,
+    content=None,
+    actions=None,
+    modal: bool = True,
+    bgcolor=None,
+    actions_alignment=ft.MainAxisAlignment.END,
+    **kwargs,
+) -> ft.AlertDialog:
+    dlg = ft.AlertDialog(
+        modal=modal,
+        title=title,
+        content=content,
+        actions=actions or [],
+        actions_alignment=actions_alignment,
+        bgcolor=bgcolor if bgcolor is not None else Palette.SURFACE,
+        shape=ft.RoundedRectangleBorder(radius=br_all(Radius.LG)),
+        **kwargs,
+    )
+    _ACTIVE_DIALOGS.append(dlg)
+    if len(_ACTIVE_DIALOGS) > 32:
+        del _ACTIVE_DIALOGS[:-32]
+    return dlg

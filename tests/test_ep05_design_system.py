@@ -165,3 +165,43 @@ def test_ep05_5_scroll_independente_sem_clipping():
     assert left_col_ftool.expand is True
     assert ctx.right_sidebar.scroll == ft.ScrollMode.AUTO
     assert ctx.right_sidebar.expand is True
+
+
+def test_ep05_4_dialogos_dark_mode():
+    """EP-05.4: Todos os dialogos consomem Palette e reagem a troca de tema claro/escuro."""
+    from core.calculos import calcular_cisalhamento_viga_comum, calcular_flexao_viga_comum
+    from ui.dialogs import open_caa_info, open_geometria_info
+    from ui.theme import DARK_COLORS, LIGHT_COLORS, apply_dark, apply_light
+
+    page = _FakePage()
+    try:
+        apply_light()
+        ctx = montar_contexto(page, "comum", lambda: None, None, None, None, None, None)
+        ctx.state["resultados_flex"] = calcular_flexao_viga_comum(
+            50, 20, 2, 25, 5, 12.5, 50, [100.0]
+        )
+        ctx.state["resultados_cis"] = calcular_cisalhamento_viga_comum(
+            50, 20, 25, 5, 12.5, 60, 50, 2, [80.0]
+        )
+        ctx.open_resultados_modal()
+        dlg = page.dialogs[-1]
+        assert dlg.bgcolor == LIGHT_COLORS["SURFACE"]
+
+        open_caa_info(page)
+        info_dlg = page.dialogs[-1]
+        assert info_dlg.bgcolor == LIGHT_COLORS["SURFACE"]
+
+        open_geometria_info(page)
+        geom_dlg = page.dialogs[-1]
+        assert geom_dlg.bgcolor == LIGHT_COLORS["SURFACE"]
+
+        # Troca em runtime atualiza dialogos ja abertos para dark mode
+        apply_dark()
+        assert dlg.bgcolor == DARK_COLORS["SURFACE"]
+        assert info_dlg.bgcolor == DARK_COLORS["SURFACE"]
+        assert geom_dlg.bgcolor == DARK_COLORS["SURFACE"]
+        # Card interno do modal tambem reage
+        flex_card = dlg.content.content.controls[0].controls[2].controls[0]
+        assert flex_card.bgcolor == DARK_COLORS["SURFACE"]
+    finally:
+        apply_light()

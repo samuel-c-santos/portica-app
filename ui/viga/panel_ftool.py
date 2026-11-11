@@ -27,11 +27,13 @@ from ui.theme import (
     br_all,
     caption,
     numeric_text,
+    outlined_button,
     pad_all,
     pad_sym,
     primary_button,
     section_header,
     surface_card,
+    themed_dialog,
     title_medium,
 )
 
@@ -278,6 +280,8 @@ def on_add_comb_click(ctx, e):
     name_tf = ft.TextField(
         label="Nome da Combinação",
         value=f"Combinação {len(ctx.state.get('combinacoes', [])) + 1}",
+        color=Palette.TEXT_PRIMARY,
+        bgcolor=Palette.SURFACE_VARIANT,
         border_color=Palette.OUTLINE_VARIANT,
         height=45,
     )
@@ -302,9 +306,8 @@ def on_add_comb_click(ctx, e):
         ctx.update_combs_ui()
         ctx.show_msg(f"Combinação '{nome}' adicionada", Palette.PRIMARY)
 
-    add_dlg = ft.AlertDialog(
-        modal=True,
-        title=title_medium("Adicionar Combinação FTOOL"),
+    add_dlg = themed_dialog(
+        title=title_medium("Adicionar Combinação FTOOL", color=Palette.TEXT_PRIMARY),
         content=ft.Container(
             content=ft.Column(
                 controls=[
@@ -314,6 +317,7 @@ def on_add_comb_click(ctx, e):
                         "Arquivo de Momento Fletor (x vs M):",
                         size=12,
                         weight=ft.FontWeight.BOLD,
+                        color=Palette.TEXT_PRIMARY,
                     ),
                     ft.Row(
                         controls=[
@@ -327,6 +331,7 @@ def on_add_comb_click(ctx, e):
                         "Arquivo de Esforço Cortante (x vs V):",
                         size=12,
                         weight=ft.FontWeight.BOLD,
+                        color=Palette.TEXT_PRIMARY,
                     ),
                     ft.Row(
                         controls=[
@@ -348,9 +353,6 @@ def on_add_comb_click(ctx, e):
                 "Salvar", on_click=save_comb, bgcolor=Palette.PRIMARY, color=Palette.ON_PRIMARY
             ),
         ],
-        actions_alignment=ft.MainAxisAlignment.END,
-        bgcolor=Palette.SURFACE,
-        shape=ft.RoundedRectangleBorder(radius=br_all(Radius.LG)),
     )
     ctx.page.show_dialog(add_dlg)
 
@@ -469,13 +471,14 @@ def on_calcular_envelope_click(ctx, e):
 
                 relatorio_text = gerar_relatorio_envelope(dados_viga, env, secoes)
 
-                results_dlg = ft.AlertDialog(
-                    modal=True,
+                results_dlg = themed_dialog(
                     title=ft.Row(
                         controls=[
                             ft.Icon(ft.Icons.CHECK_CIRCLE, color=Palette.PRIMARY),
                             ft.Container(width=Spacing.SM),
-                            title_medium("Dimensionamento Automático - Envelope"),
+                            title_medium(
+                                "Dimensionamento Automático - Envelope", color=Palette.TEXT_PRIMARY
+                            ),
                         ],
                         vertical_alignment=ft.CrossAxisAlignment.CENTER,
                     ),
@@ -493,7 +496,10 @@ def on_calcular_envelope_click(ctx, e):
                                     multiline=True,
                                     read_only=True,
                                     text_size=12,
-                                    text_style=ft.TextStyle(font_family="monospace"),
+                                    color=Palette.TEXT_PRIMARY,
+                                    text_style=ft.TextStyle(
+                                        font_family="Roboto Mono", color=Palette.TEXT_PRIMARY
+                                    ),
                                     expand=True,
                                     bgcolor=Palette.SURFACE_VARIANT,
                                     border_color=Palette.OUTLINE_VARIANT,
@@ -506,27 +512,23 @@ def on_calcular_envelope_click(ctx, e):
                         padding=pad_sym(horizontal=Spacing.MD, vertical=Spacing.SM),
                     ),
                     actions=[
-                        ft.OutlinedButton(
+                        outlined_button(
                             "Fechar",
                             on_click=lambda ev2: ctx.page.pop_dialog(),
                         ),
                     ],
-                    actions_alignment=ft.MainAxisAlignment.END,
-                    bgcolor=Palette.SURFACE,
-                    shape=ft.RoundedRectangleBorder(radius=br_all(Radius.LG)),
                 )
                 ctx.page.show_dialog(results_dlg)
             except (ValueError, KeyError, TypeError, ZeroDivisionError, RuntimeError) as ex:
                 logger.error("Erro no dimensionamento do envelope: %s", ex, exc_info=True)
                 ctx.show_msg(f"Erro no dimensionamento do envelope: {ex}", Palette.ERROR)
 
-        env_dlg = ft.AlertDialog(
-            modal=True,
+        env_dlg = themed_dialog(
             title=ft.Row(
                 controls=[
                     ft.Icon(ft.Icons.AUTO_GRAPH, color=Palette.PRIMARY),
                     ft.Container(width=Spacing.SM),
-                    title_medium("Envelope - Seções Críticas"),
+                    title_medium("Envelope - Seções Críticas", color=Palette.TEXT_PRIMARY),
                 ],
                 vertical_alignment=ft.CrossAxisAlignment.CENTER,
             ),
@@ -547,16 +549,13 @@ def on_calcular_envelope_click(ctx, e):
                 padding=pad_sym(horizontal=Spacing.MD, vertical=Spacing.SM),
             ),
             actions=[
-                ft.OutlinedButton("Cancelar", on_click=close_env_dlg),
+                outlined_button("Cancelar", on_click=close_env_dlg),
                 primary_button(
                     "Calcular Envelope",
                     icon=ft.Icons.PLAY_ARROW,
                     on_click=on_calcular_envelope_confirm_click,
                 ),
             ],
-            actions_alignment=ft.MainAxisAlignment.END,
-            bgcolor=Palette.SURFACE,
-            shape=ft.RoundedRectangleBorder(radius=br_all(Radius.LG)),
         )
         ctx.page.show_dialog(env_dlg)
 

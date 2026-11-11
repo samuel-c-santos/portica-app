@@ -20,6 +20,7 @@ from ui.theme import (
     br_all,
     caption,
     numeric_text,
+    outlined_button,
     pad_all,
     pad_only,
     pad_sym,
@@ -27,6 +28,7 @@ from ui.theme import (
     section_header,
     status_chip,
     surface_card,
+    themed_dialog,
     title_medium,
     title_small,
 )
@@ -186,6 +188,7 @@ def open_resultados_modal(ctx):
                 border_radius=br_all(Radius.SM),
                 dense=True,
                 text_size=12,
+                color=Palette.TEXT_PRIMARY,
                 filled=True,
                 bgcolor=Palette.SURFACE_VARIANT,
                 border_color=Palette.OUTLINE_VARIANT,
@@ -309,7 +312,10 @@ def open_resultados_modal(ctx):
                         ft.Row(
                             controls=[
                                 ft.Text(
-                                    f"Qtd: {r.qtd_barras}", size=11, weight=ft.FontWeight.W_500
+                                    f"Qtd: {r.qtd_barras}",
+                                    size=11,
+                                    weight=ft.FontWeight.W_500,
+                                    color=Palette.TEXT_PRIMARY,
                                 ),
                                 chip,
                             ],
@@ -423,6 +429,7 @@ def open_resultados_modal(ctx):
                     border_radius=br_all(Radius.SM),
                     dense=True,
                     text_size=11,
+                    color=Palette.TEXT_PRIMARY,
                     filled=True,
                     bgcolor=Palette.SURFACE_VARIANT,
                     border_color=Palette.OUTLINE_VARIANT,
@@ -445,6 +452,7 @@ def open_resultados_modal(ctx):
                                 f"Qtd/face: {r.n_barras_pele_face}",
                                 size=11,
                                 weight=ft.FontWeight.W_500,
+                                color=Palette.TEXT_PRIMARY,
                             ),
                             ft.Text(
                                 f"s: {fmt_num(r.s_pele_cm, 0, unidade='cm')}",
@@ -546,6 +554,7 @@ def open_resultados_modal(ctx):
                     ft.DataColumn(title_small("Status")),
                 ],
                 rows=rows_cis,
+                heading_row_color=Palette.SURFACE_VARIANT,
                 heading_row_height=Spacing.XL + 8,
                 data_row_min_height=Spacing.XL + 4,
                 border=ft.Border.all(1, Palette.OUTLINE_VARIANT),
@@ -569,13 +578,12 @@ def open_resultados_modal(ctx):
         ctx.page.pop_dialog()
         await ctx.on_gerar_pdf(e)
 
-    results_dialog = ft.AlertDialog(
-        modal=True,
+    results_dialog = themed_dialog(
         title=ft.Row(
             controls=[
                 ft.Icon(ft.Icons.CHECK_CIRCLE, color=Palette.PRIMARY),
                 ft.Container(width=Spacing.SM),
-                title_medium("Resultados do cálculo"),
+                title_medium("Resultados do cálculo", color=Palette.TEXT_PRIMARY),
             ],
             vertical_alignment=ft.CrossAxisAlignment.CENTER,
         ),
@@ -586,7 +594,7 @@ def open_resultados_modal(ctx):
             padding=pad_sym(horizontal=Spacing.MD, vertical=Spacing.SM),
         ),
         actions=[
-            ft.OutlinedButton(
+            outlined_button(
                 "Fechar",
                 on_click=lambda e: ctx.page.pop_dialog(),
             ),
@@ -596,9 +604,6 @@ def open_resultados_modal(ctx):
                 on_click=on_gerar_pdf_click,
             ),
         ],
-        actions_alignment=ft.MainAxisAlignment.END,
-        bgcolor=Palette.SURFACE,
-        shape=ft.RoundedRectangleBorder(radius=br_all(Radius.LG)),
     )
     ctx.page.show_dialog(results_dialog)
 

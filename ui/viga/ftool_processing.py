@@ -25,11 +25,13 @@ from ui.theme import (
     br_all,
     caption,
     numeric_text,
+    outlined_button,
     pad_all,
     pad_sym,
     primary_button,
     section_header,
     status_chip,
+    themed_dialog,
     title_medium,
     title_small,
 )
@@ -213,6 +215,7 @@ def processar_ftool(ctx):
                 card = ft.Container(
                     width=220,
                     padding=pad_all(Spacing.SM),
+                    bgcolor=Palette.SURFACE,
                     border=border_all(1, Palette.OUTLINE_VARIANT),
                     border_radius=br_all(Radius.SM),
                     content=ft.Column(
@@ -352,6 +355,7 @@ def processar_ftool(ctx):
                         ft.DataColumn(title_small("Status")),
                     ],
                     rows=rows_cis,
+                    heading_row_color=Palette.SURFACE_VARIANT,
                     heading_row_height=Spacing.XL + 8,
                     data_row_min_height=Spacing.XL + 4,
                     border=border_all(1, Palette.OUTLINE_VARIANT),
@@ -407,6 +411,7 @@ def processar_ftool(ctx):
                                 )
                                 for r in detalhamento
                             ],
+                            heading_row_color=Palette.SURFACE_VARIANT,
                             heading_row_height=Spacing.XL + 4,
                             data_row_min_height=Spacing.XL + 2,
                             border=border_all(1, Palette.OUTLINE_VARIANT),
@@ -597,13 +602,14 @@ def processar_ftool(ctx):
             state["_modal_results_content"] = results_content
 
             page.show_dialog(
-                ft.AlertDialog(
-                    modal=True,
+                themed_dialog(
                     title=ft.Row(
                         [
                             ft.Icon(ft.Icons.CHECK_CIRCLE, color=Palette.PRIMARY),
                             ft.Container(width=Spacing.SM),
-                            title_medium("Resultados do dimensionamento FTOOL"),
+                            title_medium(
+                                "Resultados do dimensionamento FTOOL", color=Palette.TEXT_PRIMARY
+                            ),
                         ],
                         vertical_alignment=ft.CrossAxisAlignment.CENTER,
                     ),
@@ -613,10 +619,7 @@ def processar_ftool(ctx):
                         height=540,
                         padding=pad_sym(horizontal=Spacing.MD, vertical=Spacing.SM),
                     ),
-                    actions=[ft.OutlinedButton("Fechar", on_click=lambda ev: page.pop_dialog())],
-                    actions_alignment=ft.MainAxisAlignment.END,
-                    bgcolor=Palette.SURFACE,
-                    shape=ft.RoundedRectangleBorder(radius=br_all(Radius.LG)),
+                    actions=[outlined_button("Fechar", on_click=lambda ev: page.pop_dialog())],
                 )
             )
 
@@ -860,13 +863,12 @@ def processar_ftool(ctx):
 
         ctx.page.pop_dialog()  # Fecha loading
         ctx.page.show_dialog(
-            ft.AlertDialog(
-                modal=True,
+            themed_dialog(
                 title=ft.Row(
                     [
                         ft.Icon(ft.Icons.AUTO_GRAPH, color=Palette.PRIMARY),
                         ft.Container(width=Spacing.SM),
-                        title_medium("FTOOL - Seções Detectadas"),
+                        title_medium("FTOOL - Seções Detectadas", color=Palette.TEXT_PRIMARY),
                     ],
                     vertical_alignment=ft.CrossAxisAlignment.CENTER,
                 ),
@@ -887,14 +889,11 @@ def processar_ftool(ctx):
                     padding=pad_sym(horizontal=Spacing.MD, vertical=Spacing.SM),
                 ),
                 actions=[
-                    ft.OutlinedButton("Cancelar", on_click=lambda ev: ctx.page.pop_dialog()),
+                    outlined_button("Cancelar", on_click=lambda ev: ctx.page.pop_dialog()),
                     primary_button(
                         "Calcular", icon=ft.Icons.PLAY_ARROW, on_click=on_calcular_ftool
                     ),
                 ],
-                actions_alignment=ft.MainAxisAlignment.END,
-                bgcolor=Palette.SURFACE,
-                shape=ft.RoundedRectangleBorder(radius=br_all(Radius.LG)),
             )
         )
     except (ValueError, KeyError, TypeError, OSError, IndexError, RuntimeError) as ex:
