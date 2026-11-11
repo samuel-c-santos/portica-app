@@ -34,8 +34,8 @@ Mudanças aceitas e ainda não publicadas em uma versão.
   de apoio e **não substitui** a verificação de engenheiro civil habilitado,
   com ART.
 - `CITATION.cff` (CFF 1.2.0) com metadados de citação e bloco
-  `preferred-citation` (DOI ainda é placeholder, a ser emitido na publicação
-  Zenodo).
+  `preferred-citation` (concept DOI `10.5281/zenodo.23733497` emitido na
+  publicação Zenodo).
 - `CONTRIBUTING.md` com como rodar a suíte, padrão de commit
   (*Conventional Commits*) e o que é bem-vindo e o que não será aceito.
 - `SECURITY.md` com o procedimento de relato de falha de cálculo.
