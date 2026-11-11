@@ -17,6 +17,23 @@ GAMMA_S = 1.15  # Coeficiente do aço
 GAMMA_F_PP = 1.30  # Peso próprio
 GAMMA_F_RESTO = 1.40  # Demais ações
 
+# ── Limites de domínio (NBR 6118:2023) ─────────────────────────────────────
+# Ductilidade em vigas: a norma (17.2.3) remete a 14.6.4.3. Para δ = 1,0:
+#   x/d ≤ (1,0 − 0,44)/1,25 = 0,448 ≈ 0,45  (fck ≤ 50 MPa)
+#   x/d ≤ (1,0 − 0,56)/1,25 = 0,352 ≈ 0,35  (fck > 50 MPa)
+BX_LIM_DUCTILIDADE_ATE_50 = 0.45
+BX_LIM_DUCTILIDADE_ACIMA_50 = 0.35
+
+# Profundidade do diagrama retangular de tensões (17.2.2-e):
+#   λ = 0,8 (fck ≤ 50) ; λ = 0,8 − (fck − 50)/400 (fck > 50)
+ETA_ATE_50 = 0.80
+ETA_DIVISOR_ACIMA_50 = 400.0
+
+# Fronteiras dos domínios de deformação (CA-50, εcu = 3,5‰, εyd = 2,07‰):
+#   domínio 2/3: 3,5/(3,5+10) = 0,259 ; domínio 3/4: 3,5/(3,5+2,07) = 0,628
+BX_DOMINIO_2_3 = 0.259
+BX_DOMINIO_4 = 0.628
+
 
 def lambda_f(fck_mpa: float) -> float:
     """Fator lambda para resistencia a compressao diagonal (NBR 6118:17.4.2.2).
@@ -135,23 +152,32 @@ def fctd_kn_cm2(fck: float) -> float:
 
 
 def _bx_lim_ductilidade(fck_mpa: float) -> float:
-    """Limite de ductilidade x/d (NBR 6118:2023, 14.6.4.3, δ=1,0).
+    """Limite de ductilidade x/d (NBR 6118:2023, 14.6.4.3, δ=1,0)."""
+    return BX_LIM_DUCTILIDADE_ATE_50 if fck_mpa <= 50 else BX_LIM_DUCTILIDADE_ACIMA_50
 
-    Para δ = 1,0 (sem redistribuição), os limites de 14.6.4.3 resultam em
-    x/d ≤ (1,0 − 0,44)/1,25 = 0,448 ≈ 0,45 (fck ≤ 50 MPa) e
-    x/d ≤ (1,0 − 0,56)/1,25 = 0,352 ≈ 0,35 (fck > 50 MPa).
-    """
-    return 0.45 if fck_mpa <= 50 else 0.35
+
+def ETA_ACIMA_50(fck_mpa: float) -> float:
+    """λ para fck > 50 MPa (NBR 6118:2023, 17.2.2-e)."""
+    return ETA_ATE_50 - (fck_mpa - 50.0) / ETA_DIVISOR_ACIMA_50
 
 
 def _eta_diagrama_retangular(fck_mpa: float) -> float:
-    """Profundidade do diagrama retangular λ (NBR 6118:2023, 17.2.2-e).
+    """Profundidade do diagrama retangular λ (NBR 6118:2023, 17.2.2-e)."""
+    return ETA_ATE_50 if fck_mpa <= 50 else ETA_ACIMA_50(fck_mpa)
 
-    λ = 0,8 para fck ≤ 50 MPa; λ = 0,8 − (fck − 50)/400 para fck > 50 MPa.
+
+def classificar_dominio(bx: float) -> str:
+    """Classifica a posição da linha neutra nos domínios de deformação.
+
+    Fronteiras para CA-50 (εcu = 3,5‰, εyd = 2,07‰): 2/3 em 0,259 e
+    3/4 em 0,628. Domínio 4 significa aço tracionado sem escoamento —
+    ruptura frágil, que o dimensionamento deve recusar.
     """
-    if fck_mpa <= 50:
-        return 0.80
-    return 0.80 - (fck_mpa - 50.0) / 400.0
+    if bx > BX_DOMINIO_4:
+        return "DOMINIO_4"
+    if bx > BX_DOMINIO_2_3:
+        return "DOMINIO_3"
+    return "DOMINIO_2"
 
 
 def _resolver_ln(
@@ -819,6 +845,7 @@ def calcular_flexao_viga_comum(
         as_linha_adotada = 0.0
         md_limite_knm = md_lim_kNcm / 100.0
         md_excedente_knm = 0.0
+        dominio_4 = False
 
         if Md_kNcm > md_lim_kNcm:
             armadura_dupla = True
@@ -865,10 +892,20 @@ def calcular_flexao_viga_comum(
             else:
                 bx = x_ln / d_cm
                 x_cm = x_ln
-                bx_passa = "SIM" if bx <= bx_min + 1e-9 else "NÃO"
                 ks = 1.0 / (fyd * (1.0 - 0.4 * bx))
                 as_req = Md_kNcm / (fyd * (d_cm - 0.4 * x_ln))
-                alerta = ""
+                if classificar_dominio(bx) == "DOMINIO_4":
+                    dominio_4 = True
+                    bx_passa = "NÃO"
+                    alerta = (
+                        f"Domínio 4 (bx={bx:.3f} > {BX_DOMINIO_4:.3f}): seção "
+                        f"recusada — a armadura de tração não escoa (ruptura "
+                        f"frágil). Aumente h/bw/fck ou adote armadura de "
+                        f"compressão. Mk={Mk_kNm:+.1f} kN·m."
+                    )
+                else:
+                    bx_passa = "SIM" if bx <= bx_min + 1e-9 else "NÃO"
+                    alerta = ""
 
         asmin = rho_min_val * bw_cm * h_cm / 100  # cm²
         as_necessaria = max(as_req, asmin)
@@ -897,6 +934,10 @@ def calcular_flexao_viga_comum(
             qtd_barras_1cam = qtd_barras
             barras_cima = 0
 
+        # EP-02.2: domínio 4 é recusa explícita (nunca "CABE" com As,min)
+        status_final = "NÃO CABE" if dominio_4 else res_bitola.status_bitola
+        convergiu_final = res_bitola.convergiu and not dominio_4
+
         # Armadura de pele (NBR 6118:17.3.5.2.3) — já calculada fora do loop
         # EP-01.3: invariantes de integridade antes de emitir o resultado
         _validar_invariantes_flexao(
@@ -911,7 +952,7 @@ def calcular_flexao_viga_comum(
             qtd_barras=res_bitola.qtd_barras,
             area_barra_cm2=area_barra_d,
             cabe=res_bitola.cabe,
-            status_bitola=res_bitola.status_bitola,
+            status_bitola=status_final,
         )
 
         resultados.append(
@@ -957,8 +998,8 @@ def calcular_flexao_viga_comum(
                 as_adotado_cm2=round(res_bitola.as_adotado_cm2, 3),
                 d_cm_real=round(res_bitola.d_real_cm, 2),
                 camadas_adotadas=res_bitola.camadas,
-                status_bitola=res_bitola.status_bitola,
-                convergiu=res_bitola.convergiu,
+                status_bitola=status_final,
+                convergiu=convergiu_final,
                 layout_convergido=res_bitola.layout,
                 tabela_bitolas=tabela_bitolas,
             )
@@ -1315,6 +1356,7 @@ def calcular_flexao_viga_t(
         b_coef = -d_cm
         x1 = x2 = 0.0
         as_linha_cm2 = 0.0
+        dominio_4 = False
 
         if Mk_kNm > 0:
             # 1. Equilíbrio tratando a seção como retangular de largura bf,ef.
@@ -1350,8 +1392,16 @@ def calcular_flexao_viga_t(
                 else:
                     bx = x_mesa / d_cm
                     x_cm = x_mesa
+                    if classificar_dominio(bx) == "DOMINIO_4":
+                        dominio_4 = True
+                        alerta = (
+                            f"Domínio 4 (bx={bx:.3f} > {BX_DOMINIO_4:.3f}): seção "
+                            f"recusada — a armadura de tração não escoa. "
+                            f"Aumente h/bw/fck ou adote armadura de compressão."
+                        )
+                    else:
+                        alerta = ""
                     as_req = Md_kNcm / (fyd * (d_cm - 0.4 * x_mesa))
-                    alerta = ""
             else:
                 ln_condiz = "NÃO"
                 # 2. Linha neutra na alma: decompõe o momento nas abas e na alma.
@@ -1362,7 +1412,15 @@ def calcular_flexao_viga_t(
                     as_req = Md_kNcm / (fyd * (d_cm - hf_cm / 2.0)) if Md_kNcm > 0 else 0.0
                     bx = (hf_cm / eta) / d_cm if d_cm > 0 else 0.0
                     x_cm = bx * d_cm
-                    alerta = "Momento resistido pelas abas da mesa colaborante."
+                    if classificar_dominio(bx) == "DOMINIO_4":
+                        dominio_4 = True
+                        alerta = (
+                            f"Domínio 4 (bx={bx:.3f} > {BX_DOMINIO_4:.3f}): seção "
+                            f"recusada — a armadura de tração não escoa. "
+                            f"Aumente h/bw/fck ou adote armadura de compressão."
+                        )
+                    else:
+                        alerta = "Momento resistido pelas abas da mesa colaborante."
                 else:
                     Md2_kNcm = Md_kNcm - md1
                     md2_lim, x_lim2 = _momento_limite_ln(fck_mpa, bw_cm, d_cm, bx_min)
@@ -1455,9 +1513,17 @@ def calcular_flexao_viga_t(
                     x_cm = x_neg
                     x1, x2 = x1n, x2n
                     as_req = Md_kNcm / (fyd * (d_cm - 0.4 * x_neg))
-                    alerta = ""
+                    if classificar_dominio(bx) == "DOMINIO_4":
+                        dominio_4 = True
+                        alerta = (
+                            f"Domínio 4 (bx={bx:.3f} > {BX_DOMINIO_4:.3f}): seção "
+                            f"recusada — a armadura de tração não escoa. "
+                            f"Aumente h/bw/fck ou adote armadura de compressão."
+                        )
+                    else:
+                        alerta = ""
 
-        bx_passa = "SIM" if bx <= bx_min + 1e-9 else "NÃO"
+        bx_passa = "NÃO" if dominio_4 else ("SIM" if bx <= bx_min + 1e-9 else "NÃO")
         asmin = rho_min_val * bw_cm * h_cm / 100.0
         as_necessaria = max(as_req, asmin)
 
@@ -1505,6 +1571,10 @@ def calcular_flexao_viga_t(
         bx_passa = "SIM" if bx <= bx_min + 1e-9 else "NÃO"
         espaco_disp = bw_cm - 2 * (cob_mm / 10.0) - 2 * (diam_estribo_mm / 10.0)
         eh_min = max(2.0, diam_barra_mm / 10.0, 1.2 * 1.9)
+
+        # EP-02.2: domínio 4 é recusa explícita (nunca "CABE" com As,min)
+        if dominio_4:
+            status_bitola = "NÃO CABE"
 
         # EP-01.3: invariantes de integridade antes de emitir o resultado
         _validar_invariantes_flexao(
@@ -1566,7 +1636,7 @@ def calcular_flexao_viga_t(
                 d_cm_real=round(d_cm, 2),
                 camadas_adotadas=camadas,
                 status_bitola=status_bitola,
-                convergiu=res_bitola.convergiu,
+                convergiu=res_bitola.convergiu and not dominio_4,
                 layout_convergido=layout,
                 tabela_bitolas=tabela_bitolas,
                 as_linha_cm2=round(as_linha_cm2, 3),

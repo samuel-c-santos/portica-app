@@ -13,6 +13,8 @@ from typing import Any
 from fpdf import FPDF
 
 from core.calculos.engenharia import (
+    BX_LIM_DUCTILIDADE_ACIMA_50,
+    BX_LIM_DUCTILIDADE_ATE_50,
     CAA_DATA,
     ResultadoCisalhamento,
     ResultadoFlexao,
@@ -907,7 +909,7 @@ class PorticaPDF(FPDF):
                             if r.x_cm is not None
                             else "   x = n/ap (secao insuficiente: sem raiz de equilibrio)"
                         ),
-                        f"   Verificacao de dominio: beta_x = {r.bx:.3f} <= beta_x_lim = {0.45 if fck_mpa <= 50 else 0.35:.2f} ({'PASSA' if r.bx_passa == 'SIM' else 'ALERTA'})",
+                        f"   Verificacao de dominio: beta_x = {r.bx:.3f} <= beta_x_lim = {BX_LIM_DUCTILIDADE_ATE_50 if fck_mpa <= 50 else BX_LIM_DUCTILIDADE_ACIMA_50:.2f} ({'PASSA' if r.bx_passa == 'SIM' else 'ALERTA'})",
                         "",
                     ]
                 )
@@ -2009,7 +2011,7 @@ def gerar_relatorio_viga_comum(
 
     # Validações normativas
     val_items = []
-    lim_bx = 0.45 if fck_mpa <= 50 else 0.35
+    lim_bx = BX_LIM_DUCTILIDADE_ATE_50 if fck_mpa <= 50 else BX_LIM_DUCTILIDADE_ACIMA_50
     for i, r in enumerate(resultados_flexao):
         if r is None:
             continue
@@ -2374,7 +2376,7 @@ def gerar_relatorio_viga_t(
 
     # Validações normativas
     val_items = []
-    lim_bx = 0.45 if fck_mpa <= 50 else 0.35
+    lim_bx = BX_LIM_DUCTILIDADE_ATE_50 if fck_mpa <= 50 else BX_LIM_DUCTILIDADE_ACIMA_50
     for i, r in enumerate(resultados_flexao):
         if r is None:
             continue

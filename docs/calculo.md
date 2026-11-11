@@ -118,14 +118,22 @@ O EP-02.1 removeu a calibracao empirica da planilha original (coeficientes
 
 ### 2.4 Verificacao do dominio de deformacao
 
-Apos o calculo de `bx`, verifica-se o atendimento ao limite:
+Apos o calculo de `bx`, verifica-se o limite de ductilidade da NBR 6118:2023,
+item 14.6.4.3 (para o coeficiente de redistribuicao δ = 1,0):
 
 ```
-bx_min = 0,45  (fck ≤ 50 MPa)
-bx_min = 0,35  (fck > 50 MPa)
+bx = x/d ≤ 0,45  (fck ≤ 50 MPa)
+bx = x/d ≤ 0,35  (fck > 50 MPa)
 ```
 
-O resultado e reportado como "SIM" (passa) ou "NAO" (nao passa).
+O resultado e reportado como "SIM" (passa) ou "NAO" (nao passa). O dominio 4
+(`bx > 0,628`, aco tracionado sem escoamento) e **recusa explicita**: o motor
+nao emite um resultado valido com `As,req = 0` e apenas `As,min`.
+
+Nao confundir este limite com `eta`: `eta = 0,8` para `fck ≤ 50 MPa` e
+`eta = 0,8 - (fck - 50)/400` para `fck > 50 MPa` (item 17.2.2-e) e a
+profundidade do diagrama retangular de tensoes, nao um limite de ductilidade.
+As duas grandezas sao centralizadas em constantes unicas no motor.
 
 ### 2.5 Posicao da linha neutra
 
@@ -376,9 +384,9 @@ Caso `b1esq` ou `b1dir` nao sejam informados, considera-se `0,0 cm`.
 
 Quando `Mk > 0`, a linha neutra pode estar na mesa ou na alma.
 
-#### 4.2.1 LN na mesa (η·x < hf)
+#### 4.2.1 LN na mesa (eta·x < hf)
 
-Se a condicao `η · x < hf` for satisfeita (onde `η = 0,8` para fck ≤ 50 MPa),
+Se a condicao `η · x < hf` for satisfeita (item 17.2.2-e do texto 2023) (onde `η = 0,8` para fck ≤ 50 MPa),
 o calculo e feito com largura `bf,ef`:
 
 ```
@@ -422,7 +430,7 @@ e a armadura total e:
 
 ```
 As1 = Md1 / (fyd · (d - hf/2))    (abas)
-As2 = ks2 · Md2 / d                (alma)
+As2 = Md2 / (fyd · (d - 0,4·x2))   (alma)
 As,total = As1 + As2
 ```
 
