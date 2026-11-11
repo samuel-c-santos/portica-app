@@ -3,6 +3,7 @@ Módulo para dimensionamento automático de múltiplos trechos/seções crítica
 Fase 2.3 — Dimensionamento Automático
 """
 
+import logging
 from typing import Any
 
 from core.calculos.engenharia import (
@@ -16,6 +17,13 @@ from ui.ftool.secoes_criticas import (
     calcular_lo_para_secao,
     detectar_pontos_momento_nulo,
 )
+
+logger = logging.getLogger(__name__)
+
+# EP-01.4: falhas de dados malformados são capturadas especificamente e o
+# resultado correspondente fica ausente COM aviso; qualquer outra exceção
+# (bug) propaga em vez de engolir a falha dura silenciosamente.
+ERROS_DADOS = (ValueError, KeyError, IndexError, TypeError, ZeroDivisionError, ArithmeticError)
 
 
 def dimensionar_trechos_ftool(
@@ -146,7 +154,8 @@ def dimensionar_trechos_ftool(
                 gamma_f=gamma_f,
             )
             detalhamento = calcular_qtd_estribos(detalhamento)
-        except Exception:
+        except ERROS_DADOS as ex:
+            logger.warning("Detalhamento de estribos descartado: %s: %s", type(ex).__name__, ex)
             detalhamento = None
 
     # ELS (flecha + fissuração)
@@ -254,9 +263,12 @@ def dimensionar_trechos_ftool(
                                 if layout.layers:
                                     rf.barras_suportadas = layout.layers[0].bar_count
                                     rf.barras_cima = rf.qtd_barras - rf.barras_suportadas
-                        except Exception as e:
-                            # Falha silenciosa no recálculo do layout para evitar quebrar ELS
-                            print(f"Erro ao recalcular layout ELS: {e}")
+                        except ERROS_DADOS as e:
+                            logger.warning(
+                                "Falha ao recalcular layout após barras extras: %s: %s",
+                                type(e).__name__,
+                                e,
+                            )
 
                         # Recalcular armadura de pele se necessário
                         if hasattr(rf, "requer_pele") and rf.requer_pele:
@@ -271,7 +283,8 @@ def dimensionar_trechos_ftool(
                             rf.as_pele_face_cm2 = pele["as_pele_adotada_face_cm2"]
                             rf.s_pele_cm = pele["s_adotado_cm"]
                             rf.tabela_pele = pele["tabela_phis"]
-        except Exception:
+        except ERROS_DADOS as ex:
+            logger.warning("Cálculo ELS descartado: %s: %s", type(ex).__name__, ex)
             resultado_els = None
 
     return {

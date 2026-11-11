@@ -120,12 +120,31 @@ def fctd_kn_cm2(fck: float) -> float:
     return fctkinf_mpa(fck) / 10 / GAMMA_C
 
 
+def _denom_as2(d_cm: float, d_lin: float, contexto: str) -> float:
+    """EP-01.4: guarda `d − d' > 0` para o braço da armadura dupla.
+
+    O fallback silencioso de denominador (0,1 cm) gerava As,req gigante ou
+    negativo sem explicar a causa. A seção rasa demais para acomodar
+    armadura de compressão é recusada com erro legível.
+    """
+    denom = d_cm - d_lin
+    if denom <= 0:
+        raise ValueError(
+            f"Seção recusada: braço da armadura dupla não positivo "
+            f"(d − d' = {denom:.2f} cm ≤ 0). A seção é rasa demais para "
+            f"acomodar armadura de compressão; aumente h ou reduza "
+            f"cobrimento/bitola. Contexto: {contexto}"
+        )
+    return denom
+
+
 def validar_geometria(
     h_cm: float,
     bw_cm: float,
     cob_mm: float,
     diam_estribo_mm: float,
     diam_barra_mm: float,
+    fck_mpa: float | None = None,
 ) -> str | None:
     """A9: valida geometria antes de calcular. Retorna mensagem de erro ou None.
 
@@ -135,7 +154,11 @@ def validar_geometria(
     - h >= 5 cm (minimo pratico para viga)
     - bw >= 5 cm (minimo normativo)
     - diametros > 0
+    - fck > 0 (EP-01.4: validado quando fornecido; fck=0 causava
+      ZeroDivisionError no laço de bitola)
     """
+    if fck_mpa is not None and fck_mpa <= 0:
+        return f"fck={fck_mpa} MPa deve ser positivo (resistência do concreto)."
     if h_cm <= 0:
         return f"Altura h={h_cm} cm deve ser positiva."
     if h_cm < 5:
@@ -304,7 +327,7 @@ class ResultadoFlexao:
     x2: float
     bx: float
     bx_passa: str  # "SIM" ou "NÃO"
-    x_cm: float
+    x_cm: float | None  # None quando bx é sentinela (seção insuficiente)
     ks: float
     as_req_cm2: float
     asmin_cm2: float
@@ -437,7 +460,15 @@ def dimensionar_bitola_iterativa(
             md_exc_kNcm = (abs(Md_kNm) - Md_lim_kNm) * 100.0
             ks_lim = 1.0 / (fyd * (1.0 - bx_min / 2.0))
             as1 = ks_lim * Md_lim_kNcm / d_cm
-            denom = d_cm - d_lin_est if (d_cm - d_lin_est) > 0 else 0.1
+            denom = _denom_as2(
+                d_cm,
+                d_lin_est,
+                contexto=(
+                    f"Md={Md_kNm:+.1f} kN·m, "
+                    f"seção {bw_calculo_cm:.0f}×{h_cm:.0f} cm, "
+                    f"Ø{diam_barra_mm:g} mm, iteração {it}"
+                ),
+            )
             as2 = md_exc_kNcm / (fyd * denom)
             as_req = as1 + as2
         else:
@@ -654,7 +685,9 @@ def calcular_flexao_viga_comum(
 
     # A9: validacao de geometria antes de calcular
     cob_mm = CAA_DATA[caa]["cobrimento"]
-    erro_geo = validar_geometria(h_cm, bw_cm, cob_mm, diam_estribo_mm, diam_barra_mm)
+    erro_geo = validar_geometria(
+        h_cm, bw_cm, cob_mm, diam_estribo_mm, diam_barra_mm, fck_mpa=fck_mpa
+    )
     if erro_geo:
         raise ValueError(erro_geo)
 
@@ -880,7 +913,7 @@ def calcular_flexao_viga_comum(
                 x2=round(x2, 4),
                 bx=round(bx, 4),
                 bx_passa=bx_passa,
-                x_cm=round(x_cm, 2),
+                x_cm=round(x_cm, 2) if x_cm < 999.0 else None,
                 ks=round(ks, 3),
                 as_req_cm2=round(as_req, 3),
                 asmin_cm2=round(asmin, 3),
@@ -969,7 +1002,9 @@ def calcular_cisalhamento_viga_comum(
 
     # A9: validacao de geometria
     cob_mm = CAA_DATA[caa]["cobrimento"]
-    erro_geo = validar_geometria(h_cm, bw_cm, cob_mm, diam_estribo_mm, diam_barra_mm)
+    erro_geo = validar_geometria(
+        h_cm, bw_cm, cob_mm, diam_estribo_mm, diam_barra_mm, fck_mpa=fck_mpa
+    )
     if erro_geo:
         raise ValueError(erro_geo)
 
@@ -1075,7 +1110,7 @@ class ResultadoFlexaoT:
     x2: float
     bx: float
     bx_passa: str
-    x_cm: float
+    x_cm: float | None  # None quando bx é sentinela (seção insuficiente)
     linha_neutra_condiz: str
     bf_efetivo_cm: float
     ks: float
@@ -1180,7 +1215,9 @@ def calcular_flexao_viga_t(
 
     # A9: validacao de geometria
     cob_mm = CAA_DATA[caa]["cobrimento"]
-    erro_geo = validar_geometria(h_cm, bw_cm, cob_mm, diam_estribo_mm, diam_barra_mm)
+    erro_geo = validar_geometria(
+        h_cm, bw_cm, cob_mm, diam_estribo_mm, diam_barra_mm, fck_mpa=fck_mpa
+    )
     if erro_geo:
         raise ValueError(erro_geo)
     if bf_cm < bw_cm:
@@ -1320,7 +1357,14 @@ def calcular_flexao_viga_t(
                     md_exc_kNcm = Md_kNcm - Md_lim_kNcm
                     ks_lim = 1.0 / (fyd * (1.0 - bx_min / 2.0))
                     as1 = ks_lim * Md_lim_kNcm / d_cm
-                    denom = d_cm - d_lin if (d_cm - d_lin) > 0 else 0.1
+                    denom = _denom_as2(
+                        d_cm,
+                        d_lin,
+                        contexto=(
+                            f"Mk={Mk_kNm:+.1f} kN·m (Md={Md_kNm:.1f} kN·m), "
+                            f"seção T {bw_cm:.0f}×{h_cm:.0f} cm, Ø{diam_barra_mm:g} mm"
+                        ),
+                    )
                     as2 = md_exc_kNcm / (fyd * denom)
                     as_req = as1 + as2
                     as_linha_cm2 = as2
@@ -1359,7 +1403,15 @@ def calcular_flexao_viga_t(
                         ks_lim = 1.0 / (fyd * (1.0 - bx_min / 2.0))
                         as2_1 = ks_lim * Md2_lim_kNcm / d_cm
 
-                        denom = d_cm - d_lin if (d_cm - d_lin) > 0 else 0.1
+                        denom = _denom_as2(
+                            d_cm,
+                            d_lin,
+                            contexto=(
+                                f"Mk={Mk_kNm:+.1f} kN·m (Md={Md_kNm:.1f} kN·m), "
+                                f"seção T {bw_cm:.0f}×{h_cm:.0f} cm (alma), "
+                                f"Ø{diam_barra_mm:g} mm"
+                            ),
+                        )
                         as2_2 = Md2_exc_kNcm / (fyd * denom)
                         as2 = as2_1 + as2_2
                         as_linha_cm2 = as2_2
@@ -1462,7 +1514,15 @@ def calcular_flexao_viga_t(
                 md_exc_kNcm = Md_kNcm - Md_lim_kNcm
                 ks_lim = 1.0 / (fyd * (1.0 - bx_min / 2.0))
                 as1 = ks_lim * Md_lim_kNcm / d_cm
-                denom = d_cm - d_lin if (d_cm - d_lin) > 0 else 0.1
+                denom = _denom_as2(
+                    d_cm,
+                    d_lin,
+                    contexto=(
+                        f"Mk={Mk_kNm:+.1f} kN·m (Md={Md_kNm:.1f} kN·m), "
+                        f"seção T {bw_cm:.0f}×{h_cm:.0f} cm (momento negativo), "
+                        f"Ø{diam_barra_mm:g} mm"
+                    ),
+                )
                 as2 = md_exc_kNcm / (fyd * denom)
                 as_req = as1 + as2
                 as_linha_cm2 = as2
@@ -1556,7 +1616,7 @@ def calcular_flexao_viga_t(
                 x2=round(x2 if "x2" in locals() else 0.0, 4),
                 bx=round(bx, 4),
                 bx_passa=bx_passa,
-                x_cm=round(x_cm, 2),
+                x_cm=round(x_cm, 2) if x_cm < 999.0 else None,
                 linha_neutra_condiz=ln_condiz,
                 bf_efetivo_cm=round(bf_efetivo, 2),
                 ks=round(1.0 / (fyd * (1.0 - bx / 2.0)) if bx < 999.0 else 0.0, 3),

@@ -895,7 +895,11 @@ class PorticaPDF(FPDF):
                         f"   {r.a:.4f} * beta_x^2 + {r.b:.4f} * beta_x - 1 = 0",
                         "   Resolvendo a equacao quadratica:",
                         f"   beta_x = {r.bx:.3f}",
-                        f"   x = beta_x * d = {r.bx:.3f} * {d_cm:.2f} = {r.x_cm:.2f} cm",
+                        (
+                            f"   x = beta_x * d = {r.bx:.3f} * {d_cm:.2f} = {r.x_cm:.2f} cm"
+                            if r.x_cm is not None
+                            else "   x = n/ap (secao insuficiente: beta_x fora do dominio)"
+                        ),
                         f"   Verificacao de dominio: beta_x = {r.bx:.3f} <= beta_x_lim = {0.45 if fck_mpa <= 50 else 0.35:.2f} ({'PASSA' if r.bx_passa == 'SIM' else 'ALERTA'})",
                         "",
                     ]
@@ -1975,7 +1979,7 @@ def gerar_relatorio_viga_comum(
                 f"{_n(r.momento_kNm, 2)}",
                 f"{_n(r.kc, 3)}",
                 f"{_n(r.bx, 3)}",
-                f"{_n(r.x_cm, 2)}",
+                f"{_n(r.x_cm, 2) if r.x_cm is not None else 'n/ap'}",
                 f"{_n(r.as_req_cm2, 2)}",
                 f"{_n(r.asmin_cm2, 2)}",
                 f"{r.qtd_barras} phi {_diam(r.diametro_mm)}",
@@ -2341,7 +2345,7 @@ def gerar_relatorio_viga_t(
                 f"{_n(r.momento_kNm, 2)}",
                 f"{_n(r.kc, 3)}",
                 f"{_n(r.bx, 3)}",
-                f"{_n(r.x_cm, 2)}",
+                f"{_n(r.x_cm, 2) if r.x_cm is not None else 'n/ap'}",
                 f"{_n(r.as_req_cm2, 2)}",
                 f"{_n(r.asmin_cm2, 2)}",
                 f"{r.qtd_barras} phi {_diam(r.diametro_mm)}",

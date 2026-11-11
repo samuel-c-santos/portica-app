@@ -121,7 +121,10 @@ def detectar_secoes_envelope(
     def encontrar_origem_momento(x_val: float, m_val: float) -> str:
         for idx, comb in enumerate(combinacoes):
             nome = comb.get("nome", f"Combinação {idx + 1}")
-            m_comb = interpolar_y(comb["momentos"], x_val)
+            momentos = comb.get("momentos")
+            if momentos is None:
+                continue
+            m_comb = interpolar_y(momentos, x_val)
             if abs(m_comb - m_val) < 1e-2:
                 return nome
         return "Desconhecida"
@@ -129,13 +132,16 @@ def detectar_secoes_envelope(
     def encontrar_origem_cortante(x_val: float, v_val: float) -> str:
         for idx, comb in enumerate(combinacoes):
             nome = comb.get("nome", f"Combinação {idx + 1}")
-            matches = [pt[1] for pt in comb["cortantes"] if abs(pt[0] - x_val) < 1e-5]
+            cortantes = comb.get("cortantes")
+            if cortantes is None:
+                continue
+            matches = [pt[1] for pt in cortantes if abs(pt[0] - x_val) < 1e-5]
             if matches:
                 for v in matches:
                     if abs(v - v_val) < 1e-2:
                         return nome
             else:
-                v_comb = interpolar_y(comb["cortantes"], x_val)
+                v_comb = interpolar_y(cortantes, x_val)
                 if abs(v_comb - v_val) < 1e-2:
                     return nome
         return "Desconhecida"
