@@ -14,6 +14,7 @@ build/*
 !build/build_portica.py
 !build/launcher.py
 !build/flet_bootstrap.py
+!build/release.py
 develop-eggs/
 dist/
 downloads/

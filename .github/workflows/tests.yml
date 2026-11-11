@@ -1,6 +1,8 @@
 # Suíte de testes e smoke de build do Pórtica App.
 #
-# - `tests`: pytest na matriz Python 3.10/3.11/3.12 + smoke de importação.
+# - `tests`: pytest na matriz Python 3.10/3.11/3.12 + smoke de importação
+#   + `build/release.py --check` (consistência da versão nos 5 lugares:
+#   version.py, CITATION.cff, RELEASE_NOTES, CHANGELOG e site).
 # - `build-smoke`: build do executável em runner Windows; falha se
 #   `dist/portica.exe` não for gerado ou se um PDF normativo (docs/nbr)
 #   acabar no bundle.
@@ -34,6 +36,9 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
+
+      - name: Consistência de release
+        run: python build/release.py --check
 
       - name: Instala dependências
         run: pip install -r requirements.txt -r requirements-dev.txt
