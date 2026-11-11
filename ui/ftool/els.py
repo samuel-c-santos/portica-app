@@ -79,6 +79,62 @@ class AjustesELS:
         return h_ajustado, d_ajustado, as_ajustado, fck_ajustado, phi_ajustado
 
 
+def _area_envolvida(
+    h_cm: float,
+    bw_cm: float,
+    bf_cm: float | None,
+    hf_cm: float | None,
+    h_cr: float,
+    is_t: bool,
+    positivo: bool,
+) -> float:
+    """Área de concreto envolvida pela barra de tração (Acr, NBR 6118:17.3.3.2).
+
+    EP-01.6: em viga T com momento POSITIVO e h_cr > hf, a área da mesa
+    entra (antes usava só bw·h_cr).
+    """
+    if is_t and bf_cm is not None and bf_cm > bw_cm and hf_cm is not None:
+        if positivo:
+            # Tração em baixo (alma); se a zona tracionada ultrapassa a mesa,
+            # a parte da mesa acima da alma é envolvida.
+            if h_cr > hf_cm:
+                return bf_cm * hf_cm + bw_cm * (h_cr - hf_cm)
+            return bw_cm * h_cr
+        # Momento negativo: tração no topo (mesa)
+        if h_cr <= hf_cm:
+            return bf_cm * h_cr
+        return bf_cm * hf_cm + bw_cm * (h_cr - hf_cm)
+    return bw_cm * h_cr
+
+
+def _validar_modelo_biapoiado(momentos: list[tuple[float, float]]) -> str | None:
+    """EP-01.6: valida que o modelo FTOOL é uma viga bi-apoiada.
+
+    A integração de flecha usa BCs f(apoio esq) = 0 e f(apoio dir) = 0,
+    que só valem com apoios nas extremidades. Momento ≠ 0 nas extremidades
+    indica engaste, continuidade ou balanço — modelo para o qual o ELS
+    atual mente. Recusar é preferível a mentir.
+    """
+    if not momentos:
+        return None
+    xs = [p[0] for p in momentos]
+    if len(xs) < 3:
+        return None  # malha degenerada; integração cai no fallback
+    x_min, x_max = min(xs), max(xs)
+    tol_knm = 1e-6
+    m_esq = next(p[1] for p in momentos if abs(p[0] - x_min) < 1e-9)
+    m_dir = next(p[1] for p in momentos if abs(p[0] - x_max) < 1e-9)
+    if abs(m_esq) > tol_knm or abs(m_dir) > tol_knm:
+        return (
+            "ELS: a verificação de flecha exige viga bi-apoiada, mas o modelo "
+            f"tem momento ≠ 0 nas extremidades (M(x={x_min:.2f}) = {m_esq:+.2f} kN·m, "
+            f"M(x={x_max:.2f}) = {m_dir:+.2f} kN·m) — engaste, continuidade ou "
+            f"balanço. As condições de contorno do motor ELS (f(0)=0, f(L)=0) "
+            f"não são válidas para esse modelo e a flecha seria errada."
+        )
+    return None
+
+
 def _e_modulus(fck_mpa: float) -> float:
     """Módulo de elasticidade secante (Ecs) em GPa. NBR 6118:8.2.8."""
     e_ci = 5600 * math.sqrt(fck_mpa)  # MPa
@@ -268,6 +324,12 @@ def calcular_flecha(
     if not deformacoes:
         return {"erro": "Dados de deformação não fornecidos."}
 
+    # EP-01.6: recusar modelos não bi-apoiados (engaste/contínuo/balanço)
+    # em vez de aplicar BCs de bi-apoiada e mentir na flecha.
+    erro_modelo = _validar_modelo_biapoiado(momentos)
+    if erro_modelo:
+        return {"erro": erro_modelo}
+
     # Aplicar ajustes manuais se fornecidos
     if ajustes is not None:
         h_cm, d_cm, as_tracao_cm2, fck_mpa, _ = ajustes.aplicar_ajustes(
@@ -297,7 +359,16 @@ def calcular_flecha(
 
     # Flecha por integração numérica das curvaturas reais (M/EI_eq)
     # Método: integração dupla com condições de contorno para viga bi-apoiada
-    # f(0) = 0 e f(L) = 0
+    # f(x_apoio_esq) = 0 e f(x_apoio_dir) = 0 (último ponto da malha).
+    #
+    # EP-01.6 (sinal): a curvatura κ = M/(E·I_eq) mantém o sinal do momento
+    # (antes era abs(M), o que destrói a contribuição de trechos com sinal
+    # oposto). Para viga bi-apoiada de sinal único o resultado é o mesmo.
+    #
+    # EP-01.6 (I_eq): a integração usa I_eq POR ESTAÇÃO (Branson aplicado ao
+    # momento de cada ponto). O ieq_cm4 retornado é o da estação crítica
+    # (mk_max) — mesmo valor que antes, agora documentado como "na seção
+    # crítica"; a integração nunca usou o global único.
     momentos_sorted = sorted(momentos, key=lambda p: p[0])
 
     if len(momentos_sorted) >= 2:
@@ -305,12 +376,11 @@ def calcular_flecha(
         xs = [p[0] for p in momentos_sorted]  # posições em m
         kappas = []
         for _, mk in momentos_sorted:
-            mk_abs = abs(mk)
-            ieq_local = _inercia_equivalente(mk_abs, mr, ic, i_ii)
+            ieq_local = _inercia_equivalente(mk, mr, ic, i_ii)
             if ieq_local <= 0:
                 ieq_local = ic
             # κ = M / (E * I) — conversão: M em kN·cm, E em kN/cm², I em cm4 → κ em 1/cm
-            mk_kncm = mk_abs * 100  # kN·m → kN·cm
+            mk_kncm = mk * 100  # kN·m → kN·cm (sinal preservado)
             kappa = mk_kncm / (ecs * ieq_local)  # 1/cm
             kappas.append(kappa)
 
@@ -336,9 +406,12 @@ def calcular_flecha(
             f_i = flechas_raw[-1] + df
             flechas_raw.append(f_i)
 
-        # Aplicar condição de contorno f(L) = 0
-        # f(L) = f_raw(L) + C1*L = 0 → C1 = -f_raw(L)/L
-        L_cm = xs[-1] * 100  # comprimento total em cm
+        # Aplicar condição de contorno f(apoio direito) = 0
+        # A integração é relativa ao início do vão (xs[0]); f é imposta
+        # no último ponto da malha do vão (EP-01.6: antes C1 assumia
+        # malha começando em x=0).
+        vao_m = xs[-1] - xs[0]
+        L_cm = vao_m * 100  # vão em cm
         if L_cm > 0:
             C1 = -flechas_raw[-1] / L_cm  # constante de integração (adimensional)
         else:
@@ -347,7 +420,7 @@ def calcular_flecha(
         # Calcular flechas finais com constante de integração
         flechas_finais = []
         for i, x in enumerate(xs):
-            x_cm = x * 100
+            x_cm = (x - xs[0]) * 100
             f_final = flechas_raw[i] + C1 * x_cm
             flechas_finais.append(f_final)
 
@@ -359,13 +432,19 @@ def calcular_flecha(
         flecha_imediata = curv_max * L**2 / 8 * 100  # m → cm
 
     # Flecha diferida (NBR 6118:17.3.2.1.2)
+    # EP-01.6 (simplificação documentada): αf = 2,0 para t > 6 meses. A
+    # rampa linear (t/6)·2,0 para t ≤ 6 meses NÃO está na norma (a NBR usa
+    # αf fixo da Tabela 17.1 com retruação/fluiência via ξ); mantida como
+    # aproximação conservadora declarada.
     alfa_f = 2.0 if tempo_meses > 6 else (tempo_meses / 6) * 2.0
     flecha_diferida = alfa_f * flecha_imediata
     flecha_total = flecha_imediata + flecha_diferida
 
-    # Limites (NBR 6118: Tabela 13.3)
-    limite_total = L * 100 / 250  # cm (L/250)
-    limite_ativo = L * 100 / 350  # cm (L/350)
+    # Limites (NBR 6118: Tabela 13.3) — EP-01.6: no VÃO (max−min da malha),
+    # não no comprimento total da viga.
+    vao_m = max(p[0] for p in momentos_sorted) - min(p[0] for p in momentos_sorted)
+    limite_total = vao_m * 100 / 250  # cm (L/250)
+    limite_ativo = vao_m * 100 / 350  # cm (L/350)
     passa_total = flecha_total <= limite_total
     passa_ativo = flecha_diferida <= limite_ativo
 
@@ -476,18 +555,15 @@ def calcular_fissuracao(
         # wk2: baseado na taxa de armadura da área de envolvimento (rho_ri)
         h_cr = min(2.5 * (h_cm - d_util), (h_cm - x_ii) / 3.0, 0.5 * h_cm)
 
-        if not positivo and is_t and bf_cm is not None and bf_cm > bw_cm:
-            # Tração no topo em viga T (mesa colaborante tracionada)
-            if hf_cm is not None:
-                if h_cr <= hf_cm:
-                    a_cr = bf_cm * h_cr
-                else:
-                    a_cr = bf_cm * hf_cm + bw_cm * (h_cr - hf_cm)
-            else:
-                a_cr = bf_cm * h_cr
-        else:
-            # Tração na alma (momento positivo ou viga retangular)
-            a_cr = bw_cm * h_cr
+        a_cr = _area_envolvida(
+            h_cm=h_cm,
+            bw_cm=bw_cm,
+            bf_cm=bf_cm,
+            hf_cm=hf_cm,
+            h_cr=h_cr,
+            is_t=is_t,
+            positivo=positivo,
+        )
 
         rho_ri = max(0.005, as_tracao_cm2 / a_cr)
 

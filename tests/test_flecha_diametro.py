@@ -5,6 +5,8 @@ Valida que o bug de flecha constante (independente de φ) foi corrigido.
 
 import os
 
+from helpers_els import deformacoes_biapoiadas, momentos_biapoiados
+
 from ui.ftool.els import calcular_flecha
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -12,12 +14,8 @@ SAMPLES_DIR = os.path.join(BASE_DIR, "samples")
 
 
 def _ler_dados():
-    """Lê momentos e deformações dos arquivos de amostra."""
-    from ui.ftool.parser import parse_deformacao, parse_momento
-
-    mom = parse_momento(os.path.join(SAMPLES_DIR, "test_momento_fletor.txt"))
-    deform = parse_deformacao(os.path.join(SAMPLES_DIR, "test_deformacoes.txt"))
-    return mom, deform
+    """Momentos e deformações bi-apoiados (EP-01.6: sample não é bi-apoiado)."""
+    return momentos_biapoiados(), deformacoes_biapoiadas()
 
 
 def test_flecha_varia_com_diametro_barra():

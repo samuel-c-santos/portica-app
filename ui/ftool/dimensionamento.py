@@ -26,6 +26,58 @@ logger = logging.getLogger(__name__)
 ERROS_DADOS = (ValueError, KeyError, IndexError, TypeError, ZeroDivisionError, ArithmeticError)
 
 
+def cobrimento_els_mm(dados_viga: dict[str, Any]) -> float:
+    """EP-01.6: cobrimento do ELS vem da CAA (antes: 3 cm fixo).
+
+    Prioridade: cobrimento explícito em dados_viga, senão CAA_DATA[caa].
+    """
+    from core.calculos.engenharia import CAA_DATA
+
+    caa = dados_viga["caa"]
+    return dados_viga.get("cobrimento_mm") or CAA_DATA[caa]["cobrimento"]
+
+
+def d_els_cm(dados_viga: dict[str, Any], d_cm_flexao: float | None = None) -> float:
+    """EP-01.6: altura útil do ELS.
+
+    Usa a d convergida da flexão quando disponível (mesma seção crítica);
+    senão estima a partir do cobrimento da CAA (antes: 3 cm fixo).
+    """
+    if d_cm_flexao is not None and d_cm_flexao > 0:
+        return d_cm_flexao
+    h_cm = dados_viga["h_cm"]
+    return (
+        h_cm
+        - cobrimento_els_mm(dados_viga) / 10.0
+        - dados_viga["diam_estribo_mm"] / 10.0
+        - dados_viga["diam_barra_mm"] / 20.0
+    )
+
+
+def armadura_secao_critica_els(
+    secoes_criticas: list[SecaoCritica],
+    resultados: list[dict[str, Any]],
+) -> tuple[float, float | None]:
+    """EP-01.6: armadura e mesa efetiva da SEÇÃO CRÍTICA para o ELS.
+
+    Antes o ELS usava o máximo de as_necessaria de toda a viga — errado em
+    região de momento negativo (armadura inferior alimentando a rigidez da
+    seção de topo tracionado). Retorna (as_tracao_cm2, bf_efetivo_cm|None).
+    """
+    if not secoes_criticas or not resultados:
+        return 0.0, None
+    idx = max(range(len(secoes_criticas)), key=lambda i: abs(secoes_criticas[i].momento))
+    if idx >= len(resultados):
+        return 0.0, None
+    rf = resultados[idx].get("resultado_flexao")
+    if rf is None:
+        return 0.0, None
+    bf_efetivo = getattr(rf, "bf_efetivo_cm", None)
+    if bf_efetivo is not None and bf_efetivo > 0:
+        return rf.as_necessaria_cm2, bf_efetivo
+    return rf.as_necessaria_cm2, None
+
+
 def dimensionar_trechos_ftool(
     dados_viga: dict[str, Any],
     secoes_criticas: list[SecaoCritica],
@@ -164,29 +216,35 @@ def dimensionar_trechos_ftool(
         try:
             from ui.ftool.els import calcular_fissuracao, calcular_flecha
 
-            as_tracao = max(
-                (
-                    r["resultado_flexao"].as_necessaria_cm2
-                    for r in resultados
-                    if r["resultado_flexao"]
-                ),
-                default=0,
-            )
+            # EP-01.6: a armadura do ELS é a da SEÇÃO CRÍTICA (maior |Mk|),
+            # não o máximo global — e a d do ELS é a d convergida da flexão.
+            as_tracao, bf_efetivo_critico = armadura_secao_critica_els(secoes_criticas, resultados)
             is_t = bool(
                 dados_viga.get("bf_cm") and dados_viga.get("hf_cm") and dados_viga["bf_cm"] > bw_cm
             )
-            cobrimento_mm = dados_viga.get("cobrimento_mm", 25.0)
+            cobrimento_mm = cobrimento_els_mm(dados_viga)
+            rf_critico = max(
+                (r["resultado_flexao"] for r in resultados if r["resultado_flexao"]),
+                key=lambda rf: abs(rf.momento_kNm),
+                default=None,
+            )
+            d_cm_els = d_els_cm(
+                dados_viga,
+                d_cm_flexao=rf_critico.d_cm_real if rf_critico is not None else None,
+            )
+            # bf do ELS = mesa efetiva da seção crítica (antes: bf bruto)
+            bf_els = bf_efetivo_critico if is_t and bf_efetivo_critico else dados_viga.get("bf_cm")
             flecha = calcular_flecha(
                 h_cm=h_cm,
                 bw_cm=bw_cm,
-                d_cm=h_cm - 3 - diam_estribo_mm / 10 - diam_barra_mm / 20,
+                d_cm=d_cm_els,
                 fck_mpa=fck_mpa,
                 as_tracao_cm2=as_tracao,
                 momentos=momentos,
                 deformacoes=deformacoes,
                 gamma_f=gamma_f,
                 is_t=is_t,
-                bf_cm=dados_viga.get("bf_cm"),
+                bf_cm=bf_els,
                 hf_cm=dados_viga.get("hf_cm"),
                 ajustes=ajustes_els,
                 phi_barra_mm=diam_barra_mm,
@@ -196,7 +254,7 @@ def dimensionar_trechos_ftool(
             fissuracao = calcular_fissuracao(
                 h_cm=h_cm,
                 bw_cm=bw_cm,
-                d_cm=h_cm - 3 - diam_estribo_mm / 10 - diam_barra_mm / 20,
+                d_cm=d_cm_els,
                 caa=caa,
                 fck_mpa=fck_mpa,
                 fyk_mpa=fyk_mpa,

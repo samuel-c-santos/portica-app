@@ -4,6 +4,8 @@ Testes para o módulo ELS (flecha e fissuração).
 
 import os
 
+from helpers_els import deformacoes_biapoiadas, momentos_biapoiados
+
 from ui.ftool.els import (
     calcular_fissuracao,
     calcular_flecha,
@@ -23,9 +25,20 @@ def _ler_dados():
     return mom, deform
 
 
+def _ler_dados_biapoiados():
+    """EP-01.6: ELS exige viga bi-apoiada; o sample não é bi-apoiado.
+
+    Retorna uma bi-apoiada sintética (carga uniforme, vão 7,5 m).
+    """
+    return momentos_biapoiados(), deformacoes_biapoiadas()
+
+
 def test_flecha_com_dados_reais():
-    """Flecha com dados reais deve retornar valores numéricos."""
-    momentos, deformacoes = _ler_dados()
+    """Flecha com dados bi-apoiados deve retornar valores numéricos.
+
+    (O sample FTOOL original não é bi-apoiado e agora é recusado — EP-01.6.)
+    """
+    momentos, deformacoes = _ler_dados_biapoiados()
     res = calcular_flecha(
         h_cm=70,
         bw_cm=20,
@@ -56,7 +69,7 @@ def test_flecha_sem_deformacoes():
 
 def test_flecha_tipo_retorno():
     """Verifica estrutura do retorno da flecha."""
-    momentos, deformacoes = _ler_dados()
+    momentos, deformacoes = _ler_dados_biapoiados()
     res = calcular_flecha(
         h_cm=70,
         bw_cm=20,
@@ -228,7 +241,7 @@ def test_fissuracao_fctm():
 
 def test_els_secao_t_rigidez():
     """Valida que a rigidez maior da mesa colaborante da seção T reduz a flecha em relação à seção retangular."""
-    momentos, deformacoes = _ler_dados()
+    momentos, deformacoes = _ler_dados_biapoiados()
 
     # Seção retangular (is_t=False)
     res_ret = calcular_flecha(
