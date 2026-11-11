@@ -455,3 +455,84 @@ class TestVigaTDetailing:
         # y_cg medido a partir da face inferior da viga, para barras a 39.3mm do topo
         # y_cg = 500 - 39.3 = 460.7
         assert abs(data_sup.y_cg - 460.7) < 0.1
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 9. Blindagem geométrica (EP-01.1) — nunca subdimensionar em silêncio
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+class TestBlindagemGeometrica:
+    """O detalhador deve RECUSAR a seção em vez de empilhar camadas até caber.
+
+    Caso verificado por execução (auditoria 2026-11-11): 67 barras Ø12,5 numa
+    viga 10×20 cm produziam 67 camadas, y_cg = 1287,66 mm numa viga de 200 mm
+    e d_efetiva = −1087,66 mm, sem nenhum erro.
+    """
+
+    def test_67_barras_viga_10x20_falha_com_erro(self):
+        """67φ12,5 em 10×20 cm não cabe e deve falhar com ValueError claro."""
+        inp = make_input(
+            bw=100.0,  # 10 cm
+            h=200.0,  # 20 cm
+            c_nom=25.0,
+            phi_estribo=6.3,
+            phi_barra=12.5,
+            d_max_agregado=19.0,
+            total_bars=67,
+        )
+        with pytest.raises(ValueError, match="camada"):
+            detailer.detail(inp)
+
+    def test_acima_do_limite_de_camadas_falha(self):
+        """Mais camadas que o limite normativo (NBR 6118:18.3.2) recusa a seção."""
+        # bw=300mm, φ16: n_max por camada = 6 → 25 barras = 5 camadas > limite
+        inp = make_input(
+            bw=300.0,
+            h=500.0,
+            phi_barra=16.0,
+            total_bars=25,
+        )
+        with pytest.raises(ValueError, match="camada"):
+            detailer.detail(inp)
+
+    def test_ate_4_camadas_aceita(self):
+        """Dentro do limite de camadas, seção multi-camada legítima é aceita."""
+        # bw=300mm, φ16: n_max por camada = 6 → 24 barras = 4 camadas (limite)
+        inp = make_input(
+            bw=300.0,
+            h=500.0,
+            phi_barra=16.0,
+            total_bars=24,
+        )
+        data = detailer.detail(inp)
+        assert data.layer_count == 4
+        assert data.d_efetiva > 0
+        # Todas as barras dentro da seção (frame bruto: cresce de baixo para cima)
+        y_max = max(b.y for b in data.bar_positions)
+        y_min = min(b.y for b in data.bar_positions)
+        assert y_max + inp.phi_barra / 2 <= inp.h - inp.c_nom - inp.phi_estribo + 0.1
+        assert y_min - inp.phi_barra / 2 >= inp.c_nom + inp.phi_estribo - 0.1
+
+    def test_d_efetiva_nunca_negativa(self):
+        """d_efetiva ≤ 0 nunca é retornado: seção inviável gera ValueError."""
+        # Armadura que não cabe na altura: bw=100, h=200, muitas camadas curtas
+        # de barras grossas em seção baixa.
+        inp = make_input(
+            bw=100.0,
+            h=200.0,
+            c_nom=25.0,
+            phi_estribo=6.3,
+            phi_barra=12.5,
+            total_bars=30,
+        )
+        with pytest.raises(ValueError):
+            detailer.detail(inp)
+
+    def test_erro_tem_mensagem_legivel(self):
+        """A mensagem de erro cita a quantidade de barras e o limite de camadas."""
+        inp = make_input(bw=100.0, h=200.0, phi_barra=12.5, total_bars=67)
+        with pytest.raises(ValueError) as excinfo:
+            detailer.detail(inp)
+        msg = str(excinfo.value)
+        assert "67" in msg or "camada" in msg.lower()

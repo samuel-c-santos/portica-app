@@ -56,8 +56,13 @@ def test_2_secao_pequena_forca_armadura_dupla():
     assert res.md_limite_knm < res.momento_kNm
     assert res.md_excedente_knm > 0.0
 
-    # O momento limite com d convergido é em torno de 46.93 kN.m
-    assert res.md_limite_knm == pytest.approx(46.93, abs=1.0)
+    # O momento limite agora é calculado com a d da seção (estimativa
+    # inicial, 45.7 cm). O valor antigo (46.93) derivava de um layout
+    # fantasma de 10 camadas de Ø16 numa alma de 12 cm (d=27.13), que o
+    # detalhador recusa desde EP-01.1 (limite de camadas) — a seção com
+    # Ø16 NÃO CABE e o resultado carrega a recusa em status_bitola.
+    assert res.status_bitola == "NÃO CABE"
+    assert res.md_limite_knm == pytest.approx(133.169, abs=1.0)
     # Momento excedente: 194.88 - 46.93 = 147.95
     assert res.md_excedente_knm == pytest.approx(194.88 - res.md_limite_knm, abs=0.1)
 

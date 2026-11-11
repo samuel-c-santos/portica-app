@@ -204,6 +204,13 @@ class BeamDetailer:
     # NBR 6118:18.3.2.3: travamento quando distância entre cantos > 15 cm.
     _MAX_UNSUPPORTED_SPAN_MM: float = 150.0
 
+    # Limite normativo de camadas de armadura concentrada.
+    # NBR 6118:2023 (§18.3.2): a armadura longitudinal deve ser concentrada
+    # em poucas camadas (no máximo 3-4) para viabilizar concretagem e
+    # vibrado. Acima disso, a seção é recusada em vez de empilhar camadas
+    # até "caber" (que produzia d_efetiva negativa em silêncio).
+    _MAX_LAYERS: int = 4
+
     def detail(self, inp: BeamDetailingInput) -> SectionLayoutData:
         """Executa o detalhamento e retorna um SectionLayoutData.
 
@@ -265,6 +272,13 @@ class BeamDetailer:
         # ── 4. Distribuição em camadas ────────────────────────────────────────
         layer_counts = self._distribute_layers(inp.total_bars, n_max_por_camada, warnings)
         layer_count = len(layer_counts)
+        if layer_count > self._MAX_LAYERS:
+            raise ValueError(
+                f"Seção recusada: {inp.total_bars} barras φ{inp.phi_barra} mm exigem "
+                f"{layer_count} camadas, acima do limite de {self._MAX_LAYERS} "
+                f"(NBR 6118:2023, §18.3.2). Aumente a seção, reduza a quantidade "
+                f"de barras ou use bitola maior."
+            )
 
         # ── 5. Posições Y de cada camada ──────────────────────────────────────
         phi_canto = inp.phi_canto_superior if inp.phi_canto_superior else inp.phi_barra
@@ -275,6 +289,19 @@ class BeamDetailer:
         y_layer0_center = y_inf_estribo + inp.phi_barra / 2
         y_canto_center = y_sup_estribo - phi_canto / 2
         y_last_layer_center = y_layer0_center + (layer_count - 1) * (inp.phi_barra + ev_min)
+
+        # Blindagem geométrica (EP-01.1): a última camada deve caber dentro
+        # da seção. Sem esta guarda, o detalhador empilhava camadas até além
+        # da face superior e devolvia y_cg > h e d_efetiva negativa.
+        y_limite_topo = inp.h - inp.c_nom - inp.phi_estribo
+        if y_last_layer_center + inp.phi_barra / 2.0 > y_limite_topo:
+            raise ValueError(
+                f"Seção recusada: a última camada de armadura "
+                f"(y = {y_last_layer_center + inp.phi_barra / 2.0:.1f} mm) "
+                f"ultrapassa o limite interno da seção "
+                f"(h − c − φe = {y_limite_topo:.1f} mm). "
+                f"Reduza a quantidade de barras ou aumente a altura da seção."
+            )
 
         clearance = (y_canto_center - phi_canto / 2) - (y_last_layer_center + inp.phi_barra / 2)
         if clearance < ev_min and layer_count > 1:
@@ -328,6 +355,12 @@ class BeamDetailer:
                     )
                 )
 
+        # Reindexa as barras por camada uma única vez (evita varrer toda a
+        # lista de barras para cada camada — O(camadas × barras) → O(barras)).
+        bars_by_layer: dict[int, list[BarPosition]] = {}
+        for b in bar_positions:
+            bars_by_layer.setdefault(b.layer, []).append(b)
+
         # ── 7. Barras de canto superiores construtivas ────────────────────────
         if is_t:
             # Em viga T, o estribo principal fica na alma de largura bw_mm,
@@ -336,7 +369,7 @@ class BeamDetailer:
             x_canto_min = (bf_mm - bw_mm) / 2.0 + inp.c_nom + inp.phi_estribo + phi_canto / 2
             x_canto_max = (bf_mm + bw_mm) / 2.0 - inp.c_nom - inp.phi_estribo - phi_canto / 2
         else:
-            layer0_bars = sorted([b for b in bar_positions if b.layer == 0], key=lambda b: b.x)
+            layer0_bars = sorted(bars_by_layer.get(0, []), key=lambda b: b.x)
             x_canto_min_lim = x_inf_estribo + phi_canto / 2
             x_canto_max_lim = inp.bw - inp.c_nom - inp.phi_estribo - phi_canto / 2
             if layer0_bars:
@@ -363,7 +396,7 @@ class BeamDetailer:
         for lyr in reinforcement_layers:
             if lyr.bar_count < 3:
                 continue
-            lyr_bars = sorted([b for b in bar_positions if b.layer == lyr.index], key=lambda b: b.x)
+            lyr_bars = sorted(bars_by_layer.get(lyr.index, []), key=lambda b: b.x)
             span = lyr_bars[-1].x - lyr_bars[0].x
             if span > self._MAX_UNSUPPORTED_SPAN_MM:
                 requires_grampos = True
@@ -388,6 +421,16 @@ class BeamDetailer:
         else:
             y_cg = y_cg_raw
             d_efetiva = inp.h - y_cg
+
+        # Invariante final (EP-01.1): nunca devolver altura útil não positiva.
+        # Com as guardas acima ele é alcançado, mas fica como blindagem
+        # explícita contra qualquer futura regressão geométrica.
+        if d_efetiva <= 0:
+            raise ValueError(
+                f"Seção recusada: altura útil efetiva não positiva "
+                f"(d = {d_efetiva:.1f} mm). A armadura não cabe na seção; "
+                f"aumente a altura ou reduza a armadura."
+            )
 
         return SectionLayoutData(
             bw=inp.bw,
