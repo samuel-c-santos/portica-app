@@ -2,10 +2,20 @@
 
 from __future__ import annotations
 
+import importlib.util
 from pathlib import Path
 
-from build import release
 from core.version import APP_VERSION
+
+# `build/` não é um pacote instalável e `requirements-dev.txt` instala o pacote
+# `build` do PyPI (empacotamento PEP 517). Um `from build import release`
+# funcionaria localmente (namespace package) e falharia no CI, onde o pacote
+# regular do PyPI tem precedência. Carregamos o módulo pelo caminho.
+_SPEC = importlib.util.spec_from_file_location(
+    "portica_release", Path(__file__).resolve().parent.parent / "build" / "release.py"
+)
+release = importlib.util.module_from_spec(_SPEC)
+_SPEC.loader.exec_module(release)
 
 
 def test_site_nao_usa_releases_latest_com_asset_versionado():
