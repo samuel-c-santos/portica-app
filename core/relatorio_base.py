@@ -23,6 +23,7 @@ from core.calculos.engenharia import (
     area_barra,
     fcd_mpa,
 )
+from core.calculos.secao import altura_util_cm, d_linha_cm, lambda_f
 from core.utils_tempfile import temp_path
 
 # Cores oficiais do design HTML do usuário
@@ -857,8 +858,8 @@ class PorticaPDF(FPDF):
                 self.set_font("Courier", "", 8.5)
                 self.set_text_color(*C_GRAY900)
 
-                d_lin = cob_mm / 10 + phi_estribo_mm / 10 + r.diametro_mm / 20
-                d_estimada = h_cm - d_lin
+                d_lin = d_linha_cm(cob_mm, phi_estribo_mm, r.diametro_mm)
+                d_estimada = altura_util_cm(h_cm, cob_mm, phi_estribo_mm, r.diametro_mm)
                 # EP-01.9: o PDF imprime a d que o MOTOR usou (convergida no
                 # laço de bitola), não a estimativa de 1 camada recalculada
                 # aqui — a linha do Kc tem que reproduzir o Kc do motor.
@@ -1019,10 +1020,10 @@ class PorticaPDF(FPDF):
                 self.set_font("Courier", "", 8.5)
                 self.set_text_color(*C_GRAY900)
 
-                d_lin = cob_mm / 10 + phi_estribo_mm / 10 + phi_barra_mm / 20
-                d_cm = h_cm - d_lin
+                d_lin = d_linha_cm(cob_mm, phi_estribo_mm, phi_barra_mm)
+                d_cm = altura_util_cm(h_cm, cob_mm, phi_estribo_mm, phi_barra_mm)
 
-                lam = min(0.80, 1.0 - fck_mpa / 250.0)
+                lam = lambda_f(fck_mpa)
                 # EP-01.7: fcd do motor (αc da classe) — antes αc fixo 0,85,
                 # inflando Vrd2 e Vc para C55–C90.
                 fcd = fcd_mpa(fck_mpa)

@@ -7,6 +7,7 @@ Divide cada vao em 3 zonas: Apoio Esq / Vao / Apoio Dir.
 import math
 
 from core.calculos.engenharia import calcular_cisalhamento_viga_comum
+from core.calculos.secao import altura_util_cm
 
 
 def _calc_asw_s(
@@ -89,7 +90,7 @@ def detalhar_estribos(
 
     pontos = sorted(cortantes, key=lambda p: p[0])
     L = max(p[0] for p in pontos)
-    d_cm = h_cm - cobrimento_mm / 10.0 - phi_estribo_mm / 10.0 - diam_barra_mm / 20.0
+    d_cm = altura_util_cm(h_cm, cobrimento_mm, phi_estribo_mm, diam_barra_mm)
     al_m = d_cm / 100
 
     apoios = _encontrar_apoios(pontos)

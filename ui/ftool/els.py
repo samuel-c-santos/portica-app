@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from core.calculos.engenharia import (
     fctm_mpa,
 )
+from core.calculos.secao import BeamModel, ecs_gpa
 
 
 @dataclass
@@ -29,6 +30,20 @@ class AjustesELS:
     phi_minimo_mm: float | None = None
     h_override_cm: float | None = None
     fck_override_mpa: float | None = None
+
+    def aplicar_ao_modelo(self, modelo: BeamModel) -> BeamModel:
+        """Retorna um NOVO ``BeamModel`` com os overrides aplicados (EP-04.1).
+
+        ``d`` nao e armazenado: deriva de ``h``, cobrimento e bitolas do modelo.
+        """
+        mudancas: dict = {}
+        if self.h_override_cm is not None:
+            mudancas["h"] = self.h_override_cm
+        if self.fck_override_mpa is not None:
+            mudancas["fck_mpa"] = self.fck_override_mpa
+        if self.phi_minimo_mm is not None:
+            mudancas["diam_barra_mm"] = self.phi_minimo_mm
+        return modelo.com(**mudancas) if mudancas else modelo
 
     def aplicar_ajustes(
         self,
@@ -54,18 +69,22 @@ class AjustesELS:
         Returns:
             Tuple com (h_cm_ajustado, d_cm_ajustado, as_ajustado, fck_ajustado, phi_ajustado)
         """
-        # Aplicar override de h
-        h_ajustado = self.h_override_cm if self.h_override_cm is not None else h_cm
+        base = BeamModel(
+            h=h_cm,
+            bw=0.0,
+            fck_mpa=fck_mpa,
+            diam_estribo_mm=diam_estribo_mm,
+            diam_barra_mm=phi_barra_mm,
+            cob_mm_override=cobrimento_mm,
+        )
+        ajustado = self.aplicar_ao_modelo(base)
+        h_ajustado = ajustado.h
+        fck_ajustado = ajustado.fck_mpa
+        phi_ajustado = ajustado.diam_barra_mm
 
-        # Aplicar override de fck
-        fck_ajustado = self.fck_override_mpa if self.fck_override_mpa is not None else fck_mpa
-
-        # Aplicar override de phi mínimo
-        phi_ajustado = self.phi_minimo_mm if self.phi_minimo_mm is not None else phi_barra_mm
-
-        # Recalcular d_cm se h ou phi mudaram
-        if h_ajustado != h_cm or phi_ajustado != phi_barra_mm:
-            d_ajustado = h_ajustado - cobrimento_mm / 10 - diam_estribo_mm / 10 - phi_ajustado / 20
+        # d vem do modelo (definicao unica) se h ou phi mudaram; senao mantem o d dado
+        if ajustado.h != base.h or ajustado.diam_barra_mm != base.diam_barra_mm:
+            d_ajustado = ajustado.d_cm
         else:
             d_ajustado = d_cm
 
@@ -136,10 +155,8 @@ def _validar_modelo_biapoiado(momentos: list[tuple[float, float]]) -> str | None
 
 
 def _e_modulus(fck_mpa: float) -> float:
-    """Módulo de elasticidade secante (Ecs) em GPa. NBR 6118:8.2.8."""
-    e_ci = 5600 * math.sqrt(fck_mpa)  # MPa
-    alpha_i = 0.8 + 0.2 * (fck_mpa / 80)  # NBR 6118:8.2.8 (<= 1,0)
-    return e_ci * alpha_i / 1000  # GPa
+    """Módulo de elasticidade secante (Ecs) em GPa. NBR 6118:8.2.8 (via secao.py)."""
+    return ecs_gpa(fck_mpa)
 
 
 def _propriedades_secao_t(

@@ -22,6 +22,7 @@ from core.calculos import (
     calcular_flexao_viga_comum,
     calcular_flexao_viga_t,
 )
+from core.calculos.secao import d_linha_cm
 from core.relatorio_base import gerar_relatorio_viga_comum, gerar_relatorio_viga_t
 from core.utils_tempfile import temp_path
 from ui.entrada import (
@@ -984,10 +985,10 @@ def build_viga_screen(
         try:
             # Validar d (altura util) > 0 antes de calcular
             cob_mm_est = CAA_DATA.get(int(caa_dd.control.value or 2), {}).get("cobrimento", 30)
-            d_lin_est = (
-                cob_mm_est / 10
-                + float(phi_est_dd.control.value or 5) / 10
-                + float(phi_bar_dd.control.value or 16) / 20
+            d_lin_est = d_linha_cm(
+                cob_mm_est,
+                float(phi_est_dd.control.value or 5),
+                float(phi_bar_dd.control.value or 16),
             )
             h = float(h_tf.control.value or 0)
             bw = float(bw_tf.control.value or 0)

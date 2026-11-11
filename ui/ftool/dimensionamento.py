@@ -11,6 +11,7 @@ from core.calculos.engenharia import (
     calcular_flexao_viga_comum,
     calcular_flexao_viga_t,
 )
+from core.calculos.secao import BeamModel
 from ui.ftool.els import AjustesELS
 from ui.ftool.secoes_criticas import (
     SecaoCritica,
@@ -37,6 +38,23 @@ def cobrimento_els_mm(dados_viga: dict[str, Any]) -> float:
     return dados_viga.get("cobrimento_mm") or CAA_DATA[caa]["cobrimento"]
 
 
+def modelo_de_dados_viga(dados_viga: dict[str, Any]) -> BeamModel:
+    """Constroi o ``BeamModel`` (EP-04.1) a partir do dict da UI/FTOOL."""
+    bw = dados_viga.get("bw_cm", 0.0) or 0.0
+    return BeamModel(
+        h=dados_viga["h_cm"],
+        bw=bw,
+        fck_mpa=dados_viga.get("fck_mpa", 25.0),
+        fyk_kn_cm2=dados_viga.get("fyk_kn_cm2", 50.0),
+        caa=dados_viga["caa"],
+        diam_estribo_mm=dados_viga["diam_estribo_mm"],
+        diam_barra_mm=dados_viga["diam_barra_mm"],
+        bf=dados_viga.get("bf_cm") or None,
+        hf=dados_viga.get("hf_cm") or None,
+        cob_mm_override=dados_viga.get("cobrimento_mm") or None,
+    )
+
+
 def d_els_cm(dados_viga: dict[str, Any], d_cm_flexao: float | None = None) -> float:
     """EP-01.6: altura útil do ELS.
 
@@ -45,13 +63,7 @@ def d_els_cm(dados_viga: dict[str, Any], d_cm_flexao: float | None = None) -> fl
     """
     if d_cm_flexao is not None and d_cm_flexao > 0:
         return d_cm_flexao
-    h_cm = dados_viga["h_cm"]
-    return (
-        h_cm
-        - cobrimento_els_mm(dados_viga) / 10.0
-        - dados_viga["diam_estribo_mm"] / 10.0
-        - dados_viga["diam_barra_mm"] / 20.0
-    )
+    return modelo_de_dados_viga(dados_viga).d_cm
 
 
 def armadura_secao_critica_els(

@@ -8,11 +8,21 @@ Licenca: vide LICENSE
 import math
 from dataclasses import dataclass
 
+from core.calculos.secao import (
+    CAA_COBRIMENTO_MM,
+    altura_util_cm,
+    fcd_mpa,
+    fctd_kn_cm2,
+    fctm_mpa,
+    lambda_f,
+)
+from core.calculos.secao import (
+    d_linha_cm as _d_linha_estimada_cm,
+)
 from core.detailing import BeamDetailer, BeamDetailingInput, SectionLayoutData
 
 # ── Constantes ────────────────────────────────────────────────────────────────
-ALPHA_C = 0.85  # NBR 6118
-GAMMA_C = 1.40  # Coeficiente do concreto
+# ALPHA_C e GAMMA_C: fonte unica em core/calculos/secao.py (EP-04.1)
 GAMMA_S = 1.15  # Coeficiente do aço
 GAMMA_F_PP = 1.30  # Peso próprio
 GAMMA_F_RESTO = 1.40  # Demais ações
@@ -35,13 +45,6 @@ BX_DOMINIO_2_3 = 0.259
 BX_DOMINIO_4 = 0.628
 
 
-def lambda_f(fck_mpa: float) -> float:
-    """Fator lambda para resistencia a compressao diagonal (NBR 6118:17.4.2.2).
-    lambda = 1 - fck/250 (para fck > 50). Se fck <= 50, lambda = 0.80.
-    """
-    return min(0.80, 1.0 - fck_mpa / 250.0)
-
-
 # Tabela 11.1 - NBR 6118:2023 - Coeficientes γf (simplificação por combinação)
 # O app recebe esforços característicos (sem majorar) e aplica γf internamente.
 GAMMA_F_TABLE = {
@@ -57,10 +60,10 @@ DIAM_BARRAS_LONG = [10, 12.5, 16, 20, 25, 32]  # armadura longitudinal (NBR 6118
 
 # ── Classes de Agressividade Ambiental ───────────────────────────────────────
 CAA_DATA = {
-    1: {"nome": "Fraca", "cobrimento": 25, "ac_max": 0.65, "fck_min": 20},
-    2: {"nome": "Moderada", "cobrimento": 30, "ac_max": 0.60, "fck_min": 25},
-    3: {"nome": "Forte", "cobrimento": 40, "ac_max": 0.55, "fck_min": 30},
-    4: {"nome": "Muito Forte", "cobrimento": 50, "ac_max": 0.50, "fck_min": 35},
+    1: {"nome": "Fraca", "cobrimento": CAA_COBRIMENTO_MM[1], "ac_max": 0.65, "fck_min": 20},
+    2: {"nome": "Moderada", "cobrimento": CAA_COBRIMENTO_MM[2], "ac_max": 0.60, "fck_min": 25},
+    3: {"nome": "Forte", "cobrimento": CAA_COBRIMENTO_MM[3], "ac_max": 0.55, "fck_min": 30},
+    4: {"nome": "Muito Forte", "cobrimento": CAA_COBRIMENTO_MM[4], "ac_max": 0.50, "fck_min": 35},
 }
 
 # Tabela de rho_min para flexão (fck em MPa)
@@ -107,24 +110,6 @@ def area_barra(d_mm: float) -> float:
     return (math.pi * (d_mm / 10) ** 2) / 4
 
 
-def alpha_c(fck_mpa: float) -> float:
-    """Fator αc do diagrama retangular (NBR 6118:2023, §8.2.10).
-
-    αc = 0,85 para fck ≤ 50 MPa; αc = 0,85·[1 − (fck − 50)/200] para
-    fck > 50 MPa. EP-01.7: função única usada por flexão, cisalhamento,
-    viga T e relatório — antes αc era fixo 0,85 em alguns caminhos,
-    inflando Vrd2 e Vc em ~25% para C55–C90.
-    """
-    if fck_mpa <= 50:
-        return ALPHA_C
-    return ALPHA_C * (1.0 - (fck_mpa - 50.0) / 200.0)
-
-
-def fcd_mpa(fck: float) -> float:
-    """Resistência de cálculo do concreto (MPa) com αc da classe (EP-01.7)."""
-    return alpha_c(fck) * fck / GAMMA_C
-
-
 def fyd_kn_cm2(fyk_kn_cm2: float) -> float:
     """Resistencia de calculo do aco em kN/cm².
 
@@ -134,10 +119,6 @@ def fyd_kn_cm2(fyk_kn_cm2: float) -> float:
     return fyk_kn_cm2 / GAMMA_S
 
 
-def fctm_mpa(fck: float) -> float:
-    return 0.30 * fck ** (2 / 3)
-
-
 def fck_to_kgf_cm2(fck_mpa: float) -> float:
     """Converte fck de MPa para kgf/cm2 (1 MPa = 10,1972 kgf/cm2)."""
     return fck_mpa * 10.1972
@@ -145,10 +126,6 @@ def fck_to_kgf_cm2(fck_mpa: float) -> float:
 
 def fctkinf_mpa(fck: float) -> float:
     return 0.7 * fctm_mpa(fck)
-
-
-def fctd_kn_cm2(fck: float) -> float:
-    return fctkinf_mpa(fck) / 10 / GAMMA_C
 
 
 def _tensao_aco_compressao_kn_cm2(
@@ -186,7 +163,7 @@ def _d_linha_detalhado(
     distância da face comprimida (topo) ao centroide das barras. Em caso de
     recusa geométrica, recai na estimativa de 1 camada.
     """
-    estimativa = cob_mm / 10.0 + diam_estribo_mm / 10.0 + diam_barra_mm / 20.0
+    estimativa = _d_linha_estimada_cm(cob_mm, diam_estribo_mm, diam_barra_mm)
     if qtd_barras_linha <= 0:
         return estimativa
     try:
@@ -400,8 +377,8 @@ def validar_geometria(
     if diam_barra_mm <= 0:
         return f"Barra phi={diam_barra_mm} mm deve ser positivo."
 
-    d_lin = cob_mm / 10 + diam_estribo_mm / 10 + diam_barra_mm / 20
-    d_cm = h_cm - d_lin
+    d_lin = _d_linha_estimada_cm(cob_mm, diam_estribo_mm, diam_barra_mm)
+    d_cm = altura_util_cm(h_cm, cob_mm, diam_estribo_mm, diam_barra_mm)
     if d_cm <= 0:
         return (
             f"Altura util d={d_cm:.1f} cm invalida. "
@@ -480,7 +457,7 @@ def calcular_armadura_pele(
         }
 
     # Altura util: inclui o raio da barra longitudinal (EP-02.6)
-    d_cm = h_cm - cob_mm / 10 - phi_estribo_mm / 10 - phi_barra_mm / 20
+    d_cm = altura_util_cm(h_cm, cob_mm, phi_estribo_mm, phi_barra_mm)
 
     # Espacamento maximo vertical entre barras de pele (NBR 6118:17.3.5.2.3)
     s_max = min(20.0, d_cm / 3)  # cm
@@ -654,8 +631,8 @@ def dimensionar_bitola_iterativa(
         bw_detalhamento_cm = bw_calculo_cm
 
     detailer = BeamDetailer()
-    d_lin_est = cob_mm / 10.0 + diam_estribo_mm / 10.0 + diam_barra_mm / 20.0
-    d_cm = h_cm - d_lin_est
+    d_lin_est = _d_linha_estimada_cm(cob_mm, diam_estribo_mm, diam_barra_mm)
+    d_cm = altura_util_cm(h_cm, cob_mm, diam_estribo_mm, diam_barra_mm)
     d_inicial_cm = d_cm
 
     iteracoes_feitas = 0
@@ -932,8 +909,8 @@ def calcular_flexao_viga_comum(
         raise ValueError(erro_geo)
 
     # Parametros da CAA
-    d_lin = cob_mm / 10 + diam_estribo_mm / 10 + diam_barra_mm / 20
-    d_cm = h_cm - d_lin
+    d_lin = _d_linha_estimada_cm(cob_mm, diam_estribo_mm, diam_barra_mm)
+    d_cm = altura_util_cm(h_cm, cob_mm, diam_estribo_mm, diam_barra_mm)
 
     rho_min_val = rho_min(fck_mpa)
     as_diametros = [area_barra(d) for d in DIAM_BARRAS]
@@ -1240,8 +1217,7 @@ def calcular_cisalhamento_viga_comum(
     if erro_geo:
         raise ValueError(erro_geo)
 
-    d_lin = cob_mm / 10 + diam_estribo_mm / 10 + diam_barra_mm / 20
-    d_cm = h_cm - d_lin
+    d_cm = altura_util_cm(h_cm, cob_mm, diam_estribo_mm, diam_barra_mm)
 
     fcd = fcd_mpa(fck_mpa)  # MPa
     fctm = fctm_mpa(fck_mpa)
@@ -1463,8 +1439,8 @@ def calcular_flexao_viga_t(
     if hf_cm >= h_cm:
         raise ValueError(f"Altura da mesa hf={hf_cm} cm >= h={h_cm} cm (mesa maior que viga).")
 
-    d_lin = cob_mm / 10 + diam_estribo_mm / 10 + diam_barra_mm / 20
-    d_cm = h_cm - d_lin
+    d_lin = _d_linha_estimada_cm(cob_mm, diam_estribo_mm, diam_barra_mm)
+    d_cm = altura_util_cm(h_cm, cob_mm, diam_estribo_mm, diam_barra_mm)
 
     bf_efetivo = bf_efetivo_viga_t(
         bw_cm,
