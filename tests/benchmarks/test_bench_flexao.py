@@ -8,12 +8,9 @@ NBR 6118:2023, §17.3.2 (domínio 2):
     z = d − 0,4x ;  As = Md/(fyd·z) ;  βx = x/d
     fcd = αc·fck/1,4 ;  fyd = fyk/1,15
 
-ATENÇÃO: o motor usa HOJE a calibração empírica da planilha
-(a = −0,192·(fck/10)·Kc; b = 0,48·(fck/10)·Kc; braço d − x/2 — EP-02.1
-pendente). Os benchmarks do equilíbrio NBR estão marcados
-`pytest.xfail(strict=True)`: quando o EP-02.1 implementar o equilíbrio
-normativo, eles viram XPASS e o `strict=True` falha o run — o xfail deve
-ser removido conscientemente.
+EP-02.1: o motor passou a usar o equilíbrio normativo (a calibração
+empírica da planilha foi removida). Os benchmarks abaixo são asserções
+diretas — não há mais xfail.
 
 A conta é feita com a `d` CONVERGIDA do motor (r.d_cm_real) para isolar a
 diferença de fórmula da diferença de geometria (nº de camadas).
@@ -106,11 +103,6 @@ class TestEquilibrioNBR:
         d = r.d_cm_real
         x = _x_nbr(r.momento_kNm * 100, caso["fck_mpa"], caso["bw_cm"], d)
         beta_x = x / d
-        pytest.xfail(
-            "motor usa calibração empírica da planilha (EP-02.1); "
-            f"{caso['doc']} | d convergida={d:.2f} cm → "
-            f"NBR: x={x:.3f} cm, βx={beta_x:.5f} (motor: bx={r.bx:.5f})"
-        )
         assert r.bx == pytest.approx(beta_x, rel=0.005)
         assert r.x_cm == pytest.approx(x, rel=0.005)
 
@@ -123,11 +115,6 @@ class TestEquilibrioNBR:
         x = _x_nbr(r.momento_kNm * 100, caso["fck_mpa"], caso["bw_cm"], d)
         z = d - 0.4 * x
         as_nbr = r.momento_kNm * 100 / (FYD * z)
-        pytest.xfail(
-            "motor usa calibração empírica (braço d − x/2 vs NBR d − 0,4x); "
-            f"{caso['doc']} | d convergida={d:.2f} cm → "
-            f"NBR: z={z:.3f} cm, As={as_nbr:.4f} cm² (motor: {r.as_req_cm2:.4f})"
-        )
         assert r.as_req_cm2 == pytest.approx(as_nbr, rel=0.005)
 
 

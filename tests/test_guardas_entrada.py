@@ -106,9 +106,14 @@ class TestEnvelopeCombMalformada:
         assert isinstance(secoes, list)
 
 
-class TestSentinelaBx999:
+class TestSemSentinelaBx999:
     def test_t_negativo_x_cm_nunca_sentinela(self):
-        """Seção insuficiente (bx=999) nunca imprime X = 999·d no resultado."""
+        """Seção recusada nunca imprime X = 999·d no resultado.
+
+        EP-02.1: o equilíbrio NBR + armadura dupla elimina o sentinela bx=999
+        do caminho retangular; a seção é recusada pelo detalhamento, com x
+        finito e menor que d.
+        """
         res = calcular_flexao_viga_t(
             h_cm=50.0,
             bw_cm=12.0,
@@ -122,5 +127,7 @@ class TestSentinelaBx999:
             momentos=[-400.0],
         )
         r = res[0]
-        assert r.bx == 999.0  # caso de sentinela reproduzido
-        assert r.x_cm is None
+        assert r.bx == pytest.approx(0.45, abs=1e-9)
+        assert r.bx < 0.628
+        assert r.x_cm is not None and r.x_cm < r.d_cm_real
+        assert r.status_bitola in ("NÃO CABE", "NÃO CONVERGIU")

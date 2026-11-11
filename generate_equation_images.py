@@ -43,8 +43,9 @@ render(r"$d \;=\; h - c - \phi_{t} - \dfrac{\phi_{l}}{2}$", "eq_d.png")
 render(r"$KC \;=\; \dfrac{b_{w}\,d^{2}}{M_{d}}$", "eq_kc.png")
 
 render(
-    r"$-0{,}192\,\dfrac{f_{ck}}{10}\,KC\;\beta_{x}^{\,2} \;+\; 0{,}48\,\dfrac{f_{ck}}{10}\,KC\;\beta_{x} \;-\; 1 \;=\; 0$",
+    r"$0{,}4\,x^{2} \;-\; d\,x \;+\; \dfrac{M_{d}}{f_{cd}\,b} \;=\; 0$",
     "eq_2grau.png",
+    width=10,
 )
 
 render(
@@ -57,7 +58,7 @@ render(
 render(r"$x \;=\; \beta_{x}\,d$", "eq_x.png")
 
 render(
-    r"$k_{s} \;=\; \dfrac{1}{f_{yd}\,(1-\beta_{x}/2)} \,/\,10 \qquad \mathrm{[cm^{2}/(kN\cdot m)]}$",
+    r"$k_{s} \;=\; \dfrac{1}{f_{yd}\,(1-0{,}4\,\beta_{x})} \qquad \mathrm{[cm^{2}/kN]}$",
     "eq_ks.png",
     width=11.5,
 )

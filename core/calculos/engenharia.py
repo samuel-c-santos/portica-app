@@ -134,6 +134,62 @@ def fctd_kn_cm2(fck: float) -> float:
     return fctkinf_mpa(fck) / 10 / GAMMA_C
 
 
+def _bx_lim_ductilidade(fck_mpa: float) -> float:
+    """Limite de ductilidade x/d (NBR 6118:2023, 14.6.4.3, δ=1,0).
+
+    Para δ = 1,0 (sem redistribuição), os limites de 14.6.4.3 resultam em
+    x/d ≤ (1,0 − 0,44)/1,25 = 0,448 ≈ 0,45 (fck ≤ 50 MPa) e
+    x/d ≤ (1,0 − 0,56)/1,25 = 0,352 ≈ 0,35 (fck > 50 MPa).
+    """
+    return 0.45 if fck_mpa <= 50 else 0.35
+
+
+def _eta_diagrama_retangular(fck_mpa: float) -> float:
+    """Profundidade do diagrama retangular λ (NBR 6118:2023, 17.2.2-e).
+
+    λ = 0,8 para fck ≤ 50 MPa; λ = 0,8 − (fck − 50)/400 para fck > 50 MPa.
+    """
+    if fck_mpa <= 50:
+        return 0.80
+    return 0.80 - (fck_mpa - 50.0) / 400.0
+
+
+def _resolver_ln(
+    md_kncm: float, fck_mpa: float, b_cm: float, d_cm: float
+) -> tuple[float | None, float, float]:
+    """Resolve o equilíbrio NBR da linha neutra (NBR 6118:2023, 17.2.2).
+
+    Md = fcd·b·x·(d − 0,4x)  →  0,4x² − d·x + Md/(fcd·b) = 0.
+
+    Retorna (x, x1, x2) com x = menor raiz (domínio 2/3). Se o discriminante
+    for negativo (momento acima da capacidade da seção com armadura simples),
+    retorna (None, 0, 0) — o chamador decide entre armadura dupla e recusa.
+    """
+    fcd = fcd_mpa(fck_mpa) / 10.0  # kN/cm²
+    if fcd <= 0 or b_cm <= 0 or d_cm <= 0:
+        return None, 0.0, 0.0
+    c = md_kncm / (fcd * b_cm)
+    delta = d_cm**2 - 1.6 * c
+    if delta < 0:
+        return None, 0.0, 0.0
+    raiz = math.sqrt(delta)
+    x1 = (d_cm - raiz) / 0.8
+    x2 = (d_cm + raiz) / 0.8
+    return min(x1, x2), x1, x2
+
+
+def _momento_limite_ln(
+    fck_mpa: float, b_cm: float, d_cm: float, bx_lim: float
+) -> tuple[float, float]:
+    """Momento limite (kN·cm) e x (cm) no limite de ductilidade bx_lim.
+
+    Md,lim = fcd·b·x_lim·(d − 0,4·x_lim), x_lim = bx_lim·d.
+    """
+    fcd = fcd_mpa(fck_mpa) / 10.0  # kN/cm²
+    x_lim = bx_lim * d_cm
+    return fcd * b_cm * x_lim * (d_cm - 0.4 * x_lim), x_lim
+
+
 def _denom_as2(d_cm: float, d_lin: float, contexto: str) -> float:
     """EP-01.4: guarda `d − d' > 0` para o braço da armadura dupla.
 
@@ -446,39 +502,13 @@ def dimensionar_bitola_iterativa(
         iteracoes_feitas = it
 
         Md_kNcm = abs(Md_kNm) * 100.0
-        kc = (bw_calculo_cm * d_cm**2) / Md_kNcm if Md_kNcm != 0 else 0
 
-        fck_conv = fck_mpa / 10.0
         fyd = fyd_kn_cm2(fyk_mpa)
-        a_coef = -0.192 * fck_conv * kc
-        b_coef = 0.48 * fck_conv * kc
-        c_coef = -1.0
+        bx_min = _bx_lim_ductilidade(fck_mpa)
+        md_lim_kNcm, x_lim_cm = _momento_limite_ln(fck_mpa, bw_calculo_cm, d_cm, bx_min)
 
-        delta = b_coef**2 - 4 * a_coef * c_coef
-        if delta < 0 or a_coef == 0:
-            bx = 999.0
-            x1 = x2 = 0.0
-        else:
-            sq = math.sqrt(delta)
-            x1 = (-b_coef + sq) / (2 * a_coef)
-            x2 = (-b_coef - sq) / (2 * a_coef)
-            if x1 < 0:
-                bx = x2 if 0 < x2 < 0.628 else 999.0
-            elif x2 < 0:
-                bx = x1 if 0 < x1 < 0.628 else 999.0
-            else:
-                cand = sorted([x1, x2])
-                bx = cand[0] if 0 < cand[0] < 0.628 else (cand[1] if 0 < cand[1] < 0.628 else 999.0)
-
-        bx_min = 0.45 if fck_mpa <= 50 else 0.35
-        kc_lim = 1.0 / (fck_conv * bx_min * (0.48 - 0.192 * bx_min))
-        Md_lim_kNcm = (bw_calculo_cm * d_cm**2) / kc_lim
-        Md_lim_kNm = Md_lim_kNcm / 100.0
-
-        if abs(Md_kNm) > Md_lim_kNm:
-            md_exc_kNcm = (abs(Md_kNm) - Md_lim_kNm) * 100.0
-            ks_lim = 1.0 / (fyd * (1.0 - bx_min / 2.0))
-            as1 = ks_lim * Md_lim_kNcm / d_cm
+        if Md_kNcm > md_lim_kNcm:
+            # Armadura dupla mantém a linha neutra no limite de ductilidade.
             denom = _denom_as2(
                 d_cm,
                 d_lin_est,
@@ -488,14 +518,15 @@ def dimensionar_bitola_iterativa(
                     f"Ø{diam_barra_mm:g} mm, iteração {it}"
                 ),
             )
-            as2 = md_exc_kNcm / (fyd * denom)
+            as1 = md_lim_kNcm / (fyd * (d_cm - 0.4 * x_lim_cm))
+            as2 = (Md_kNcm - md_lim_kNcm) / (fyd * denom)
             as_req = as1 + as2
         else:
-            if bx >= bx_min or bx >= 0.628:
+            x_ln, _x1, _x2 = _resolver_ln(Md_kNcm, fck_mpa, bw_calculo_cm, d_cm)
+            if x_ln is None or x_ln <= 0:
                 as_req = 0.0
             else:
-                ks = 1.0 / (fyd * (1.0 - bx / 2.0))
-                as_req = ks * Md_kNcm / d_cm
+                as_req = Md_kNcm / (fyd * (d_cm - 0.4 * x_ln))
 
         asmin = rho_min(fck_mpa) * bw_detalhamento_cm * h_cm / 100.0
         as_necessaria = max(as_req, asmin)
@@ -771,113 +802,75 @@ def calcular_flexao_viga_comum(
                 f"armadura; aumente h ou bw."
             )
 
-        # KC = bw·d² / Md
-        # Formula empirica (coef 0.192/0.48) exige Md em kN·cm e fcd em kN/cm².
-        # Converte Md para kN·cm (×100) para consistencia de unidades.
         Md_kNcm = abs(Md_kNm) * 100
         kc = (bw_cm * d_cm**2) / Md_kNcm if Md_kNcm != 0 else 0
 
-        # Coeficientes da equacao do 2º grau: a·x² + b·x + c = 0
-        # fck/10 ~ fcd empirico da planilha (em kN/cm²)
-        fck_conv = fck_mpa / 10  # MPa -> kN/cm² (formula empirica)
         fyd = fyd_kn_cm2(fyk_mpa)  # kN/cm² (fyk entra em kN/cm²)
+        bx_min = _bx_lim_ductilidade(fck_mpa)
+        md_lim_kNcm, x_lim_cm = _momento_limite_ln(fck_mpa, bw_cm, d_cm, bx_min)
 
-        a_coef = -0.192 * fck_conv * kc
-        b_coef = 0.48 * fck_conv * kc
-        c_coef = -1
+        # Equilíbrio NBR em x (não em βx): 0,4·x² − d·x + Md/(fcd·b) = 0
+        a_coef = 0.4
+        b_coef = -d_cm
+        x1 = x2 = 0.0
 
-        delta = b_coef**2 - 4 * a_coef * c_coef
-        if delta < 0 or a_coef == 0:
-            bx = 999
-            x1 = x2 = 0
-        else:
-            sq = math.sqrt(delta)
-            x1 = (-b_coef + sq) / (2 * a_coef)
-            x2 = (-b_coef - sq) / (2 * a_coef)
-
-            # Selecionar x válido (0 < x < 0.628)
-            if x1 < 0:
-                bx = x2 if 0 < x2 < 0.628 else 999
-            elif x2 < 0:
-                bx = x1 if 0 < x1 < 0.628 else 999
-            else:
-                # Ambas positivas: escolher a menor dentro do dominio 0 < bx < 0.628
-                cand = sorted([x1, x2])
-                bx = cand[0] if 0 < cand[0] < 0.628 else (cand[1] if 0 < cand[1] < 0.628 else 999)
-
-        # bx mínimo/limite conforme NBR 6118
-        bx_min = 0.45 if fck_mpa <= 50 else 0.35
-        kc_lim = 1.0 / (fck_conv * bx_min * (0.48 - 0.192 * bx_min))
-        Md_lim_kNcm = (bw_cm * d_cm**2) / kc_lim
-        Md_lim_kNm = Md_lim_kNcm / 100
-
-        # Inicializar variáveis de armadura dupla
         armadura_dupla = False
         as_linha_cm2 = 0.0
         as_linha_adotada = 0.0
-        md_limite_knm = Md_lim_kNm
+        md_limite_knm = md_lim_kNcm / 100.0
         md_excedente_knm = 0.0
 
-        # Verificar se armadura dupla é necessária
-        if abs(Md_kNm) > Md_lim_kNm:
+        if Md_kNcm > md_lim_kNcm:
             armadura_dupla = True
-            md_excedente_knm = abs(Md_kNm) - Md_lim_kNm
-            md_exc_kNcm = md_excedente_knm * 100
-
-            # ks limite
-            ks = 1 / (fyd * (1 - bx_min / 2))
-
-            # As1 (tracionada limite)
-            as1 = ks * Md_lim_kNcm / d_cm
-
-            # As2 (tracionada adicional) e As' (comprimida)
-            as2 = md_exc_kNcm / (fyd * (d_cm - d_lin))
+            md_excedente_knm = (Md_kNcm - md_lim_kNcm) / 100.0
+            ks = 1.0 / (fyd * (1.0 - 0.4 * bx_min))
+            as1 = md_lim_kNcm / (fyd * (d_cm - 0.4 * x_lim_cm))
+            as2 = (Md_kNcm - md_lim_kNcm) / (
+                fyd
+                * _denom_as2(
+                    d_cm,
+                    d_lin,
+                    contexto=(
+                        f"Mk={Mk_kNm:+.1f} kN·m (Md={Md_kNm:.1f} kN·m, γf={gamma_f}), "
+                        f"seção {bw_cm:.0f}×{h_cm:.0f} cm, Ø{diam_barra_mm:g} mm, "
+                        f"cob={cob_mm:.0f} mm, CAA {caa}"
+                    ),
+                )
+            )
             as_linha_cm2 = as2
-
-            # As total requerida
             as_req = as1 + as2
-
             bx = bx_min
+            x_cm = x_lim_cm
+            x1 = x2 = x_lim_cm
             bx_passa = "SIM"
             alerta = (
                 f"Armadura dupla utilizada (bx={bx_min:.2f}). "
                 f"As = {as_req:.2f} cm² | As' = {as_linha_cm2:.2f} cm²."
             )
         else:
-            # Armadura simples
-            bx_passa = "SIM" if bx < bx_min else "NÃO"
-            dominio_ok = bx < 0.628
-            if not dominio_ok or bx >= bx_min:
-                ks = 0
-                as_req = 0
-            else:
-                ks = 1 / (fyd * (1 - bx / 2))
-                as_req = ks * Md_kNcm / d_cm
-
-            # Alerta da armadura simples
-            if bx >= 999:
+            x_ln, x1, x2 = _resolver_ln(Md_kNcm, fck_mpa, bw_cm, d_cm)
+            if x_ln is None or x_ln <= 0:
+                bx = 999.0
+                bx_passa = "NÃO"
+                ks = 0.0
+                as_req = 0.0
+                x_cm = 999.0 * d_cm
                 alerta = (
                     f"Seção insuficiente para o momento Mk={Mk_kNm:+.1f} kN·m "
                     f"(Md={Md_kNm:.1f} kN·m, γf={gamma_f}). "
-                    f"KC={kc:.2f} abaixo do mínimo para a seção {bw_cm:.0f}×{h_cm:.0f} cm. "
+                    f"KC={kc:.2f} abaixo do mínimo para a seção "
+                    f"{bw_cm:.0f}×{h_cm:.0f} cm. "
                     f"Soluções: aumente h ou bw, aumente fck, ou reduza o momento."
                 )
-            elif bx >= 0.628:
-                alerta = (
-                    f"Relação bx={bx:.3f} acima do limite 0,628 (domínio 4). "
-                    f"Mk={Mk_kNm:+.1f} kN·m, seção {bw_cm:.0f}×{h_cm:.0f} cm. "
-                    f"Soluções: aumente h para reduzir bx, ou aumente bw."
-                )
             else:
+                bx = x_ln / d_cm
+                x_cm = x_ln
+                bx_passa = "SIM" if bx <= bx_min + 1e-9 else "NÃO"
+                ks = 1.0 / (fyd * (1.0 - 0.4 * bx))
+                as_req = Md_kNcm / (fyd * (d_cm - 0.4 * x_ln))
                 alerta = ""
 
-        # Altura da linha neutra
-        x_cm = bx * d_cm
-
-        # Asmin
         asmin = rho_min_val * bw_cm * h_cm / 100  # cm²
-
-        # As utilizado
         as_necessaria = max(as_req, asmin)
 
         # Número de barras pelo diâmetro escolhido (convergido)
@@ -1310,250 +1303,161 @@ def calcular_flexao_viga_t(
                 f"aumente h ou bw."
             )
 
-        # Fator eta de profundidade para classes de concreto
-        if fck_mpa <= 50:
-            eta = 0.8
-        else:
-            eta = 0.8 - (fck_mpa - 50) / 400.0
-
-        # Relação limite bx_min conforme NBR 6118
-        bx_min = 0.45 if fck_mpa <= 50 else 0.35
-        kc_lim = 1.0 / (fck_conv * bx_min * (0.48 - 0.192 * bx_min))
-
+        eta = _eta_diagrama_retangular(fck_mpa)
+        bx_min = _bx_lim_ductilidade(fck_mpa)
+        fcd_kn_cm2 = fcd_mpa(fck_mpa) / 10.0
         Md_kNcm = abs(Md_kNm) * 100.0
 
+        b_kc = bf_efetivo if Mk_kNm > 0 else bw_cm
+        kc = (b_kc * d_cm**2) / Md_kNcm if Md_kNcm != 0 else 0
+
+        a_coef = 0.4
+        b_coef = -d_cm
+        x1 = x2 = 0.0
+        as_linha_cm2 = 0.0
+
         if Mk_kNm > 0:
-            # Momento positivo: compressão no topo (mesa)
-            # 1. Tenta calcular assumindo LN na mesa (largura bf_efetivo)
-            kc = (bf_efetivo * d_cm**2) / Md_kNcm if Md_kNcm != 0 else 0
-            a_coef = -0.192 * fck_conv * kc
-            b_coef = 0.48 * fck_conv * kc
-            c_coef = -1.0
+            # 1. Equilíbrio tratando a seção como retangular de largura bf,ef.
+            x_mesa, x1m, x2m = _resolver_ln(Md_kNcm, fck_mpa, bf_efetivo, d_cm)
+            md_lim_mesa, x_lim_mesa = _momento_limite_ln(fck_mpa, bf_efetivo, d_cm, bx_min)
+            na_mesa = x_mesa is not None and eta * x_mesa < hf_cm
 
-            delta = b_coef**2 - 4 * a_coef * c_coef
-            if delta < 0 or a_coef == 0:
-                bx = 999.0
-                x1 = x2 = 0.0
-            else:
-                sq = math.sqrt(delta)
-                x1 = (-b_coef + sq) / (2 * a_coef)
-                x2 = (-b_coef - sq) / (2 * a_coef)
-                if x1 < 0:
-                    bx = x2 if 0 < x2 < 0.628 else 999.0
-                elif x2 < 0:
-                    bx = x1 if 0 < x1 < 0.628 else 999.0
-                else:
-                    cand = sorted([x1, x2])
-                    bx = (
-                        cand[0]
-                        if 0 < cand[0] < 0.628
-                        else (cand[1] if 0 < cand[1] < 0.628 else 999.0)
-                    )
-
-            x_cm = bx * d_cm
-
-            # Verifica se a linha neutra está realmente na mesa colaborante
-            if eta * x_cm < hf_cm:
+            if na_mesa:
                 ln_condiz = "SIM"
-                if bx >= 999.0:
-                    alerta = (
-                        f"Seção insuficiente para o momento Mk={Mk_kNm:+.1f} kN·m "
-                        f"(Md={Md_kNm:.1f} kN·m, γf={gamma_f}). "
-                        f"KC={kc:.2f} abaixo do mínimo para a seção {bf_efetivo:.0f}×{h_cm:.0f} cm."
-                    )
-                    as_req = 0.0
-                    as_linha_cm2 = 0.0
-                elif bx >= 0.628:
-                    alerta = (
-                        f"Relação bx={bx:.3f} acima do limite 0,628 (domínio 4). "
-                        f"Soluções: aumente h para reduzir bx, ou aumente bw."
-                    )
-                    as_req = 0.0
-                    as_linha_cm2 = 0.0
-                elif bx >= bx_min:
-                    # Armadura dupla na mesa colaborante
-                    Md_lim_kNcm = (bf_efetivo * d_cm**2) / kc_lim
-                    md_exc_kNcm = Md_kNcm - Md_lim_kNcm
-                    ks_lim = 1.0 / (fyd * (1.0 - bx_min / 2.0))
-                    as1 = ks_lim * Md_lim_kNcm / d_cm
-                    denom = _denom_as2(
-                        d_cm,
-                        d_lin,
-                        contexto=(
-                            f"Mk={Mk_kNm:+.1f} kN·m (Md={Md_kNm:.1f} kN·m), "
-                            f"seção T {bw_cm:.0f}×{h_cm:.0f} cm, Ø{diam_barra_mm:g} mm"
-                        ),
-                    )
-                    as2 = md_exc_kNcm / (fyd * denom)
-                    as_req = as1 + as2
-                    as_linha_cm2 = as2
-                    alerta = (
-                        f"Armadura dupla utilizada na mesa (bx={bx_min:.2f}). "
-                        f"As = {as_req:.2f} cm² | As' = {as_linha_cm2:.2f} cm²."
-                    )
-                    bx = bx_min
-                else:
-                    ks = 1.0 / (fyd * (1.0 - bx / 2.0))
-                    as_req = ks * Md_kNcm / d_cm
-                    as_linha_cm2 = 0.0
-                    alerta = ""
-            else:
-                ln_condiz = "NÃO"
-                # Linha neutra na alma: decomposição do momento fletor
-                # EP-01.7: αc da classe via função única (era duplicado aqui)
-                stress_block_fcd = fcd_mpa(fck_mpa) / 10.0  # kN/cm^2
-
-                Md1_kNcm = stress_block_fcd * (bf_efetivo - bw_cm) * hf_cm * (d_cm - hf_cm / 2.0)
-
-                if Md_kNcm <= Md1_kNcm:
-                    as_req = Md_kNcm / (fyd * (d_cm - hf_cm / 2.0))
-                    as_linha_cm2 = 0.0
-                    alerta = "Momento resistido pelas abas da mesa colaborante."
-                    bx = (hf_cm / eta) / d_cm if d_cm > 0 else 0.0
-                else:
-                    Md2_kNcm = Md_kNcm - Md1_kNcm
-                    Md2_lim_kNcm = (bw_cm * d_cm**2) / kc_lim
-                    if Md2_kNcm > Md2_lim_kNcm:
-                        # Armadura dupla necessária na alma
-                        Md2_exc_kNcm = Md2_kNcm - Md2_lim_kNcm
-
-                        ks_lim = 1.0 / (fyd * (1.0 - bx_min / 2.0))
-                        as2_1 = ks_lim * Md2_lim_kNcm / d_cm
-
-                        denom = _denom_as2(
+                x1, x2 = x1m, x2m
+                if Md_kNcm > md_lim_mesa:
+                    as1 = md_lim_mesa / (fyd * (d_cm - 0.4 * x_lim_mesa))
+                    as2 = (Md_kNcm - md_lim_mesa) / (
+                        fyd
+                        * _denom_as2(
                             d_cm,
                             d_lin,
                             contexto=(
                                 f"Mk={Mk_kNm:+.1f} kN·m (Md={Md_kNm:.1f} kN·m), "
-                                f"seção T {bw_cm:.0f}×{h_cm:.0f} cm (alma), "
+                                f"seção T {bw_cm:.0f}×{h_cm:.0f} cm, "
                                 f"Ø{diam_barra_mm:g} mm"
                             ),
                         )
-                        as2_2 = Md2_exc_kNcm / (fyd * denom)
+                    )
+                    as_req = as1 + as2
+                    as_linha_cm2 = as2
+                    bx = bx_min
+                    x_cm = x_lim_mesa
+                    alerta = (
+                        f"Armadura dupla utilizada na mesa (bx={bx_min:.2f}). "
+                        f"As = {as_req:.2f} cm² | As' = {as_linha_cm2:.2f} cm²."
+                    )
+                else:
+                    bx = x_mesa / d_cm
+                    x_cm = x_mesa
+                    as_req = Md_kNcm / (fyd * (d_cm - 0.4 * x_mesa))
+                    alerta = ""
+            else:
+                ln_condiz = "NÃO"
+                # 2. Linha neutra na alma: decompõe o momento nas abas e na alma.
+                md1 = fcd_kn_cm2 * (bf_efetivo - bw_cm) * hf_cm * (d_cm - hf_cm / 2.0)
+                as1 = md1 / (fyd * (d_cm - hf_cm / 2.0)) if md1 > 0 else 0.0
+
+                if Md_kNcm <= md1:
+                    as_req = Md_kNcm / (fyd * (d_cm - hf_cm / 2.0)) if Md_kNcm > 0 else 0.0
+                    bx = (hf_cm / eta) / d_cm if d_cm > 0 else 0.0
+                    x_cm = bx * d_cm
+                    alerta = "Momento resistido pelas abas da mesa colaborante."
+                else:
+                    Md2_kNcm = Md_kNcm - md1
+                    md2_lim, x_lim2 = _momento_limite_ln(fck_mpa, bw_cm, d_cm, bx_min)
+                    if Md2_kNcm > md2_lim:
+                        as2_1 = md2_lim / (fyd * (d_cm - 0.4 * x_lim2))
+                        as2_2 = (Md2_kNcm - md2_lim) / (
+                            fyd
+                            * _denom_as2(
+                                d_cm,
+                                d_lin,
+                                contexto=(
+                                    f"Mk={Mk_kNm:+.1f} kN·m (Md={Md_kNm:.1f} kN·m), "
+                                    f"seção T {bw_cm:.0f}×{h_cm:.0f} cm (alma), "
+                                    f"Ø{diam_barra_mm:g} mm"
+                                ),
+                            )
+                        )
                         as2 = as2_1 + as2_2
                         as_linha_cm2 = as2_2
-
-                        as1 = Md1_kNcm / (fyd * (d_cm - hf_cm / 2.0))
                         as_req = as1 + as2
                         bx = bx_min
+                        x_cm = x_lim2
                         alerta = (
-                            f"Linha neutra fora da mesa colaborante (0,8x={eta * bx * d_cm:.1f} cm >= hf={hf_cm:.1f} cm) "
-                            f"com armadura dupla na alma. As = {as_req:.2f} cm² | As' = {as_linha_cm2:.2f} cm²."
+                            f"Linha neutra fora da mesa colaborante "
+                            f"({eta:.2f}x={eta * bx * d_cm:.1f} cm >= hf={hf_cm:.1f} cm) "
+                            f"com armadura dupla na alma. As = {as_req:.2f} cm² | "
+                            f"As' = {as_linha_cm2:.2f} cm²."
                         )
                     else:
-                        kc2 = (bw_cm * d_cm**2) / Md2_kNcm
-                        a_coef2 = -0.192 * fck_conv * kc2
-                        b_coef2 = 0.48 * fck_conv * kc2
-                        c_coef2 = -1.0
-
-                        delta2 = b_coef2**2 - 4 * a_coef2 * c_coef2
-                        if delta2 < 0 or a_coef2 == 0:
-                            bx2 = 999.0
-                            x1_2 = x2_2 = 0.0
-                        else:
-                            sq2 = math.sqrt(delta2)
-                            x1_2 = (-b_coef2 + sq2) / (2 * a_coef2)
-                            x2_2 = (-b_coef2 - sq2) / (2 * a_coef2)
-                            if x1_2 < 0:
-                                bx2 = x2_2 if 0 < x2_2 < 0.628 else 999.0
-                            elif x2_2 < 0:
-                                bx2 = x1_2 if 0 < x1_2 < 0.628 else 999.0
-                            else:
-                                cand2 = sorted([x1_2, x2_2])
-                                bx2 = (
-                                    cand2[0]
-                                    if 0 < cand2[0] < 0.628
-                                    else (cand2[1] if 0 < cand2[1] < 0.628 else 999.0)
-                                )
-
-                        bx = bx2
-                        if bx2 >= 999.0:
-                            alerta = f"Seção insuficiente na alma para o momento Md2={Md2_kNcm / 100:.1f} kN·m."
+                        x_alma, x1w, x2w = _resolver_ln(Md2_kNcm, fck_mpa, bw_cm, d_cm)
+                        if x_alma is None or x_alma <= 0:
+                            bx = 999.0
+                            x_cm = 999.0 * d_cm
                             as_req = 0.0
-                            as_linha_cm2 = 0.0
-                        elif bx2 >= 0.628:
-                            alerta = f"bx na alma ({bx2:.3f}) acima de 0,628. Aumente a seção."
-                            as_req = 0.0
-                            as_linha_cm2 = 0.0
+                            alerta = (
+                                f"Seção insuficiente na alma para o momento "
+                                f"Md2={Md2_kNcm / 100:.1f} kN·m."
+                            )
                         else:
-                            ks2 = 1.0 / (fyd * (1.0 - bx2 / 2.0))
-                            as2 = ks2 * Md2_kNcm / d_cm
-                            as_linha_cm2 = 0.0
-
-                            as1 = Md1_kNcm / (fyd * (d_cm - hf_cm / 2.0))
+                            bx = x_alma / d_cm
+                            x_cm = x_alma
+                            x1, x2 = x1w, x2w
+                            as2 = Md2_kNcm / (fyd * (d_cm - 0.4 * x_alma))
                             as_req = as1 + as2
                             alerta = (
-                                f"Linha neutra fora da mesa colaborante (0,8x={eta * bx2 * d_cm:.1f} cm >= hf={hf_cm:.1f} cm). "
-                                f"As1 (abas) = {as1:.2f} cm² | As2 (alma) = {as2:.2f} cm²."
+                                f"Linha neutra fora da mesa colaborante "
+                                f"({eta:.2f}x={eta * bx * d_cm:.1f} cm >= "
+                                f"hf={hf_cm:.1f} cm). "
+                                f"As1 (abas) = {as1:.2f} cm² | "
+                                f"As2 (alma) = {as2:.2f} cm²."
                             )
         else:
-            # Momento negativo: compressão na base (largura bw_cm)
+            # Momento negativo: seção retangular com largura bw.
             ln_condiz = "SIM"
-            kc = (bw_cm * d_cm**2) / Md_kNcm if Md_kNcm != 0 else 0
-            a_coef = -0.192 * fck_conv * kc
-            b_coef = 0.48 * fck_conv * kc
-            c_coef = -1.0
-
-            delta = b_coef**2 - 4 * a_coef * c_coef
-            if delta < 0 or a_coef == 0:
-                bx = 999.0
-                x1 = x2 = 0.0
-            else:
-                sq = math.sqrt(delta)
-                x1 = (-b_coef + sq) / (2 * a_coef)
-                x2 = (-b_coef - sq) / (2 * a_coef)
-                if x1 < 0:
-                    bx = x2 if 0 < x2 < 0.628 else 999.0
-                elif x2 < 0:
-                    bx = x1 if 0 < x1 < 0.628 else 999.0
-                else:
-                    cand = sorted([x1, x2])
-                    bx = (
-                        cand[0]
-                        if 0 < cand[0] < 0.628
-                        else (cand[1] if 0 < cand[1] < 0.628 else 999.0)
+            md_lim, x_lim = _momento_limite_ln(fck_mpa, bw_cm, d_cm, bx_min)
+            if Md_kNcm > md_lim:
+                as1 = md_lim / (fyd * (d_cm - 0.4 * x_lim))
+                as2 = (Md_kNcm - md_lim) / (
+                    fyd
+                    * _denom_as2(
+                        d_cm,
+                        d_lin,
+                        contexto=(
+                            f"Mk={Mk_kNm:+.1f} kN·m (Md={Md_kNm:.1f} kN·m), "
+                            f"seção T {bw_cm:.0f}×{h_cm:.0f} cm (momento negativo), "
+                            f"Ø{diam_barra_mm:g} mm"
+                        ),
                     )
-
-            if bx >= 999.0:
-                alerta = (
-                    f"Seção insuficiente para o momento negativo Mk={Mk_kNm:+.1f} kN·m "
-                    f"na seção {bw_cm:.0f}×{h_cm:.0f} cm."
                 )
-                as_req = 0.0
-                as_linha_cm2 = 0.0
-            elif bx >= 0.628:
-                alerta = f"bx={bx:.3f} acima do limite 0,628 para momento negativo."
-                as_req = 0.0
-                as_linha_cm2 = 0.0
-            elif bx >= bx_min:
-                # Armadura dupla para momento negativo
-                Md_lim_kNcm = (bw_cm * d_cm**2) / kc_lim
-                md_exc_kNcm = Md_kNcm - Md_lim_kNcm
-                ks_lim = 1.0 / (fyd * (1.0 - bx_min / 2.0))
-                as1 = ks_lim * Md_lim_kNcm / d_cm
-                denom = _denom_as2(
-                    d_cm,
-                    d_lin,
-                    contexto=(
-                        f"Mk={Mk_kNm:+.1f} kN·m (Md={Md_kNm:.1f} kN·m), "
-                        f"seção T {bw_cm:.0f}×{h_cm:.0f} cm (momento negativo), "
-                        f"Ø{diam_barra_mm:g} mm"
-                    ),
-                )
-                as2 = md_exc_kNcm / (fyd * denom)
                 as_req = as1 + as2
                 as_linha_cm2 = as2
                 bx = bx_min
+                x_cm = x_lim
                 alerta = (
                     f"Momento negativo com armadura dupla (bx={bx_min:.2f}). "
                     f"As = {as_req:.2f} cm² | As' = {as_linha_cm2:.2f} cm²."
                 )
             else:
-                ks = 1.0 / (fyd * (1.0 - bx / 2.0))
-                as_req = ks * Md_kNcm / d_cm
-                as_linha_cm2 = 0.0
-                alerta = ""
+                x_neg, x1n, x2n = _resolver_ln(Md_kNcm, fck_mpa, bw_cm, d_cm)
+                if x_neg is None or x_neg <= 0:
+                    bx = 999.0
+                    x_cm = 999.0 * d_cm
+                    as_req = 0.0
+                    alerta = (
+                        f"Seção insuficiente para o momento negativo "
+                        f"Mk={Mk_kNm:+.1f} kN·m na seção {bw_cm:.0f}×{h_cm:.0f} cm."
+                    )
+                else:
+                    bx = x_neg / d_cm
+                    x_cm = x_neg
+                    x1, x2 = x1n, x2n
+                    as_req = Md_kNcm / (fyd * (d_cm - 0.4 * x_neg))
+                    alerta = ""
 
+        bx_passa = "SIM" if bx <= bx_min + 1e-9 else "NÃO"
         asmin = rho_min_val * bw_cm * h_cm / 100.0
         as_necessaria = max(as_req, asmin)
 
@@ -1598,8 +1502,7 @@ def calcular_flexao_viga_t(
             camadas = 0
             status_bitola = "NÃO CABE"
 
-        x_cm = bx * d_cm
-        bx_passa = "SIM" if bx < bx_min else "NÃO"
+        bx_passa = "SIM" if bx <= bx_min + 1e-9 else "NÃO"
         espaco_disp = bw_cm - 2 * (cob_mm / 10.0) - 2 * (diam_estribo_mm / 10.0)
         eh_min = max(2.0, diam_barra_mm / 10.0, 1.2 * 1.9)
 
@@ -1636,7 +1539,7 @@ def calcular_flexao_viga_t(
                 x_cm=round(x_cm, 2) if x_cm < 999.0 else None,
                 linha_neutra_condiz=ln_condiz,
                 bf_efetivo_cm=round(bf_efetivo, 2),
-                ks=round(1.0 / (fyd * (1.0 - bx / 2.0)) if bx < 999.0 else 0.0, 3),
+                ks=round(1.0 / (fyd * (1.0 - 0.4 * bx)) if bx < 999.0 else 0.0, 3),
                 as_req_cm2=round(as_req, 3),
                 asmin_cm2=round(asmin, 3),
                 as_necessaria_cm2=round(as_necessaria, 3),

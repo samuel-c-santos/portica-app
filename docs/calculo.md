@@ -95,24 +95,26 @@ Sendo:
 - `d`: altura util (cm)
 - `Md`: momento de calculo (kN·cm)
 
-### 2.3 Equacao do segundo grau para a linha neutra
+### 2.3 Equacao da linha neutra (equilibrio NBR)
 
-A posicao adimensional da linha neutra `bx = x/d` e obtida resolvendo a equacao de
-equilibrio de momentos reduzida:
+A posicao `x` da linha neutra sai do equilibrio de momentos do diagrama retangular
+de tensoes (NBR 6118:2023, item 17.2.2):
 
 ```
-a · bx² + b · bx + c = 0
-
-a = -0.192 · (fck/10) · KC
-b =  0.48  · (fck/10) · KC
-c = -1
+Md = fcd · b · x · (d - 0,4x)
 ```
 
-Observacao: a implementacao utiliza `fck / 10` (em kN/cm²) para reproduzir a
-calibracao empirica da planilha original.
+Rearranjando, obtem-se uma equacao do segundo grau em `x`:
 
-A raiz valida `0 < bx < 0,628` (limite do dominio 3) e selecionada entre as duas
-solucoes da equacao.
+```
+0,4 · x² - d · x + Md/(fcd · b) = 0
+```
+
+com `fcd = alpha_c · fck / gamma_c`. A raiz valida e a menor (dominio 2/3) e a
+posicao adimensional e `bx = x/d`.
+
+O EP-02.1 removeu a calibracao empirica da planilha original (coeficientes
+0,192/0,48 e braco `d - x/2`), que nao era o equilibrio da norma.
 
 ### 2.4 Verificacao do dominio de deformacao
 
@@ -136,9 +138,12 @@ x = bx · d   (cm)
 Para a regiao de dominio 2-3 com `bx < bx_min`, a area de aco necessaria e:
 
 ```
-ks = 1 / (fyd · (1 - bx/2))
+ks = 1 / (fyd · (1 - 0,4 · bx))
 As,req = ks · Md / d
 ```
+
+O braco de alavanca e `z = d - 0,4x = d · (1 - 0,4 · bx)`, de modo que
+`As,req = Md / (fyd · z)`.
 
 A armadura minima e dada por:
 

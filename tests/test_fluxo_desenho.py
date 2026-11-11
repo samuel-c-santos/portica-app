@@ -206,9 +206,9 @@ class TestFlexaoTMomentoNegativo:
         assert r.as_linha_cm2 == 0.0
         assert r.as_req_cm2 > 0.0
 
-    def test_momento_negativo_dupla(self):
-        """Mk=−130 (Md=182) na alma de 15: bx sai do domínio (999) → seção
-        insuficiente com as_req=0 e alerta — ramos 1517-1523 do motor."""
+    def test_momento_negativo_armadura_dupla(self):
+        """Mk=−130 (Md=182) em bw=15: com a d convergida Md supera Md,lim →
+        armadura dupla no limite de ductilidade (bx = 0,45), nunca sentinela."""
         res = calcular_flexao_viga_t(
             h_cm=50.0,
             bw_cm=15.0,
@@ -223,9 +223,11 @@ class TestFlexaoTMomentoNegativo:
         )
         r = res[0]
         assert r.tipo == "NEGATIVO"
-        assert r.bx == 999.0
-        assert r.as_req_cm2 == 0.0
-        assert "Seção insuficiente para o momento negativo" in r.alerta
+        assert r.bx == pytest.approx(0.45, abs=1e-9)
+        assert r.x_cm is not None and r.x_cm < r.d_cm_real
+        assert r.as_req_cm2 > 0.0
+        assert r.as_linha_cm2 > 0.0
+        assert "armadura dupla" in r.alerta.lower()
 
     def test_momento_negativo_d_positivo_e_invariantes(self):
         res = calcular_flexao_viga_t(

@@ -892,20 +892,20 @@ class PorticaPDF(FPDF):
                     ]
                 )
 
-                fck_conv = fck_mpa / 10
+                fcd_kn_cm2 = fcd_mpa(fck_mpa) / 10.0
+                c_eq = Md_kNcm / (fcd_kn_cm2 * b_calc) if fcd_kn_cm2 * b_calc else 0.0
                 lines.extend(
                     [
-                        "3. Relacao da linha neutra (beta_x = x/d):",
-                        "   Equacao: -0.192 * fck_conv * Kc * beta_x^2 + 0.48 * fck_conv * Kc * beta_x - 1 = 0",
-                        f"   Onde fck_conv = fck/10 = {fck_conv:.1f} kN/cm^2",
-                        "   Substituindo os valores:",
-                        f"   {r.a:.4f} * beta_x^2 + {r.b:.4f} * beta_x - 1 = 0",
-                        "   Resolvendo a equacao quadratica:",
-                        f"   beta_x = {r.bx:.3f}",
+                        "3. Linha neutra (equilibrio NBR 6118:17.2.2):",
+                        "   Md = fcd * b * x * (d - 0.4*x)",
+                        "   Equacao: 0.4*x^2 - d*x + Md/(fcd*b) = 0",
+                        f"   fcd = {fcd_kn_cm2:.4f} kN/cm^2 ; Md/(fcd*b) = {c_eq:.2f} cm^2",
+                        f"   0.4*x^2 - {d_cm:.2f}*x + {c_eq:.2f} = 0",
+                        f"   beta_x = x/d = {r.bx:.4f}",
                         (
-                            f"   x = beta_x * d = {r.bx:.3f} * {d_cm:.2f} = {r.x_cm:.2f} cm"
+                            f"   x = {r.x_cm:.2f} cm"
                             if r.x_cm is not None
-                            else "   x = n/ap (secao insuficiente: beta_x fora do dominio)"
+                            else "   x = n/ap (secao insuficiente: sem raiz de equilibrio)"
                         ),
                         f"   Verificacao de dominio: beta_x = {r.bx:.3f} <= beta_x_lim = {0.45 if fck_mpa <= 50 else 0.35:.2f} ({'PASSA' if r.bx_passa == 'SIM' else 'ALERTA'})",
                         "",
@@ -916,13 +916,18 @@ class PorticaPDF(FPDF):
                 lines.extend(
                     [
                         "4. Area de aco necessaria (As,req):",
-                        "   Ks = 1 / (fyd * (1 - 0.5 * beta_x))",
-                        f"   Ks = 1 / ({fyd:.3f} * (1 - 0.5 * {r.bx:.3f})) = {r.ks:.3f} cm^2/kN",
+                        "   Ks = 1 / (fyd * (1 - 0.4 * beta_x))",
+                        f"   Ks = 1 / ({fyd:.3f} * (1 - 0.4 * {r.bx:.3f})) = {r.ks:.3f} cm^2/kN",
                         "   As,req = Ks * Md / d",
                         f"   As,req = {r.ks:.3f} * {Md_kNcm:.1f} / {d_cm:.2f} = {r.as_req_cm2:.2f} cm^2",
-                        "",
                     ]
                 )
+                if getattr(r, "armadura_dupla", False):
+                    lines.append(
+                        f"   (armadura dupla na memoria: As = As1 + As2; "
+                        f"As' = {r.as_linha_cm2:.2f} cm^2)"
+                    )
+                lines.append("")
 
                 # EP-01.9: o espaçamento impresso é o do MOTOR
                 # (eh_suportado do detalhamento convergido). O algoritmo

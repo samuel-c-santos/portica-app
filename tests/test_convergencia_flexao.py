@@ -75,13 +75,12 @@ def test_integ_flexao_comum_retorna_layout_e_tabela():
     assert len(res.tabela_bitolas) > 0
 
 
-def test_oscilacao_entre_2_layouts_e_recusada():
-    """EP-01.2: o laço de bitola deve declarar não-convergência.
+def test_nao_convergencia_por_max_iter_e_recusada():
+    """EP-01.2: o laço que não fecha a tolerância em max_iter deve recusar.
 
-    Caso verificado por execução (auditoria 2026-11-11): viga 15×60, Ø10,
-    Mk=50 kN·m faz o laço oscilar entre 4 e 5 barras (d_real alternando
-    54.24 ↔ 54.59 cm) pelas 5 iterações, e a ÚLTIMA iteração era adotada
-    em silêncio como se convergida fosse.
+    A partir do EP-02.1 a fórmula de equilíbrio mudou e o caso 15×60/Ø10
+    deixou de oscilar. O caminho de recusa é exercitado de forma direta:
+    com max_iter=1 o laço não tem como satisfazer |d₀ − d_real| < tol.
     """
     res = dimensionar_bitola_iterativa(
         h_cm=60.0,
@@ -93,12 +92,21 @@ def test_oscilacao_entre_2_layouts_e_recusada():
         fyk_mpa=50.0,
         Md_kNm=50.0 * 1.4,
         bw_detalhamento_cm=15.0,
+        max_iter=1,
     )
     assert res.convergiu is False
     assert res.cabe is False
     assert res.status_bitola == "NÃO CONVERGIU"
     # nunca devolver o último iterado como se fosse resultado
     assert res.layout is None
+
+
+def test_deteccao_de_oscilacao_de_d():
+    """EP-01.2: sequência de d que troca de sinal é oscilação."""
+    from core.calculos.engenharia import _d_sem_oscilacao
+
+    assert _d_sem_oscilacao([54.24, 54.59, 54.24, 54.59]) is False
+    assert _d_sem_oscilacao([55.0, 54.5, 54.4, 54.4]) is True
 
 
 def test_caso_h50_bw15_mk400_oscilador_e_recusado():

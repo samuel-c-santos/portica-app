@@ -9,14 +9,18 @@ class TestVigaT:
     """Cobertura: calculo de flexao para secao T."""
 
     def test_as_calculo_t(self, viga_exemplo_t, momentos_exemplo):
-        """As,req = 4,838 cm² para Mk=96,9 em T 20×70 (bf,ef=60).
+        """As,req = 4,805 cm² para Mk=96,9 em T 20×70 (bf,ef=60).
 
-        EP-03.2: valor de referência à mão (fórmula empírica do motor; a
-        mesa com bf,ef = min(60, 20+20+20) = 60 domina o caso):
-            d = 65,7 ; Kc = 60·65,7²/13566 = 19,09107
-            bx = 0,03692 → 0,8x = 1,94 cm < hf = 12 (LN na mesa)
-            Ks = 1/(43,4783·(1 − 0,01846)) = 0,023431
-            As,req = 0,023431·13566/65,7 = 4,838 cm²
+        EP-02.1: conta à mão pelo equilíbrio NBR 6118:2023, §17.3.2:
+            d = 65,7 ; bf,ef = min(60, 20+20+20) = 60 cm
+            fcd = 0,85·30/1,4/10 = 1,82143 kN/cm²
+            Md/(fcd·bf) = 13566/(1,82143·60) = 124,126 cm²
+            0,4x² − 65,7x + 124,126 = 0  →  x² − 164,25x + 310,315 = 0
+            Δ = 164,25² − 4·310,315 = 25736,8 → √Δ = 160,427
+            x = (164,25 − 160,427)/2 = 1,912 cm ; βx = 0,02910
+            0,8x = 1,53 cm < hf = 12 (LN na mesa)
+            z = 65,7 − 0,4·1,912 = 64,935 cm
+            As = 13566/(43,4783·64,935) = 4,805 cm²
         """
         res = calcular_flexao_viga_t(
             h_cm=viga_exemplo_t["h_cm"],
@@ -36,7 +40,7 @@ class TestVigaT:
         r = res[0]
         assert r is not None
         assert r.linha_neutra_condiz == "SIM"
-        assert r.as_req_cm2 == pytest.approx(4.838, abs=0.02), f"As: {r.as_req_cm2}"
+        assert r.as_req_cm2 == pytest.approx(4.805, abs=0.02), f"As: {r.as_req_cm2}"
         assert r.as_necessaria_cm2 >= r.asmin_cm2 - 0.01
 
     def test_ln_dentro_mesa(self, viga_exemplo_t):
@@ -137,7 +141,7 @@ class TestVigaT:
             diam_estribo_mm=5.0,
             diam_barra_mm=12.5,
             fyk_mpa=50.0,
-            momentos=[130.0],  # momento intermediário
+            momentos=[170.0],  # momento intermediário (LN na alma sob NBR)
             b1esq_cm=20,
             b1dir_cm=20,
             gamma_f=1.4,
@@ -161,7 +165,7 @@ class TestVigaT:
             diam_estribo_mm=5.0,
             diam_barra_mm=12.5,
             fyk_mpa=50.0,
-            momentos=[200.0],  # momento bastante elevado
+            momentos=[240.0],  # momento elevado (dupla na alma sob NBR)
             b1esq_cm=20,
             b1dir_cm=20,
             gamma_f=1.4,
