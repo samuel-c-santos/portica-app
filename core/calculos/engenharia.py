@@ -8,8 +8,11 @@ Licenca: vide LICENSE
 import math
 from dataclasses import dataclass
 
-from core.calculos.secao import (
+from core.calculos.secao import (  # noqa: F401  (re-exporta a API publica de core.calculos)
+    ALPHA_C,
     CAA_COBRIMENTO_MM,
+    GAMMA_C,
+    alpha_c,
     altura_util_cm,
     fcd_mpa,
     fctd_kn_cm2,
