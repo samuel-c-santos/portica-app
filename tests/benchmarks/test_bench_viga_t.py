@@ -5,10 +5,9 @@ bf,ef — NBR 6118:2023, §15.5.2:
     b1 ≤ 0,1·l0 (50% do vão entre faces de apoios... l0 = vão teórico);
     bf,ef = bw + b1,esq + b1,dir, também ≤ bf total.
 
-As,min — Tabela 17.3 com a largura da zona tracionada; no motor o mínimo
-usa a ALMA (bw) para ambas as armaduras (EP-02.3 registrou que a armadura
-superior de viga T deveria usar a mesa) — o benchmark trava o comportamento
-da alma, que é normativo para a armadura inferior.
+As,min — Tabela 17.3 com a largura da zona tracionada. Para momento
+positivo a tração está na alma (bw); para momento negativo está na mesa
+(bf,ef). O EP-02.3 aplica essa distinção.
 """
 
 import pytest
@@ -19,10 +18,15 @@ from core.calculos.engenharia import bf_efetivo_viga_t, rho_min
 class TestBfEfetivo:
     """bf,ef = min(bf, bw + b1e + b1d) com b1 ≤ 0,1·l0 (quando l0 informado)."""
 
-    def test_sem_b1_retorna_bf_integral(self):
-        # Comportamento do motor: sem b1 → bf integral (EP-02.3 registrará
-        # a decisão de tornar o default 0,0)
-        assert bf_efetivo_viga_t(20.0, 60.0) == 60.0
+    def test_sem_b1_retorna_bw(self):
+        # EP-02.3: sem b1 → b1 = 0,0 → bf,ef = bw (conservador, como na doc).
+        assert bf_efetivo_viga_t(20.0, 60.0) == 20.0
+
+    def test_b1_limitado_por_0_5_bf1(self):
+        # bf1 (mesa adjacente) = 20 → b1 ≤ 0,5·20 = 10; bf,ef = 20+10+10 = 40
+        assert bf_efetivo_viga_t(20.0, 60.0, 20.0, 20.0, bf1esq_cm=20.0, bf1dir_cm=20.0) == (
+            pytest.approx(40.0, abs=0.01)
+        )
 
     def test_b1_limitado_por_0_1_lo(self):
         # b1e = b1d = 8 cm; l0 = 60 cm → limite 0,1·l0 = 6 cm

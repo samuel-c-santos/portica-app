@@ -373,21 +373,26 @@ Conforme NBR 6118:15.5.2, a largura efetiva `bf,ef` da mesa e limitada por:
 bf,ef = min(bf, bw + b1esq + b1dir)
 ```
 
-Com restricoes adicionais por vão:
+Com restricoes adicionais, para cada lado:
 ```
 b1 ≤ 0,1 · lo    (lo = distância entre pontos de momento nulo)
+b1 ≤ 0,5 · bf1   (bf1 = mesa adjacente do mesmo lado)
 ```
 
-Caso `b1esq` ou `b1dir` nao sejam informados, considera-se `0,0 cm`.
+Caso `b1esq` ou `b1dir` nao sejam informados, considera-se `0,0 cm`
+(`bf,ef = bw`, conservador). O `lo` e calculado a partir dos pontos de
+momento nulo; nas extremidades/apoios, a propria extremidade da viga serve
+de limite.
 
 ### 4.2 Momento positivo (mesa comprimida)
 
 Quando `Mk > 0`, a linha neutra pode estar na mesa ou na alma.
 
-#### 4.2.1 LN na mesa (eta·x < hf)
+#### 4.2.1 LN na mesa (x ≤ hf)
 
-Se a condicao `η · x < hf` for satisfeita (item 17.2.2-e do texto 2023) (onde `η = 0,8` para fck ≤ 50 MPa),
-o calculo e feito com largura `bf,ef`:
+Se a linha neutra esta dentro da mesa (`x ≤ hf`), o calculo e feito com
+largura `bf,ef`. O `eta` de 17.2.2-e continua sendo usado apenas como
+profundidade do diagrama retangular (`y = eta·x`), nao como criterio de mesa:
 
 ```
 KC = bf,ef · d² / Md
@@ -396,9 +401,9 @@ KC = bf,ef · d² / Md
 A equacao do segundo grau e a verificacao de dominio seguem o mesmo roteiro da
 viga retangular, porem com `bf,ef` em vez de `bw`.
 
-#### 4.2.2 LN na alma (η·x >= hf): Decomposicao do momento
+#### 4.2.2 LN na alma (x > hf): Decomposicao do momento
 
-Quando `η · x >= hf`, a linha neutra esta na alma. O momento e decomposto em
+Quando `x > hf`, a linha neutra esta na alma. O momento e decomposto em
 duas parcelas:
 
 **Parcela 1: momento resistido pelas abas (Md1)**
@@ -455,7 +460,7 @@ flowchart TD
     D --> E{"bx < bx_min?"}
     E -->|Nao| AD["Armadura dupla"]
     E -->|Sim| G["Calcular x = bx · d"]
-    G --> H{"η·x < hf?"}
+    G --> H{"x ≤ hf?"}
     H -->|Sim| LN_MESA["LN na mesa: calculo direto"]
     H -->|Nao| DECOMP["Decompor: Md1 + Md2"]
     DECOMP --> RESOLVER["Resolver eq. 2o grau com bw para Md2"]

@@ -137,7 +137,7 @@ render(
 render(r"$KC \;=\; \dfrac{b_{f,\text{ef}}\,d^{2}}{M_{d}}$", "eq_kc_t.png")
 
 render(
-    r"$0{,}8\,x \;<\; h_{f} \;\;\Longrightarrow\;\; \text{Linha neutra dentro da mesa (T valido)}$",
+    r"$x \;\leq\; h_{f} \;\;\Longrightarrow\;\; \text{Linha neutra dentro da mesa (T valido)}$",
     "eq_ln_mesa.png",
     width=12.5,
 )

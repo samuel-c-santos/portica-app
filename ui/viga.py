@@ -1019,11 +1019,11 @@ def build_viga_screen(
             if is_t:
                 bf = float(bf_tf.control.value or 0)
                 hf = float(hf_tf.control.value or 0)
-                # Ler b1 dos campos ou calcular default (bf-bw)/2
+                # EP-02.3: b1 ausente = 0,0 (bf,ef = bw; conservador)
                 b1e_str = b1esq_tf.control.value.strip().replace(",", ".")
                 b1d_str = b1dir_tf.control.value.strip().replace(",", ".")
-                b1e = float(b1e_str) if b1e_str else max(0.0, (bf - bw) / 2.0)
-                b1d = float(b1d_str) if b1d_str else max(0.0, (bf - bw) / 2.0)
+                b1e = float(b1e_str) if b1e_str else 0.0
+                b1d = float(b1d_str) if b1d_str else 0.0
                 res_flex = calcular_flexao_viga_t(
                     h_cm=h,
                     bw_cm=bw,
@@ -1914,15 +1914,11 @@ def build_viga_screen(
                         hf = float(hf_tf.control.value or 0)
                         dados_viga["bf_cm"] = bf
                         dados_viga["hf_cm"] = hf
-                        # Ler b1 dos campos ou calcular default (bf-bw)/2
+                        # EP-02.3: b1 ausente = 0,0 (bf,ef = bw; conservador)
                         b1e_str = b1esq_tf.control.value.strip().replace(",", ".")
                         b1d_str = b1dir_tf.control.value.strip().replace(",", ".")
-                        dados_viga["b1esq_cm"] = (
-                            float(b1e_str) if b1e_str else max(0.0, (bf - bw) / 2.0)
-                        )
-                        dados_viga["b1dir_cm"] = (
-                            float(b1d_str) if b1d_str else max(0.0, (bf - bw) / 2.0)
-                        )
+                        dados_viga["b1esq_cm"] = float(b1e_str) if b1e_str else 0.0
+                        dados_viga["b1dir_cm"] = float(b1d_str) if b1d_str else 0.0
                     resultados = dimensionar_trechos_ftool(
                         dados_viga,
                         secoes,

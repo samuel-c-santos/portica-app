@@ -1216,28 +1216,30 @@ def bf_efetivo_viga_t(
     b1dir_cm: float | None = None,
     lo_esq_cm: float | None = None,
     lo_dir_cm: float | None = None,
+    bf1esq_cm: float | None = None,
+    bf1dir_cm: float | None = None,
 ) -> float:
-    """Largura efetiva da mesa (NBR 6118:15.5.2):
-    bf,ef = bw + b1esq + b1dir, limitado por:
-    - b1 <= 0.5*bf1 (largura da mesa adjacente do outro lado, se houver)
-    - b1 <= 0.1*a (a = distância entre faces de apoios)
+    """Largura efetiva da mesa (NBR 6118:2023, 15.5.2).
 
-    Para um vão isolado, simplificamos: bf,ef = min(bf, bw + b1esq + b1dir).
-    Se b1esq/b1dir não forem fornecidos, retorna bf integral.
+    bf,ef = min(bf, bw + b1esq + b1dir), com, para cada lado:
+    - b1 ≤ 0,1·l0 (l0 = distância entre pontos de momento fletor nulo);
+    - b1 ≤ 0,5·bf1 (bf1 = largura da mesa adjacente do mesmo lado, isto é,
+      a distância livre até a viga/laje vizinha);
+    - b1 ausente → 0,0 cm (bf,ef = bw; conservador).
     """
-    if b1esq_cm is None and b1dir_cm is None:
-        return bf_cm
-    b1e = b1esq_cm if b1esq_cm is not None else 0.0
-    b1d = b1dir_cm if b1dir_cm is not None else 0.0
+    b1e = max(0.0, b1esq_cm) if b1esq_cm is not None else 0.0
+    b1d = max(0.0, b1dir_cm) if b1dir_cm is not None else 0.0
 
-    # Limit b1 by 0.1 * span as per NBR 6118 15.5.2
     if lo_esq_cm is not None and lo_esq_cm > 0:
         b1e = min(b1e, 0.1 * lo_esq_cm)
     if lo_dir_cm is not None and lo_dir_cm > 0:
         b1d = min(b1d, 0.1 * lo_dir_cm)
+    if bf1esq_cm is not None and bf1esq_cm > 0:
+        b1e = min(b1e, 0.5 * bf1esq_cm)
+    if bf1dir_cm is not None and bf1dir_cm > 0:
+        b1d = min(b1d, 0.5 * bf1dir_cm)
 
-    bf_calc = bw_cm + b1e + b1d
-    return min(bf_cm, bf_calc)
+    return min(bf_cm, bw_cm + b1e + b1d)
 
 
 def calcular_flexao_viga_t(
@@ -1255,6 +1257,8 @@ def calcular_flexao_viga_t(
     b1dir_cm: float | None = None,
     lo_esq_cm: float | None = None,
     lo_dir_cm: float | None = None,
+    bf1esq_cm: float | None = None,
+    bf1dir_cm: float | None = None,
     gamma_f: float = GAMMA_F_RESTO,
 ) -> list[ResultadoFlexaoT]:
     """Calcula flexao para secao de Viga T.
@@ -1282,7 +1286,14 @@ def calcular_flexao_viga_t(
     d_cm = h_cm - d_lin
 
     bf_efetivo = bf_efetivo_viga_t(
-        bw_cm, bf_cm, b1esq_cm, b1dir_cm, lo_esq_cm=lo_esq_cm, lo_dir_cm=lo_dir_cm
+        bw_cm,
+        bf_cm,
+        b1esq_cm,
+        b1dir_cm,
+        lo_esq_cm=lo_esq_cm,
+        lo_dir_cm=lo_dir_cm,
+        bf1esq_cm=bf1esq_cm,
+        bf1dir_cm=bf1dir_cm,
     )
     rho_min_val = rho_min(fck_mpa)
     fck_conv = fck_mpa / 10  # MPa -> kN/cm² (formula empirica)
@@ -1362,7 +1373,7 @@ def calcular_flexao_viga_t(
             # 1. Equilíbrio tratando a seção como retangular de largura bf,ef.
             x_mesa, x1m, x2m = _resolver_ln(Md_kNcm, fck_mpa, bf_efetivo, d_cm)
             md_lim_mesa, x_lim_mesa = _momento_limite_ln(fck_mpa, bf_efetivo, d_cm, bx_min)
-            na_mesa = x_mesa is not None and eta * x_mesa < hf_cm
+            na_mesa = x_mesa is not None and x_mesa <= hf_cm
 
             if na_mesa:
                 ln_condiz = "SIM"
@@ -1445,7 +1456,7 @@ def calcular_flexao_viga_t(
                         x_cm = x_lim2
                         alerta = (
                             f"Linha neutra fora da mesa colaborante "
-                            f"({eta:.2f}x={eta * bx * d_cm:.1f} cm >= hf={hf_cm:.1f} cm) "
+                            f"(x={bx * d_cm:.1f} cm > hf={hf_cm:.1f} cm) "
                             f"com armadura dupla na alma. As = {as_req:.2f} cm² | "
                             f"As' = {as_linha_cm2:.2f} cm²."
                         )
@@ -1467,8 +1478,7 @@ def calcular_flexao_viga_t(
                             as_req = as1 + as2
                             alerta = (
                                 f"Linha neutra fora da mesa colaborante "
-                                f"({eta:.2f}x={eta * bx * d_cm:.1f} cm >= "
-                                f"hf={hf_cm:.1f} cm). "
+                                f"(x={bx * d_cm:.1f} cm > hf={hf_cm:.1f} cm). "
                                 f"As1 (abas) = {as1:.2f} cm² | "
                                 f"As2 (alma) = {as2:.2f} cm²."
                             )
@@ -1524,7 +1534,9 @@ def calcular_flexao_viga_t(
                         alerta = ""
 
         bx_passa = "NÃO" if dominio_4 else ("SIM" if bx <= bx_min + 1e-9 else "NÃO")
-        asmin = rho_min_val * bw_cm * h_cm / 100.0
+        # EP-02.3: no momento negativo a tração está na mesa; o As,min usa bf,ef.
+        b_asmin = bf_efetivo if Mk_kNm < 0 else bw_cm
+        asmin = rho_min_val * b_asmin * h_cm / 100.0
         as_necessaria = max(as_req, asmin)
 
         if as_linha_cm2 > 0:
@@ -1539,38 +1551,23 @@ def calcular_flexao_viga_t(
         qtd_barras = math.ceil(as_necessaria / area_barra_d) if area_barra_d > 0 else 0
         qtd_barras = max(1, qtd_barras)
 
-        # Detalha as barras reais para obter o espaçamento e disposição corretos
-        try:
-            inp = BeamDetailingInput(
-                bw=bw_cm * 10.0,
-                h=h_cm * 10.0,
-                c_nom=cob_mm,
-                phi_estribo=diam_estribo_mm,
-                phi_barra=diam_barra_mm,
-                d_max_agregado=19.0,
-                total_bars=qtd_barras,
-            )
-            layout = BeamDetailer().detail(inp)
-            cabe_status = True
-            eh_real = min(lyr.h_spacing for lyr in layout.layers) / 10.0 if layout.layers else 0.0
-            eh_passa = "SIM"
-            qtd_barras_1cam = layout.layers[0].bar_count if layout.layers else qtd_barras
-            barras_cima = qtd_barras - qtd_barras_1cam
-            camadas = layout.layer_count
-            status_bitola = "CABE" if camadas == 1 else f"{camadas} CAMADAS"
-        except ValueError:
-            layout = None
-            cabe_status = False
-            eh_real = 0.0
-            eh_passa = "NÃO"
-            qtd_barras_1cam = qtd_barras
-            barras_cima = 0
-            camadas = 0
-            status_bitola = "NÃO CABE"
-
-        bx_passa = "SIM" if bx <= bx_min + 1e-9 else "NÃO"
+        # EP-02.3: status/camadas/espaçamento vêm do laço de bitola (mesma
+        # semântica do caminho retangular), não de um detalhamento local com
+        # "N CAMADAS" hard-coded e eh_passa="SIM".
+        layout = res_bitola.layout
+        status_bitola = res_bitola.status_bitola
+        cabe_status = res_bitola.cabe
+        camadas = res_bitola.camadas
+        eh_real = res_bitola.eh_real_mm / 10.0
+        eh_passa = "SIM" if res_bitola.cabe else "NÃO"
+        qtd_barras = res_bitola.qtd_barras
+        qtd_barras_1cam = (
+            layout.layers[0].bar_count if layout is not None and layout.layers else qtd_barras
+        )
+        barras_cima = qtd_barras - qtd_barras_1cam
         espaco_disp = bw_cm - 2 * (cob_mm / 10.0) - 2 * (diam_estribo_mm / 10.0)
         eh_min = max(2.0, diam_barra_mm / 10.0, 1.2 * 1.9)
+        bx_passa = "NÃO" if dominio_4 else ("SIM" if bx <= bx_min + 1e-9 else "NÃO")
 
         # EP-02.2: domínio 4 é recusa explícita (nunca "CABE" com As,min)
         if dominio_4:

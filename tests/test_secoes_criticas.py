@@ -9,6 +9,7 @@ import pytest
 from ui.ftool.parser import parse_cortante, parse_momento
 from ui.ftool.secoes_criticas import (
     SecaoCritica,
+    calcular_lo_para_secao,
     detectar_apoios,
     detectar_maximos_locais,
     detectar_minimos_locais,
@@ -155,3 +156,26 @@ def test_interpolacao_descontinuidade():
     curva2 = [(1.0, 10.0), (2.0, -120.0), (2.0, 30.0), (3.0, 10.0)]
     val2 = interpolar_y(curva2, 2.0)
     assert val2 == -120.0
+
+
+class TestLoParaSecao:
+    """EP-02.3: l0 calculado também nos apoios/extremidades."""
+
+    def test_secao_no_apoio_usa_extremidade(self):
+        # M=0 apenas em x=1,0 e x=6,0; seção no apoio esquerdo x=0.
+        nulos = [(1.0, 0.0), (6.0, 0.0)]
+        lo_esq, lo_dir = calcular_lo_para_secao(0.0, nulos, 0.0, 7.5)
+        # esquerda cai na extremidade x=0; direita no primeiro M=0 (x=1,0)
+        assert lo_esq == pytest.approx(100.0, abs=0.01)
+        assert lo_dir == pytest.approx(100.0, abs=0.01)
+
+    def test_secao_interna_entre_zeros(self):
+        nulos = [(1.0, 0.0), (6.0, 0.0)]
+        lo_esq, lo_dir = calcular_lo_para_secao(3.0, nulos, 0.0, 7.5)
+        assert lo_esq == pytest.approx(500.0, abs=0.01)
+        assert lo_dir == pytest.approx(500.0, abs=0.01)
+
+    def test_sem_m_nulo_usa_vao_total(self):
+        lo_esq, lo_dir = calcular_lo_para_secao(2.0, [], 0.0, 7.5)
+        assert lo_esq == pytest.approx(750.0, abs=0.01)
+        assert lo_dir == pytest.approx(750.0, abs=0.01)

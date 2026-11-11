@@ -147,6 +147,8 @@ def dimensionar_trechos_ftool(
                 b1dir_cm=dados_viga.get("b1dir_cm"),
                 lo_esq_cm=lo_esq_cm,
                 lo_dir_cm=lo_dir_cm,
+                bf1esq_cm=dados_viga.get("bf1esq_cm"),
+                bf1dir_cm=dados_viga.get("bf1dir_cm"),
                 gamma_f=gamma_f,
             )
         else:

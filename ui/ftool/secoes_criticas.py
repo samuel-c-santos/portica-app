@@ -175,7 +175,9 @@ def calcular_lo_para_secao(
     - l0_esq: distância do ponto de M=0 à esquerda até o ponto de M=0 à direita
     - l0_dir: mesma coisa (vão teórico ao redor da seção)
 
-    Se não houver pontos de M=0, retorna (None, None) — sem limitação de b1.
+    Quando não há M=0 de um dos lados (apoio/extremidade), usa a própria
+    extremidade da viga como limite. Só retorna (None, None) se o vão
+    resultante for nulo ou negativo.
 
     Args:
         x_secao: posição x da seção crítica (m)
@@ -186,34 +188,31 @@ def calcular_lo_para_secao(
     Returns:
         (l0_esq_cm, l0_dir_cm) em cm, ou (None, None) se não aplicável
     """
-    if not pontos_momento_nulo:
-        return None, None
-
-    # Encontrar pontos de M=0 adjacentes à seção
+    # EP-02.3: as extremidades da viga são limites válidos de vão quando não
+    # há um ponto de M=0 daquele lado (apoios e extremidades). Antes o l0 só
+    # era calculado se houvesse M=0 dos DOIS lados, o que nunca acontecia
+    # nos apoios — e o limite b1 ≤ 0,1·l0 nunca era aplicado no fluxo Standard.
     x_nulos = sorted([x for x, _ in pontos_momento_nulo])
 
-    # Ponto de M=0 à esquerda (mais próximo e < x_secao)
-    x_nulo_esq = None
+    # Ponto de M=0 à esquerda (mais próximo e < x_secao); senão, extremidade.
+    x_nulo_esq = x_min
     for xn in reversed(x_nulos):
         if xn < x_secao - 1e-5:
             x_nulo_esq = xn
             break
 
-    # Ponto de M=0 à direita (mais próximo e > x_secao)
-    x_nulo_dir = None
+    # Ponto de M=0 à direita (mais próximo e > x_secao); senão, extremidade.
+    x_nulo_dir = x_max
     for xn in x_nulos:
         if xn > x_secao + 1e-5:
             x_nulo_dir = xn
             break
 
-    # Se não encontrou pontos de M=0 em ambos os lados, não há limitação
-    if x_nulo_esq is None or x_nulo_dir is None:
+    lo_m = x_nulo_dir - x_nulo_esq
+    if lo_m <= 0:
         return None, None
 
-    # l0 = distância entre os dois pontos de M=0
-    lo_m = x_nulo_dir - x_nulo_esq
     lo_cm = lo_m * 100
-
     return lo_cm, lo_cm
 
 

@@ -70,9 +70,9 @@ class TestVigaT:
         assert bf_ef <= 60.0
 
     def test_bf_efetivo_sem_b1(self):
-        """Sem b1, bf efetivo deve ser igual a bf."""
+        """EP-02.3: sem b1, bf efetivo = bw (default 0,0 conservador)."""
         bf_ef = bf_efetivo_viga_t(bw_cm=20, bf_cm=60)
-        assert bf_ef == 60.0
+        assert bf_ef == 20.0
 
     def test_pele_viga_t(self, viga_exemplo_t):
         """Viga T com h=70 deve requerer armadura de pele."""
@@ -176,3 +176,30 @@ class TestVigaT:
         assert r.as_req_cm2 > 0
         assert r.as_linha_cm2 > 0
         assert "armadura dupla na alma" in r.alerta
+
+    def test_as_min_superior_usa_mesa(self):
+        """Mk<0: a tração está na mesa; As,min usa bf,ef (NBR 6118, Tab. 17.3).
+
+        bf,ef = min(60, 15 + 20 + 20) = 55 cm ; ρ_min(30) = 0,150%
+        As,min = 0,150/100 · 55 · 50 = 4,125 cm² (antes: só a alma, 1,125 cm²)
+        """
+        res = calcular_flexao_viga_t(
+            h_cm=50,
+            bw_cm=15,
+            bf_cm=60,
+            hf_cm=10,
+            caa=2,
+            fck_mpa=30,
+            diam_estribo_mm=5.0,
+            diam_barra_mm=12.5,
+            fyk_mpa=50.0,
+            momentos=[-50.0],
+            b1esq_cm=20,
+            b1dir_cm=20,
+            gamma_f=1.4,
+        )
+        r = res[0]
+        assert r is not None
+        assert r.tipo == "NEGATIVO"
+        assert r.bf_efetivo_cm == pytest.approx(55.0, abs=0.01)
+        assert r.asmin_cm2 == pytest.approx(4.125, abs=0.01)
