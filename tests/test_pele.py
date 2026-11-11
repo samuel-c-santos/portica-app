@@ -51,30 +51,31 @@ class TestArmaduraPele:
     def test_valores_exatos_h70_cob30_filo5(self):
         """Caso à mão completo (bw=20, h=70, cob=30, φe=5, φl=16).
 
-        d_pele = 70 − 3 − 0,5 = 66,5 ; s_max = min(20; 22,17) = 20
+        EP-02.6: φ5 não é barra comercial e saiu da lista; não existe mais a
+        restrição extra φ_pele ≤ φ_estribo (não está em 17.3.5.2.3). Menor
+        bitola comercial = φ6,3.
+
+        d_pele = 70 − 3 − 0,5 − 0,8 = 65,7 ; s_max = min(20; 21,9) = 20
         h_interna = 70 − 2·3,5 = 63 ; n_espac = ceil(63/20 − 1) = 3
         φ6,3: n_área = ceil(1,4/0,3117) = 5 → n = 5 ; s = 63/6 = 10,5
-             cabe = (10,5 ≤ 20) e (6,3 ≤ 5) = FALSO (φ pele > φ estribo)
-        φ8..φ16: idem, todos falsos (φ > φe)
-        φ5: n = max(3; ceil(1,4/0,19635)=8) = 8 ; As = 1,571 ; s = 63/9 = 7,0
-             cabe = VERDADEIRO → adotado φ5 (fallback do EP-02.6: φ5 não
-             é bitola comercial — pendência registrada no EP-02.6)
+             As = 5·0,3117 = 1,5585 ; cabe (10,5 ≤ 20) → adotado φ6,3
         """
         pele = calcular_armadura_pele(70, 20, 30, 5, 16)
         assert pele["as_pele_min_face_cm2"] == pytest.approx(1.40, abs=0.001)
         assert pele["s_max_cm"] == pytest.approx(20.0, abs=0.05)
-        assert pele["phi_pele_mm"] == pytest.approx(5.0, abs=0.01)
-        assert pele["n_barras_face"] == 8
-        assert pele["as_pele_adotada_face_cm2"] == pytest.approx(1.571, abs=0.01)
-        assert pele["s_adotado_cm"] == pytest.approx(7.0, abs=0.05)
+        assert pele["phi_pele_mm"] == pytest.approx(6.3, abs=0.01)
+        assert pele["n_barras_face"] == 5
+        assert pele["as_pele_adotada_face_cm2"] == pytest.approx(5 * 0.3117, abs=0.01)
+        assert pele["s_adotado_cm"] == pytest.approx(10.5, abs=0.05)
 
     def test_tabela_phis_completa(self):
-        """Tabela deve ter 6 opcoes de diametro."""
+        """Tabela deve ter as 5 bitolas comerciais, em ordem crescente."""
         pele = calcular_armadura_pele(70, 20, 30, 5, 16)
         assert pele["requer"] is True
-        assert len(pele["tabela_phis"]) == 6
+        assert len(pele["tabela_phis"]) == 5
         phis = [item["phi_mm"] for item in pele["tabela_phis"]]
-        assert 5.0 in phis
+        assert phis == [6.3, 8.0, 10.0, 12.5, 16.0]
+        assert 6.3 in phis
         assert 16.0 in phis
 
     def test_tabela_phis_tem_dados(self):
@@ -89,13 +90,13 @@ class TestArmaduraPele:
     def test_phi_menor_mais_barras(self):
         """Diametro menor deve exigir mais barras (ou igual)."""
         pele = calcular_armadura_pele(90, 20, 30, 5, 16)
-        n_phi5 = next(
-            item["n_barras_face"] for item in pele["tabela_phis"] if item["phi_mm"] == 5.0
+        n_phi63 = next(
+            item["n_barras_face"] for item in pele["tabela_phis"] if item["phi_mm"] == 6.3
         )
         n_phi16 = next(
             item["n_barras_face"] for item in pele["tabela_phis"] if item["phi_mm"] == 16.0
         )
-        assert n_phi5 >= n_phi16
+        assert n_phi63 >= n_phi16
 
     def test_pele_no_resultado_flexao(self):
         """ResultadoFlexao deve ter campos de pele preenchidos."""
@@ -114,4 +115,4 @@ class TestArmaduraPele:
         assert r.requer_pele is True
         assert r.n_barras_pele_face > 0
         assert r.phi_pele_mm > 0
-        assert len(r.tabela_pele) == 6
+        assert len(r.tabela_pele) == 5

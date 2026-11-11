@@ -462,7 +462,10 @@ def calcular_armadura_pele(
         tabela_phis: lista de (phi_mm, n_barras, s_cm, as_cm2, cabe) para UI
     """
     LIMIAR_PELE_CM = 60.0
-    PHI_OPCOES = [6.3, 8.0, 10.0, 12.5, 16.0, 5.0]  # 6.3 ou 8 preferencial (construtibilidade)
+    # EP-02.6: bitolas comerciais de CA-50/CA-60, em ordem crescente. O φ5 mm
+    # não é barra comercial de armadura e foi removido (o fallback silencioso
+    # para 5 mm foi eliminado).
+    PHI_OPCOES = [6.3, 8.0, 10.0, 12.5, 16.0]
 
     if h_cm < LIMIAR_PELE_CM:
         return {
@@ -476,10 +479,10 @@ def calcular_armadura_pele(
             "tabela_phis": [],
         }
 
-    # Altura util aproximada
-    d_cm = h_cm - cob_mm / 10 - phi_estribo_mm / 10
+    # Altura util: inclui o raio da barra longitudinal (EP-02.6)
+    d_cm = h_cm - cob_mm / 10 - phi_estribo_mm / 10 - phi_barra_mm / 20
 
-    # Espacamento maximo vertical entre barras de pele (NBR 6118)
+    # Espacamento maximo vertical entre barras de pele (NBR 6118:17.3.5.2.3)
     s_max = min(20.0, d_cm / 3)  # cm
 
     # Area minima de pele por face: 0,10% x A_c,alma
@@ -503,8 +506,11 @@ def calcular_armadura_pele(
         # Espacamento adotado: s = h_interna / (n+1) — uniforme canto-barra-barra-canto
         s_adot = h_interna / (n + 1) if n > 0 else 0
 
-        # O diâmetro da barra de pele deve ser menor ou igual ao diâmetro do estribo (NBR 6118:17.3.5.2.3)
-        cabe = (s_adot <= s_max if n > 1 else True) and (phi <= phi_estribo_mm)
+        # NBR 6118:17.3.5.2.3: espaçamento ≤ 20 cm em cada face. Não há
+        # exigência normativa de φ_pele ≤ φ_estribo (essa restrição extra
+        # era o que forçava o fallback para φ5). Com 1 barra, a distância
+        # às bordas é h_interna/2 e o próprio n_por_espac garante ≤ s_max.
+        cabe = s_adot <= s_max
 
         tabela_phis.append(
             {
@@ -516,19 +522,21 @@ def calcular_armadura_pele(
             }
         )
 
-    # Adotar o menor diametro que atenda a area minima e aos critérios normativos
+    # Adotar o menor diâmetro comercial que atenda à área mínima e ao
+    # espaçamento. Sem fallback silencioso: se nenhum atender, é erro.
     melhor = None
     for item in tabela_phis:
         if item["cabe"] and item["as_cm2"] >= as_pele_min_face:
             melhor = item
             break
     if not melhor:
-        # Fallback: encontrar qualquer uma que atenda phi <= phi_estribo_mm
-        opcoes_validas = [item for item in tabela_phis if item["phi_mm"] <= phi_estribo_mm]
-        if opcoes_validas:
-            melhor = min(opcoes_validas, key=lambda x: x["phi_mm"])
-        else:
-            melhor = tabela_phis[-1]  # fallback absoluto
+        raise ValueError(
+            "Armadura de pele: nenhuma bitola comercial "
+            f"({', '.join(f'{p:g}' for p in PHI_OPCOES)} mm) atende a "
+            f"As,pele,min={as_pele_min_face:.3f} cm²/face e s_max={s_max:.1f} cm "
+            f"para h={h_cm:g} cm, bw={bw_cm:g} cm. Aumente a seção ou reduza o "
+            "cobrimento/bitola."
+        )
     phi_pele_mm = melhor["phi_mm"]
     n_barras_face = melhor["n_barras_face"]
     as_adotada_face = melhor["as_cm2"]

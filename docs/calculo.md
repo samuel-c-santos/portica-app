@@ -556,30 +556,45 @@ Vigas com `h >= 60 cm` exigem armadura lateral (de pele).
 ### 6.2 Area minima por face
 
 ```
-As,pele,min = min(0,10% · A_c,alma, 5 cm²/m · h/100)
+As,pele,min = min(0,10% · A_c,alma, 5 cm²/m por face · h/100)
 
 A_c,alma = bw · h    (cm²)
 ```
 
+O cap de 5 cm²/m por face, para a altura `h`, vale `5·h/100 cm²`. Na pratica
+ele **nunca governa** para as seções usuais (bw=20, h=70:
+`min(1,40; 3,50) = 1,40 cm²/face`), de modo que a regra efetiva e 0,10% da
+area da alma. O cap esta documentado para que o leitor saiba o que de fato
+esta sendo aplicado.
+
 ### 6.3 Espacamento maximo vertical
 
 ```
+d = h - c - phi_e - phi_l/2
 s_max = min(20 cm, d/3)
 ```
 
-### 6.4 Restricao de diametro
+O `d` inclui o raio da barra longitudinal (EP-02.6), como no restante do
+motor.
 
-O diametro da barra de pele deve ser menor ou igual ao diametro do estribo
-(NBR 6118:17.3.5.2.3): `phi_pele ≤ phi_estribo`.
+### 6.4 Bitolas e selecao automatica
 
-### 6.5 Selecao automatica
+Nao ha exigencia normativa de `phi_pele <= phi_estribo` no item 17.3.5.2.3;
+essa restricao extra foi removida (era o que forcava o fallback para o
+phi de 5 mm, que nao e barra comercial). O motor testa as bitolas comerciais
+em ordem crescente:
 
-O motor testa os diametros `[6.3, 8, 10, 12.5, 16, 5]` mm e seleciona o menor
-que atenda simultaneamente:
+```
+[6.3, 8, 10, 12.5, 16] mm
+```
+
+e seleciona a menor que atenda simultaneamente:
 
 1. Area adotada >= area minima
 2. Espacamento adotado <= espacamento maximo
-3. phi_pele <= phi_estribo
+
+Nao existe fallback silencioso: se nenhuma bitola atender, o motor levanta
+erro explicito para o usuario aumentar a secao ou reduzir cobrimento/bitola.
 
 ---
 

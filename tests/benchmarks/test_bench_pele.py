@@ -11,14 +11,14 @@ mínima nas faces laterais:
 
 Casos à mão (bw=20, h=70, φe=8mm, φl=16mm):
 
-    CAA I (cob=25): d = 70 − 2,5 − 0,8 = 66,7 ; s_max = min(20, 22,23) = 20
+    CAA I (cob=25): d = 70 − 2,5 − 0,8 − 0,8 = 65,9 ; s_max = min(20, 21,97) = 20
         A_c,alma = 20·70 = 1400 ; As,min = 0,001·1400 = 1,4 cm² (< 3,5)
         h_interna = 70 − 2·(2,5 + 0,8) = 63,4 ; n_espac = ceil(63,4/20 − 1) = 3
         φ6,3 (área 0,3117): n_área = ceil(1,4/0,3117) = 5 → n = 5
         As,adot = 5·0,3117 = 1,5585 ; s_adot = 63,4/6 = 10,57 cm (arredondado 10,6)
         φ6,3 ≤ φe=8 ✓ → adota φ6,3, n=5, s=10,6
 
-    CAA III (cob=40): d = 70 − 4 − 0,8 = 65,2 ; s_max = min(20, 21,73) = 20
+    CAA III (cob=40): d = 70 − 4 − 0,8 − 0,8 = 64,4 ; s_max = min(20, 21,47) = 20
         As,min = 1,4 ; h_interna = 70 − 2·4,8 = 60,4 ; n_espac = ceil(60,4/20−1) = 3
         φ6,3: n = 5 ; As,adot = 1,5585 ; s_adot = 60,4/6 = 10,07 cm (arredondado 10,1)
 """
@@ -39,7 +39,7 @@ class TestPeleCAA1:
         assert self._pele()["as_pele_min_face_cm2"] == pytest.approx(1.4, abs=0.001)
 
     def test_s_pele_max(self):
-        # s_max = min(20; 67/3) = 20 cm
+        # d = 65,9 cm ; s_max = min(20; 65,9/3) = 20 cm
         assert self._pele()["s_max_cm"] == pytest.approx(20.0, abs=0.05)
 
     def test_adotada_phi_6_3_n_5(self):
@@ -66,7 +66,7 @@ class TestPeleCAA3:
         assert self._pele()["as_pele_min_face_cm2"] == pytest.approx(1.4, abs=0.001)
 
     def test_s_max_por_d(self):
-        # d = 65,5 ; d/3 = 21,83 > 20 → s_max = 20
+        # d = 64,4 cm ; d/3 = 21,47 > 20 → s_max = 20
         assert self._pele()["s_max_cm"] == pytest.approx(20.0, abs=0.05)
 
 
