@@ -2,7 +2,7 @@
 
 **Aviso.** O Pórtica App é uma ferramenta de apoio ao dimensionamento de vigas
 de concreto armado conforme a ABNT NBR 6118. Os resultados devem ser
-verificados por engenheiro civil habilitado, com ART/RRT, antes de qualquer
+verificados por engenheiro civil habilitado, com ART, antes de qualquer
 uso em projeto executivo. O software é fornecido "como está", sem garantia de
 adequação a um caso concreto. Os autores não respondem por decisões de projeto
 tomadas com base nas saídas do programa.
@@ -21,7 +21,7 @@ O programa **não** substitui:
 
 - o projeto estrutural completo, com suas hipóteses de carregamento,combinações
   e efeitos de segunda ordem;
-- a verificação de um engenheiro civil habilitado, com ART/RRT;
+- a verificação de um engenheiro civil habilitado, com ART;
 - a consulta à norma vigente e às suas tabelas;
 - a conferência das premissas adotadas no modelo estrutural.
 

@@ -27,7 +27,7 @@ Calculadora estrutural de vigas de concreto armado conforme a **ABNT NBR 6118:20
 | Armadura dupla | Solução com armadura de compressão quando o momento excede o limite do domínio 3 |
 | Armadura de pele | Dimensionamento automático das costelas para vigas com `h ≥ 60 cm` |
 | Coeficientes γf | Tabela de ponderação das ações da NBR 6118 (seleção por caso de combinação) |
-| Relatório PDF | Capa, dados de entrada, tabelas de flexão e cisalhamento, esquema da seção e campos de ART/CREA |
+| Relatório PDF | Capa, dados de entrada, tabelas de flexão e cisalhamento, esquema da seção e campos de CREA/CAU |
 | Exportação DXF | Desenho da seção R/T com layers e grampos |
 | Projetos `.ptc` | Salvar e carregar o projeto completo (geometria, materiais, esforços, ajustes) |
 | Parser FTOOL | Leitura dos `.txt` exportados do FTOOL: momento fletor, esforço cortante e deformações |
@@ -175,7 +175,7 @@ O app implementa as fórmulas e os critérios de dimensionamento; os valores de 
 
 > **Aviso.** O Pórtica App é uma ferramenta de apoio ao dimensionamento de vigas
 > de concreto armado conforme a ABNT NBR 6118. Os resultados devem ser
-> verificados por engenheiro civil habilitado, com ART/RRT, antes de qualquer
+> verificados por engenheiro civil habilitado, com ART, antes de qualquer
 > uso em projeto executivo. O software é fornecido "como está", sem garantia de
 > adequação a um caso concreto. Os autores não respondem por decisões de projeto
 > tomadas com base nas saídas do programa.

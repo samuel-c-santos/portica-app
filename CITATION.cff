@@ -6,7 +6,7 @@ abstract: >-
   6118:2023, com flexao, cisalhamento, armadura dupla, armadura de pele,
   verificacao de ELS e detalhamento. Aceita entrada manual ou importacao de
   esforcos exportados do FTOOL. Ferramenta de apoio: os resultados devem ser
-  verificados por engenheiro civil habilitado, com ART/RRT.
+  verificados por engenheiro civil habilitado, com ART.
 type: software
 authors:
   - family-names: "dos Santos"

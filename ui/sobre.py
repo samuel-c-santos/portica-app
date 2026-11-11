@@ -199,7 +199,7 @@ def build_sobre(page, on_back):
                 body_small(
                     f"O {APP_TITLE} é uma ferramenta de apoio ao dimensionamento de vigas de concreto armado "
                     "conforme a ABNT NBR 6118. Os resultados devem ser verificados por engenheiro civil "
-                    "habilitado, com ART/RRT, antes de qualquer uso em projeto executivo. O software é "
+                    "habilitado, com ART, antes de qualquer uso em projeto executivo. O software é "
                     'fornecido "como está", sem garantia de adequação a um caso concreto. Os autores não '
                     "respondem por decisões de projeto tomadas com base nas saídas do programa.",
                     color=Palette.TEXT_SECONDARY,

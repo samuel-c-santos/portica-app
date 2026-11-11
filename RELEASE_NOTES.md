@@ -19,7 +19,7 @@ exportação DXF e verificações de ELS. Desenvolvido em Python + Flet, licenci
 O Pórtica App dimensiona e detalha vigas de concreto armado (seção retangular e seção
 T), partindo dos esforços que o engenheiro já tem: digitados à mão ou importados dos
 arquivos `.txt` exportados pelo FTOOL. É uma ferramenta de apoio ao projeto: os
-resultados devem ser verificados por engenheiro civil habilitado, com ART/RRT.
+resultados devem ser verificados por engenheiro civil habilitado, com ART.
 
 ## Funcionalidades principais
 
@@ -28,7 +28,7 @@ resultados devem ser verificados por engenheiro civil habilitado, com ART/RRT.
 - **Armadura dupla**: solução com armadura de compressão quando o momento excede o limite do domínio 3.
 - **Armadura de pele**: dimensionamento automático das costelas para vigas com `h ≥ 60 cm`.
 - **ELS**: flecha (imediata e diferida) e fissuração (`wk1`, `wk2` e mínima), por classe de agressividade.
-- **Relatório PDF**: capa, dados de entrada, tabelas, diagramas M(x)/V(x), esquema da seção e campos de ART/CREA.
+- **Relatório PDF**: capa, dados de entrada, tabelas, diagramas M(x)/V(x), esquema da seção e campos de CREA/CAU.
 - **Exportação DXF**: desenho da seção R/T com layers e grampos.
 - **Projetos `.ptc`**: salvar e carregar o projeto completo (geometria, materiais, esforços, ajustes).
 - **Importação FTOOL**: leitura dos `.txt` exportados (momento fletor, cortante e deformações), detecção das seções críticas, envelope de combinações e dimensionamento automático.
@@ -59,7 +59,7 @@ resultados devem ser verificados por engenheiro civil habilitado, com ART/RRT.
 
 > **Aviso.** O Pórtica App é uma ferramenta de apoio ao dimensionamento de vigas
 > de concreto armado conforme a ABNT NBR 6118. Os resultados devem ser
-> verificados por engenheiro civil habilitado, com ART/RRT, antes de qualquer
+> verificados por engenheiro civil habilitado, com ART, antes de qualquer
 > uso em projeto executivo. O software é fornecido "como está", sem garantia de
 > adequação a um caso concreto. Os autores não respondem por decisões de projeto
 > tomadas com base nas saídas do programa.

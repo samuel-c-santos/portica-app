@@ -32,7 +32,7 @@ Mudanças aceitas e ainda não publicadas em uma versão.
   e responsabilização do usuário pela verificação dos resultados.
 - `DISCLAIMER.md` com o aviso de responsabilidade técnica: o app é ferramenta
   de apoio e **não substitui** a verificação de engenheiro civil habilitado,
-  com ART/RRT.
+  com ART.
 - `CITATION.cff` (CFF 1.2.0) com metadados de citação e bloco
   `preferred-citation` (DOI ainda é placeholder, a ser emitido na publicação
   Zenodo).
