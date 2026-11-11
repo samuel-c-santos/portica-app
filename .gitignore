@@ -103,7 +103,9 @@ samples/Projeto_*.ptc
 *installer.spec
 *.app
 
-assets\assets.af
+# `core/assets/assets.af` e versionado de proposito: arquivo de assets
+# do build do Flet; o build assume que ele existe. (A regra antiga
+# `assets\assets.af` nunca casava: o git trata `\` como escape - EP-00.6.)
 
 # ── Documentos arquivados (não versionar) ──────────────────────────────────
 docs/archived/
