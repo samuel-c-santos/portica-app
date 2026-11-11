@@ -3,8 +3,9 @@ Módulo para geração de diagramas de esforços diretamente no PDF.
 Fase 2.4 — Diagrama de Esforços no PDF
 """
 
-from typing import List, Tuple
+
 from fpdf import FPDF
+
 from ui.ftool.secoes_criticas import SecaoCritica
 
 
@@ -14,11 +15,11 @@ def _desenhar_grafico(
     y_origin: float,
     largura: float,
     altura: float,
-    pontos: List[Tuple[float, float]],
-    cor_linha: Tuple[int, int, int],
+    pontos: list[tuple[float, float]],
+    cor_linha: tuple[int, int, int],
     titulo: str,
     unidade_y: str,
-    secoes_criticas: List[SecaoCritica],
+    secoes_criticas: list[SecaoCritica],
     tipo_esforco: str,  # "M" ou "V"
 ) -> None:
     """
@@ -92,7 +93,7 @@ def _desenhar_grafico(
     # 5. Desenhar Curva de Esforços
     pdf.set_draw_color(*cor_linha)
     pdf.set_line_width(0.7)
-    
+
     def desenhar_curva_fpdf(pts):
         pontos_ordenados = sorted(pts, key=lambda p: p[0])
         for idx in range(len(pontos_ordenados) - 1):
@@ -119,7 +120,7 @@ def _desenhar_grafico(
     labels_pos = []  # armazena (px, py_pt, val_esforco, lbl, sec) para cada seção
     for sec in secoes_ordenadas:
         px = x_origin + (sec.x / L) * largura
-        
+
         # Desenhar linha vertical pontilhada (Tracejada)
         pdf.set_draw_color(160, 160, 160)
         pdf.set_line_width(0.2)
@@ -153,9 +154,9 @@ def _desenhar_grafico(
 
     # Desenhar rótulos com posicionamento inteligente para evitar sobreposição
     pdf.set_font("Helvetica", "B", 7)
-    for i, (px, py_pt, val_esforco, lbl, sec) in enumerate(labels_pos):
+    for i, (px, py_pt, _val_esforco, lbl, _sec) in enumerate(labels_pos):
         pdf.set_text_color(60, 60, 60)
-        
+
         # Verificar se há outra seção muito próxima (< 12mm no PDF)
         tem_proximo = False
         if i < len(labels_pos) - 1:
@@ -187,7 +188,7 @@ def _desenhar_grafico(
     # 7. Desenhar Escala nos Eixos (Rótulos de eixos)
     pdf.set_text_color(120, 120, 120)
     pdf.set_font("Helvetica", "", 7)
-    
+
     # Rótulos do Eixo Y (Valores de esforços)
     for i in range(5):
         val_y = y_min_padded + (i / 4) * y_span_padded
@@ -200,7 +201,7 @@ def _desenhar_grafico(
     for mx in range(int(L) + 1):
         px = x_origin + (mx / L) * largura
         pdf.text(px - 2.5, y_origin + altura + 4.0, f"{mx}m")
-    
+
     # Adicionar o ponto final se for decimal (ex: 7.50m)
     if abs(L - int(L)) > 1e-3:
         px_end = x_origin + largura
@@ -214,9 +215,9 @@ def _desenhar_grafico(
 
 def gerar_diagrama_esforcos(
     pdf: FPDF,
-    momentos: List[Tuple[float, float]],
-    cortantes: List[Tuple[float, float]],
-    secoes_criticas: List[SecaoCritica],
+    momentos: list[tuple[float, float]],
+    cortantes: list[tuple[float, float]],
+    secoes_criticas: list[SecaoCritica],
     largura_mm: float = 160,
     altura_mm: float = 60,
 ) -> None:
@@ -229,9 +230,9 @@ def gerar_diagrama_esforcos(
     margem_necessaria = 2 * altura_mm + 25.0
     if pdf.get_y() + margem_necessaria > pdf.h - 25.0:
         pdf.add_page()
-        
+
     y_start = pdf.get_y() + 8.0
-    
+
     # Alinhamento preciso com as margens do PDF
     ML = getattr(pdf, "l_margin", 20.0)
     MR = getattr(pdf, "r_margin", 20.0)
@@ -269,6 +270,6 @@ def gerar_diagrama_esforcos(
         secoes_criticas=secoes_criticas,
         tipo_esforco="V",
     )
-    
+
     # Atualizar cursor y da página do PDF para após os gráficos
     pdf.set_y(y_start_cortante + altura_mm + 12.0)

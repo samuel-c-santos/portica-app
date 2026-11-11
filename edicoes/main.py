@@ -15,14 +15,12 @@ if _proj_root not in sys.path:
 
 import flet as ft
 
-from ui.theme import Palette, Spacing, apply_light, apply_dark, is_dark, logo_path_for
-from ui.sidebar import build_sidebar, ROUTE_HOME, ROUTE_VIGA, ROUTE_SOBRE
-from ui.home import build_home
-from ui.viga import build_viga_screen
-from ui.sobre import build_sobre
-
-
 from core.utils_tempfile import resource_path
+from ui.home import build_home
+from ui.sidebar import ROUTE_HOME, ROUTE_SOBRE, ROUTE_VIGA, build_sidebar
+from ui.sobre import build_sobre
+from ui.theme import Palette, apply_dark, apply_light, is_dark
+from ui.viga import build_viga_screen
 
 APP_TITLE = "Pórtica App"
 
@@ -79,7 +77,7 @@ def main(page: ft.Page):
     def navigate_to_file(path: str):
         """Abre um projeto .ptc direto da lista de recentes."""
         try:
-            with open(path, "r", encoding="utf-8") as f:
+            with open(path, encoding="utf-8") as f:
                 data = json.load(f)
             modo = data.get("modo", "comum")
         except Exception:

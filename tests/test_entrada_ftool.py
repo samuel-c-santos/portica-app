@@ -51,7 +51,7 @@ def test_entrada_de_projeto_valores_desconhecidos_caem_para_manual():
 
 @pytest.mark.parametrize("arquivo", [AMOSTRA_STANDARD, AMOSTRA_PREMIUM])
 def test_amostras_ptc_sem_entrada_carregam_como_manual(arquivo):
-    with open(arquivo, "r", encoding="utf-8") as f:
+    with open(arquivo, encoding="utf-8") as f:
         proj_data = json.load(f)
     assert "entrada" not in proj_data
     assert entrada_de_projeto(proj_data) == ENTRADA_MANUAL
@@ -267,7 +267,7 @@ def test_salvar_grava_a_fonte_de_entrada(ui, tmp_path):
     page, screen, _, fp_save = _build_screen(ui, save_path=str(out_manual))
 
     asyncio.run(_find_button(screen, "Salvar Projeto").on_click(None))
-    with open(out_manual, "r", encoding="utf-8") as f:
+    with open(out_manual, encoding="utf-8") as f:
         data = json.load(f)
     assert data["entrada"] == ENTRADA_MANUAL
     assert data["edicao"] == "premium"
@@ -278,7 +278,7 @@ def test_salvar_grava_a_fonte_de_entrada(ui, tmp_path):
     fp_save.path = str(out_ftool)
     _find_button(screen, "Importar do FTOOL").on_click(None)
     asyncio.run(_find_button(screen, "Salvar Projeto").on_click(None))
-    with open(out_ftool, "r", encoding="utf-8") as f:
+    with open(out_ftool, encoding="utf-8") as f:
         data = json.load(f)
     assert data["entrada"] == ENTRADA_FTOOL
 
@@ -298,7 +298,7 @@ def test_carregar_ptc_antigo_sem_entrada_abre_sem_erro(ui):
 
 
 def test_carregar_ptc_com_entrada_ftool_revela_o_painel(ui, tmp_path):
-    with open(AMOSTRA_PREMIUM, "r", encoding="utf-8") as f:
+    with open(AMOSTRA_PREMIUM, encoding="utf-8") as f:
         proj_data = json.load(f)
     proj_data["entrada"] = ENTRADA_FTOOL
     destino = tmp_path / "projeto_ftool.ptc"
@@ -315,7 +315,7 @@ def test_carregar_ptc_com_entrada_ftool_revela_o_painel(ui, tmp_path):
 
 @pytest.mark.parametrize("edicao", ["standard", "premium"])
 def test_edicao_standard_e_premium_sao_ambos_aceitos(ui, tmp_path, edicao):
-    with open(AMOSTRA_STANDARD, "r", encoding="utf-8") as f:
+    with open(AMOSTRA_STANDARD, encoding="utf-8") as f:
         proj_data = json.load(f)
     proj_data["edicao"] = edicao
     proj_data["modo"] = "comum"

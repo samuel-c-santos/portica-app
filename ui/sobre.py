@@ -3,15 +3,22 @@ Pórtica App - Tela Sobre.
 """
 
 import flet as ft
-from core.version import APP_VERSION
 
+from core.version import APP_VERSION
 from ui.theme import (
-    Palette, Spacing, Radius, pad_sym, pad_only, pad_all, br_all,
-    surface_card, primary_button,
-    display_large, headline_large, headline_medium, headline_small,
-    title_large, title_medium, title_small, body_large, body_medium, body_small,
-    label_medium, label_small, caption, overline, icon_pill,
-    SHADOW_SM, SHADOW_MD,
+    Palette,
+    Spacing,
+    body_large,
+    body_medium,
+    body_small,
+    caption,
+    display_large,
+    icon_pill,
+    overline,
+    pad_all,
+    pad_only,
+    surface_card,
+    title_medium,
 )
 
 

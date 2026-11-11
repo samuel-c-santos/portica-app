@@ -4,7 +4,6 @@ Fase 2.2 — Detecção automática de seções críticas
 """
 
 from dataclasses import dataclass
-from typing import List, Tuple, Dict, Any, Optional
 
 
 @dataclass
@@ -17,7 +16,7 @@ class SecaoCritica:
     origem: str = ""  # nome da combinação de origem (ex: "Combinação 1")
 
 
-def interpolar_y(curva: List[Tuple[float, float]], x_target: float) -> float:
+def interpolar_y(curva: list[tuple[float, float]], x_target: float) -> float:
     """
     Interpola linearmente o valor de y para um x_target em uma curva (lista de tuplas (x, y)).
     Se houver descontinuidade (múltiplos valores de y para o mesmo x_target),
@@ -51,7 +50,7 @@ def interpolar_y(curva: List[Tuple[float, float]], x_target: float) -> float:
     return 0.0
 
 
-def detectar_maximos_locais(pontos: List[Tuple[float, float]]) -> List[Tuple[float, float]]:
+def detectar_maximos_locais(pontos: list[tuple[float, float]]) -> list[tuple[float, float]]:
     """
     Detecta máximos locais na curva de momentos ou cortantes.
     Um ponto (xi, yi) é máximo local se yi >= yi-1 e yi >= yi+1.
@@ -78,7 +77,7 @@ def detectar_maximos_locais(pontos: List[Tuple[float, float]]) -> List[Tuple[flo
     return maximos
 
 
-def detectar_minimos_locais(pontos: List[Tuple[float, float]]) -> List[Tuple[float, float]]:
+def detectar_minimos_locais(pontos: list[tuple[float, float]]) -> list[tuple[float, float]]:
     """
     Detecta mínimos locais na curva.
     Um ponto (xi, yi) é mínimo local se yi <= yi-1 e yi <= yi+1.
@@ -105,7 +104,7 @@ def detectar_minimos_locais(pontos: List[Tuple[float, float]]) -> List[Tuple[flo
     return minimos
 
 
-def detectar_apoios(momentos: List[Tuple[float, float]], cortantes: List[Tuple[float, float]]) -> List[float]:
+def detectar_apoios(momentos: list[tuple[float, float]], cortantes: list[tuple[float, float]]) -> list[float]:
     """
     Detecta as posições x dos apoios:
     1. Descontinuidades na curva de cortante (dois pontos com mesmo x)
@@ -135,7 +134,7 @@ def detectar_apoios(momentos: List[Tuple[float, float]], cortantes: List[Tuple[f
     return apoios
 
 
-def detectar_pontos_momento_nulo(pontos: List[Tuple[float, float]]) -> List[Tuple[float, float]]:
+def detectar_pontos_momento_nulo(pontos: list[tuple[float, float]]) -> list[tuple[float, float]]:
     """
     Detecta onde M(x) cruza o zero (mudança de sinal entre pontos consecutivos).
     Faz a interpolação linear para achar a coordenada x exata onde M = 0.
@@ -143,7 +142,7 @@ def detectar_pontos_momento_nulo(pontos: List[Tuple[float, float]]) -> List[Tupl
     pontos_nulo = []
     sorted_pts = sorted(pontos, key=lambda p: p[0])
     n = len(sorted_pts)
-    
+
     i = 0
     while i < n:
         x, m = sorted_pts[i]
@@ -151,7 +150,7 @@ def detectar_pontos_momento_nulo(pontos: List[Tuple[float, float]]) -> List[Tupl
             pontos_nulo.append((x, 0.0))
             i += 1
             continue
-            
+
         if i < n - 1:
             x_next, m_next = sorted_pts[i + 1]
             if m * m_next < 0:
@@ -159,67 +158,67 @@ def detectar_pontos_momento_nulo(pontos: List[Tuple[float, float]]) -> List[Tupl
                 x_zero = x - m * (x_next - x) / (m_next - m)
                 pontos_nulo.append((x_zero, 0.0))
         i += 1
-        
+
     return pontos_nulo
 
 
 def calcular_lo_para_secao(
     x_secao: float,
-    pontos_momento_nulo: List[Tuple[float, float]],
+    pontos_momento_nulo: list[tuple[float, float]],
     x_min: float,
     x_max: float
-) -> Tuple[Optional[float], Optional[float]]:
+) -> tuple[float | None, float | None]:
     """
     Calcula os vãos teóricos l0 esquerdo e direito para uma seção crítica.
-    
+
     l0 é a distância entre pontos de momento nulo (NBR 6118:15.5.2).
     Para cada seção, retorna (l0_esq, l0_dir) em cm:
     - l0_esq: distância do ponto de M=0 à esquerda até o ponto de M=0 à direita
     - l0_dir: mesma coisa (vão teórico ao redor da seção)
-    
+
     Se não houver pontos de M=0, retorna (None, None) — sem limitação de b1.
-    
+
     Args:
         x_secao: posição x da seção crítica (m)
         pontos_momento_nulo: lista de (x, 0.0) onde M cruza zero
         x_min: extremo esquerdo da viga (m)
         x_max: extremo direito da viga (m)
-    
+
     Returns:
         (l0_esq_cm, l0_dir_cm) em cm, ou (None, None) se não aplicável
     """
     if not pontos_momento_nulo:
         return None, None
-    
+
     # Encontrar pontos de M=0 adjacentes à seção
     x_nulos = sorted([x for x, _ in pontos_momento_nulo])
-    
+
     # Ponto de M=0 à esquerda (mais próximo e < x_secao)
     x_nulo_esq = None
     for xn in reversed(x_nulos):
         if xn < x_secao - 1e-5:
             x_nulo_esq = xn
             break
-    
+
     # Ponto de M=0 à direita (mais próximo e > x_secao)
     x_nulo_dir = None
     for xn in x_nulos:
         if xn > x_secao + 1e-5:
             x_nulo_dir = xn
             break
-    
+
     # Se não encontrou pontos de M=0 em ambos os lados, não há limitação
     if x_nulo_esq is None or x_nulo_dir is None:
         return None, None
-    
+
     # l0 = distância entre os dois pontos de M=0
     lo_m = x_nulo_dir - x_nulo_esq
     lo_cm = lo_m * 100
-    
+
     return lo_cm, lo_cm
 
 
-def detectar_todas_secoes(momentos: List[Tuple[float, float]], cortantes: List[Tuple[float, float]]) -> List[SecaoCritica]:
+def detectar_todas_secoes(momentos: list[tuple[float, float]], cortantes: list[tuple[float, float]]) -> list[SecaoCritica]:
     """
     Orquestra todas as detecções (máximos, mínimos, apoios, momentos nulos, extremos)
     e retorna uma lista de SecaoCritica ordenada por x.
@@ -253,13 +252,13 @@ def detectar_todas_secoes(momentos: List[Tuple[float, float]], cortantes: List[T
         # Determinar tipo por ordem de prioridade
         tipo = ""
         descricao = ""
-        
+
         is_apoio = any(abs(x - xa) < 1e-5 for xa in x_apoios)
         is_max = any(abs(x - xm) < 1e-5 for xm in x_maximos)
         is_min = any(abs(x - xm) < 1e-5 for xm in x_minimos)
         is_extremo = any(abs(x - xe) < 1e-5 for xe in x_extremos)
         is_nulo = any(abs(x - xn) < 1e-5 for xn in x_nulos)
-        
+
         if is_apoio:
             tipo = "APOIO"
             if abs(x - x_min) < 1e-5:

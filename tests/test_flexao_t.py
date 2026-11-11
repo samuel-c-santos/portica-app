@@ -1,6 +1,5 @@
 """Testes de viga T (flexao com mesa colaborante)."""
-import pytest
-from core.calculos import calcular_flexao_viga_t, bf_efetivo_viga_t
+from core.calculos import bf_efetivo_viga_t, calcular_flexao_viga_t
 
 
 class TestVigaT:

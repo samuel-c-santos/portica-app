@@ -6,8 +6,8 @@ Licenca: vide LICENSE
 """
 
 import math
-from dataclasses import dataclass, field
-from typing import List, Optional
+from dataclasses import dataclass
+
 from core.detailing import BeamDetailer, BeamDetailingInput, SectionLayoutData
 
 # ── Constantes ────────────────────────────────────────────────────────────────
@@ -113,7 +113,7 @@ def validar_geometria(
     cob_mm: float,
     diam_estribo_mm: float,
     diam_barra_mm: float,
-) -> Optional[str]:
+) -> str | None:
     """A9: valida geometria antes de calcular. Retorna mensagem de erro ou None.
 
     Criterios minimos:
@@ -158,7 +158,7 @@ def rho_min(fck: float) -> float:
 
 def asw_min_cm2_m(fck: float, bw_cm: float, fyk_estribo_mpa: float = 500) -> float:
     """Asw/s mínimo (cm²/m) para estribos.
-    
+
     A tabela ASW_S_TABLE_CA50 armazena:
       [0] = ρ_min em % (apenas referência)
       [1] = Asw_min/s por cm de bw para CA-50 (cm²/m/cm)
@@ -235,7 +235,7 @@ def calcular_armadura_pele(
 
         # Espacamento adotado: s = h_interna / (n+1) — uniforme canto-barra-barra-canto
         s_adot = h_interna / (n + 1) if n > 0 else 0
-        
+
         # O diâmetro da barra de pele deve ser menor ou igual ao diâmetro do estribo (NBR 6118:17.3.5.2.3)
         cabe = (s_adot <= s_max if n > 1 else True) and (phi <= phi_estribo_mm)
 
@@ -303,7 +303,7 @@ class ResultadoFlexao:
     barras_cima: int
     cob_mm: float
     espaco_disp_cm: float
-    as_lista_barras: List[float]  # área por diâmetro (cm²)
+    as_lista_barras: list[float]  # área por diâmetro (cm²)
     # Armadura de pele (h >= 60 cm, NBR 6118:17.3.5.2.3)
     requer_pele: bool = False
     n_barras_pele_face: int = 0
@@ -312,7 +312,7 @@ class ResultadoFlexao:
     s_pele_cm: float = 0.0
     as_pele_min_face_cm2: float = 0.0
     s_pele_max_cm: float = 0.0
-    tabela_pele: List = None  # lista de dicts com phi/n/s/as/cabe
+    tabela_pele: list = None  # lista de dicts com phi/n/s/as/cabe
     alerta: str = ""  # mensagem de alerta (dominio nao passa, etc)
     armadura_dupla: bool = False  # indica se usa compressão
     as_linha_cm2: float = 0.0  # armadura de compressão (As')
@@ -323,8 +323,8 @@ class ResultadoFlexao:
     d_cm_real: float = 0.0
     camadas_adotadas: int = 1
     status_bitola: str = "CABE"
-    layout_convergido: Optional[object] = None
-    tabela_bitolas: List = None
+    layout_convergido: object | None = None
+    tabela_bitolas: list = None
 
     def __post_init__(self):
         if self.tabela_pele is None:
@@ -344,7 +344,7 @@ class ResultadoBitola:
     camadas: int
     status_bitola: str
     eh_real_mm: float
-    layout: Optional[SectionLayoutData]
+    layout: SectionLayoutData | None
     iteracoes: int
     cabe: bool
 
@@ -358,7 +358,7 @@ def dimensionar_bitola_iterativa(
     fck_mpa: float,
     fyk_mpa: float,
     Md_kNm: float,
-    bw_detalhamento_cm: Optional[float] = None,
+    bw_detalhamento_cm: float | None = None,
     d_max_agregado_mm: float = 19.0,
     max_iter: int = 5,
     tol_mm: float = 1.0,
@@ -375,7 +375,6 @@ def dimensionar_bitola_iterativa(
     iteracoes_feitas = 0
     layout_final = None
     as_req_final = 0.0
-    as_usado_final = 0.0
     qtd_barras = 0
 
     for it in range(1, max_iter + 1):
@@ -428,7 +427,6 @@ def dimensionar_bitola_iterativa(
         asmin = rho_min(fck_mpa) * bw_detalhamento_cm * h_cm / 100.0
         as_usado = max(as_req, asmin)
         as_req_final = as_req
-        as_usado_final = as_usado
 
         a_bar = area_barra(diam_barra_mm)
         qtd_barras = math.ceil(as_usado / a_bar) if a_bar > 0 else 0
@@ -526,9 +524,9 @@ def calcular_flexao_viga_comum(
     diam_estribo_mm: float,
     diam_barra_mm: float,
     fyk_mpa: float,
-    momentos: List[float],
+    momentos: list[float],
     gamma_f: float = GAMMA_F_RESTO,
-) -> List[ResultadoFlexao]:
+) -> list[ResultadoFlexao]:
     """Calcula flexao para uma secao retangular com multiplos momentos.
 
     Os momentos sao recebidos como valores caracteristicos (sem majoracao).
@@ -650,20 +648,20 @@ def calcular_flexao_viga_comum(
             armadura_dupla = True
             md_excedente_knm = abs(Md_kNm) - Md_lim_kNm
             md_exc_kNcm = md_excedente_knm * 100
-            
+
             # ks limite
             ks = 1 / (fyd * (1 - bx_min / 2))
-            
+
             # As1 (tracionada limite)
             as1 = ks * Md_lim_kNcm / d_cm
-            
+
             # As2 (tracionada adicional) e As' (comprimida)
             as2 = md_exc_kNcm / (fyd * (d_cm - d_lin))
             as_linha_cm2 = as2
-            
+
             # As total requerida
             as_req = as1 + as2
-            
+
             bx = bx_min
             bx_passa = "SIM"
             alerta = (
@@ -814,9 +812,9 @@ def calcular_cisalhamento_viga_comum(
     fyk_estribo_mpa: float,
     fyk_barra_mpa: float,
     caa: int,
-    forcas_cortantes: List[float],
+    forcas_cortantes: list[float],
     gamma_f: float = GAMMA_F_RESTO,
-) -> List[ResultadoCisalhamento]:
+) -> list[ResultadoCisalhamento]:
     """Calcula cisalhamento para uma secao retangular (largura da alma bw).
 
     As forcas cortantes sao recebidas como valores caracteristicos (com sinal,
@@ -950,7 +948,7 @@ class ResultadoFlexaoT:
     barras_cima: int = 0
     cob_mm: float = 0.0
     espaco_disp_cm: float = 0.0
-    as_lista_barras: List[float] = None
+    as_lista_barras: list[float] = None
     as_linha_cm2: float = 0.0
     as_linha_adotada: float = 0.0
     # Armadura de pele (h >= 60 cm, NBR 6118:17.3.5.2.3)
@@ -961,14 +959,14 @@ class ResultadoFlexaoT:
     s_pele_cm: float = 0.0
     as_pele_min_face_cm2: float = 0.0
     s_pele_max_cm: float = 0.0
-    tabela_pele: List = None  # lista de dicts com phi/n/s/as/cabe
+    tabela_pele: list = None  # lista de dicts com phi/n/s/as/cabe
     alerta: str = ""  # mensagem de alerta (dominio nao passa, etc)
     as_adotado_cm2: float = 0.0
     d_cm_real: float = 0.0
     camadas_adotadas: int = 1
     status_bitola: str = "CABE"
-    layout_convergido: Optional[object] = None
-    tabela_bitolas: List = None
+    layout_convergido: object | None = None
+    tabela_bitolas: list = None
 
     def __post_init__(self):
         if self.tabela_pele is None:
@@ -979,8 +977,8 @@ class ResultadoFlexaoT:
 
 def bf_efetivo_viga_t(
     bw_cm: float, bf_cm: float,
-    b1esq_cm: Optional[float] = None, b1dir_cm: Optional[float] = None,
-    lo_esq_cm: Optional[float] = None, lo_dir_cm: Optional[float] = None,
+    b1esq_cm: float | None = None, b1dir_cm: float | None = None,
+    lo_esq_cm: float | None = None, lo_dir_cm: float | None = None,
 ) -> float:
     """Largura efetiva da mesa (NBR 6118:15.5.2):
        bf,ef = bw + b1esq + b1dir, limitado por:
@@ -1015,13 +1013,13 @@ def calcular_flexao_viga_t(
     diam_estribo_mm: float,
     diam_barra_mm: float,
     fyk_mpa: float,
-    momentos: List[float],
-    b1esq_cm: Optional[float] = None,
-    b1dir_cm: Optional[float] = None,
-    lo_esq_cm: Optional[float] = None,
-    lo_dir_cm: Optional[float] = None,
+    momentos: list[float],
+    b1esq_cm: float | None = None,
+    b1dir_cm: float | None = None,
+    lo_esq_cm: float | None = None,
+    lo_dir_cm: float | None = None,
     gamma_f: float = GAMMA_F_RESTO,
-) -> List[ResultadoFlexaoT]:
+) -> list[ResultadoFlexaoT]:
     """Calcula flexao para secao de Viga T.
 
     Os momentos sao recebidos como valores caracteristicos (sem majoracao).
@@ -1096,7 +1094,7 @@ def calcular_flexao_viga_t(
                 tabela_bitolas.append(res_cand)
 
         d_cm = res_bitola.d_real_cm
-        
+
         # Fator eta de profundidade para classes de concreto
         if fck_mpa <= 50:
             eta = 0.8
@@ -1108,7 +1106,7 @@ def calcular_flexao_viga_t(
         kc_lim = 1.0 / (fck_conv * bx_min * (0.48 - 0.192 * bx_min))
 
         Md_kNcm = abs(Md_kNm) * 100.0
-        
+
         if Mk_kNm > 0:
             # Momento positivo: compressão no topo (mesa)
             # 1. Tenta calcular assumindo LN na mesa (largura bf_efetivo)
@@ -1116,7 +1114,7 @@ def calcular_flexao_viga_t(
             a_coef = -0.192 * fck_conv * kc
             b_coef = 0.48 * fck_conv * kc
             c_coef = -1.0
-            
+
             delta = b_coef**2 - 4 * a_coef * c_coef
             if delta < 0 or a_coef == 0:
                 bx = 999.0
@@ -1132,9 +1130,9 @@ def calcular_flexao_viga_t(
                 else:
                     cand = sorted([x1, x2])
                     bx = cand[0] if 0 < cand[0] < 0.628 else (cand[1] if 0 < cand[1] < 0.628 else 999.0)
-            
+
             x_cm = bx * d_cm
-            
+
             # Verifica se a linha neutra está realmente na mesa colaborante
             if eta * x_cm < hf_cm:
                 ln_condiz = "SIM"
@@ -1180,9 +1178,9 @@ def calcular_flexao_viga_t(
                 if fck_mpa > 50:
                     alpha_c = 0.85 * (1.0 - (fck_mpa - 50) / 200.0)
                 stress_block_fcd = alpha_c * (fck_mpa / 1.4) / 10.0 # kN/cm^2
-                
+
                 Md1_kNcm = stress_block_fcd * (bf_efetivo - bw_cm) * hf_cm * (d_cm - hf_cm / 2.0)
-                
+
                 if Md_kNcm <= Md1_kNcm:
                     as_req = Md_kNcm / (fyd * (d_cm - hf_cm / 2.0))
                     as_linha_cm2 = 0.0
@@ -1194,15 +1192,15 @@ def calcular_flexao_viga_t(
                     if Md2_kNcm > Md2_lim_kNcm:
                         # Armadura dupla necessária na alma
                         Md2_exc_kNcm = Md2_kNcm - Md2_lim_kNcm
-                        
+
                         ks_lim = 1.0 / (fyd * (1.0 - bx_min / 2.0))
                         as2_1 = ks_lim * Md2_lim_kNcm / d_cm
-                        
+
                         denom = d_cm - d_lin if (d_cm - d_lin) > 0 else 0.1
                         as2_2 = Md2_exc_kNcm / (fyd * denom)
                         as2 = as2_1 + as2_2
                         as_linha_cm2 = as2_2
-                        
+
                         as1 = Md1_kNcm / (fyd * (d_cm - hf_cm / 2.0))
                         as_req = as1 + as2
                         bx = bx_min
@@ -1215,7 +1213,7 @@ def calcular_flexao_viga_t(
                         a_coef2 = -0.192 * fck_conv * kc2
                         b_coef2 = 0.48 * fck_conv * kc2
                         c_coef2 = -1.0
-                        
+
                         delta2 = b_coef2**2 - 4 * a_coef2 * c_coef2
                         if delta2 < 0 or a_coef2 == 0:
                             bx2 = 999.0
@@ -1231,7 +1229,7 @@ def calcular_flexao_viga_t(
                             else:
                                 cand2 = sorted([x1_2, x2_2])
                                 bx2 = cand2[0] if 0 < cand2[0] < 0.628 else (cand2[1] if 0 < cand2[1] < 0.628 else 999.0)
-                        
+
                         bx = bx2
                         if bx2 >= 999.0:
                             alerta = f"Seção insuficiente na alma para o momento Md2={Md2_kNcm/100:.1f} kN·m."
@@ -1245,7 +1243,7 @@ def calcular_flexao_viga_t(
                             ks2 = 1.0 / (fyd * (1.0 - bx2 / 2.0))
                             as2 = ks2 * Md2_kNcm / d_cm
                             as_linha_cm2 = 0.0
-                            
+
                             as1 = Md1_kNcm / (fyd * (d_cm - hf_cm / 2.0))
                             as_req = as1 + as2
                             alerta = (
@@ -1259,7 +1257,7 @@ def calcular_flexao_viga_t(
             a_coef = -0.192 * fck_conv * kc
             b_coef = 0.48 * fck_conv * kc
             c_coef = -1.0
-            
+
             delta = b_coef**2 - 4 * a_coef * c_coef
             if delta < 0 or a_coef == 0:
                 bx = 999.0
@@ -1275,7 +1273,7 @@ def calcular_flexao_viga_t(
                 else:
                     cand = sorted([x1, x2])
                     bx = cand[0] if 0 < cand[0] < 0.628 else (cand[1] if 0 < cand[1] < 0.628 else 999.0)
-            
+
             if bx >= 999.0:
                 alerta = (
                     f"Seção insuficiente para o momento negativo Mk={Mk_kNm:+.1f} kN·m "
@@ -1307,10 +1305,10 @@ def calcular_flexao_viga_t(
                 as_req = ks * Md_kNcm / d_cm
                 as_linha_cm2 = 0.0
                 alerta = ""
-        
+
         asmin = rho_min_val * bw_cm * h_cm / 100.0
         as_usado = max(as_req, asmin)
-        
+
         if as_linha_cm2 > 0:
             area_barra_d = area_barra(diam_barra_mm)
             qtd_barras_linha = math.ceil(as_linha_cm2 / area_barra_d) if area_barra_d > 0 else 0
@@ -1318,11 +1316,11 @@ def calcular_flexao_viga_t(
         else:
             as_linha_adotada = 0.0
             qtd_barras_linha = 0
-            
+
         area_barra_d = area_barra(diam_barra_mm)
         qtd_barras = math.ceil(as_usado / area_barra_d) if area_barra_d > 0 else 0
         qtd_barras = max(1, qtd_barras)
-        
+
         # Detalha as barras reais para obter o espaçamento e disposição corretos
         try:
             inp = BeamDetailingInput(
@@ -1356,7 +1354,7 @@ def calcular_flexao_viga_t(
         bx_passa = "SIM" if bx < bx_min else "NÃO"
         espaco_disp = bw_cm - 2 * (cob_mm / 10.0) - 2 * (diam_estribo_mm / 10.0)
         eh_min = max(2.0, diam_barra_mm / 10.0, 1.2 * 1.9)
-        
+
         resultados.append(ResultadoFlexaoT(
             momento_kNm=abs(Md_kNm),
             tipo=tipo,

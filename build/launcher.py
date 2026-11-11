@@ -21,13 +21,12 @@ if getattr(sys, 'frozen', False):
 
 # Importa e executa o app principal
 if __name__ == "__main__":
+    # ft.run() substitui ft.app(), deprecado no Flet 0.80+.
+    import flet as ft
     from flet_bootstrap import FletClientError, prepare_desktop_client
 
     # App unificado: existe uma unica edicao (F1a).
     from edicoes import main
-
-    # ft.run() substitui ft.app(), deprecado no Flet 0.80+.
-    import flet as ft
 
     try:
         prepare_desktop_client()

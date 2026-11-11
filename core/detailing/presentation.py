@@ -28,10 +28,9 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
-from typing import List, Tuple, Optional, Any, Protocol
+from typing import Any
 
-from .domain import SectionLayoutData, BarPosition
-
+from .domain import SectionLayoutData
 
 # ══════════════════════════════════════════════════════════════════════════════
 # Paleta de cores (RGB 0-255)
@@ -53,31 +52,39 @@ _C_CG_LINE         = (200, 40, 40)     # linha do baricentro: vermelho
 # Linguagem intermediária agnóstica de canvas.
 # ══════════════════════════════════════════════════════════════════════════════
 
-RGB = Tuple[int, int, int]  # shorthand
+RGB = tuple[int, int, int]  # shorthand
 
 
 @dataclass
 class CmdRect:
     """Retângulo. Coords em mm no espaço da seção (Y↑, origem canto inf-esq)."""
-    x: float; y: float; w: float; h: float
-    fill: Optional[RGB] = None
-    stroke: Optional[RGB] = None
+    x: float
+    y: float
+    w: float
+    h: float
+    fill: RGB | None = None
+    stroke: RGB | None = None
     line_width: float = 0.5
 
 
 @dataclass
 class CmdCircle:
     """Círculo."""
-    cx: float; cy: float; r: float
-    fill: Optional[RGB] = None
-    stroke: Optional[RGB] = None
+    cx: float
+    cy: float
+    r: float
+    fill: RGB | None = None
+    stroke: RGB | None = None
     line_width: float = 0.3
 
 
 @dataclass
 class CmdLine:
     """Linha simples."""
-    x1: float; y1: float; x2: float; y2: float
+    x1: float
+    y1: float
+    x2: float
+    y2: float
     color: RGB = field(default_factory=lambda: _C_DIM)
     line_width: float = 0.3
     dashed: bool = False
@@ -86,7 +93,7 @@ class CmdLine:
 @dataclass
 class CmdPolyline:
     """Sequência de segmentos de linha (não fechada)."""
-    points: List[Tuple[float, float]]   # lista de (x, y)
+    points: list[tuple[float, float]]   # lista de (x, y)
     color: RGB = field(default_factory=lambda: _C_STIRRUP)
     line_width: float = 1.0
 
@@ -96,7 +103,9 @@ class CmdArcPath:
     """Arco de círculo (usado nos cantos do estribo).
     Approximated as a polyline by the renderers (8 steps/quarter).
     """
-    cx: float; cy: float; radius: float
+    cx: float
+    cy: float
+    radius: float
     start_angle_deg: float   # graus, 0 = direita, sentido antihorário
     sweep_angle_deg: float   # varrido (positivo = antihorário)
     color: RGB = field(default_factory=lambda: _C_STIRRUP)
@@ -106,7 +115,8 @@ class CmdArcPath:
 @dataclass
 class CmdText:
     """Texto posicionado."""
-    x: float; y: float
+    x: float
+    y: float
     text: str
     font_size: float = 7.0
     color: RGB = field(default_factory=lambda: _C_TEXT)
@@ -116,9 +126,9 @@ class CmdText:
 @dataclass
 class CmdPolygon:
     """Polígono fechado com preenchimento opcional."""
-    points: List[Tuple[float, float]]
-    fill: Optional[RGB] = None
-    stroke: Optional[RGB] = None
+    points: list[tuple[float, float]]
+    fill: RGB | None = None
+    stroke: RGB | None = None
     line_width: float = 0.5
 
 
@@ -149,9 +159,9 @@ class BeamSectionCommands:
         FpdfRenderer(pdf, px=20, py=15, scale=0.5).render(cmds)
     """
 
-    def build(self, data: SectionLayoutData) -> List[DrawCmd]:
+    def build(self, data: SectionLayoutData) -> list[DrawCmd]:
         """Produz a lista completa de comandos de desenho."""
-        cmds: List[DrawCmd] = []
+        cmds: list[DrawCmd] = []
         self._draw_concrete(cmds, data)
         self._draw_stirrup(cmds, data)
         self._draw_corner_bars(cmds, data)
@@ -163,7 +173,7 @@ class BeamSectionCommands:
 
     # ── Bloco 1: Contorno de concreto ─────────────────────────────────────────
 
-    def _draw_concrete(self, cmds: List[DrawCmd], d: SectionLayoutData) -> None:
+    def _draw_concrete(self, cmds: list[DrawCmd], d: SectionLayoutData) -> None:
         if getattr(d, "is_t", False):
             bf = d.bf
             hf = d.hf
@@ -196,7 +206,7 @@ class BeamSectionCommands:
 
     # ── Bloco 2: Estribo principal com raio de curvatura e gancho 135° ────────
 
-    def _draw_stirrup(self, cmds: List[DrawCmd], d: SectionLayoutData) -> None:
+    def _draw_stirrup(self, cmds: list[DrawCmd], d: SectionLayoutData) -> None:
         c  = d.c_nom
         pe = d.phi_estribo
         r  = d.stirrup_corner_radius    # raio interno dos cantos
@@ -250,7 +260,7 @@ class BeamSectionCommands:
 
     # ── Bloco 3: Barras de canto superiores ───────────────────────────────────
 
-    def _draw_corner_bars(self, cmds: List[DrawCmd], d: SectionLayoutData) -> None:
+    def _draw_corner_bars(self, cmds: list[DrawCmd], d: SectionLayoutData) -> None:
         r_vis = max(d.phi_estribo / 2, 1.5)  # raio mínimo visível
         for bar in d.bar_positions:
             if not bar.is_corner_bar:
@@ -264,7 +274,7 @@ class BeamSectionCommands:
 
     # ── Bloco 4: Barras longitudinais principais ───────────────────────────────
 
-    def _draw_main_bars(self, cmds: List[DrawCmd], d: SectionLayoutData) -> None:
+    def _draw_main_bars(self, cmds: list[DrawCmd], d: SectionLayoutData) -> None:
         r = d.phi_barra / 2
         for bar in d.bar_positions:
             if bar.is_corner_bar:
@@ -279,7 +289,7 @@ class BeamSectionCommands:
     # ── Bloco 5: Grampos suplementares ────────────────────────────────────────
 
     def _draw_supplementary_stirrups(
-        self, cmds: List[DrawCmd], d: SectionLayoutData
+        self, cmds: list[DrawCmd], d: SectionLayoutData
     ) -> None:
         if not d.requires_supplementary_stirrup:
             return
@@ -314,7 +324,7 @@ class BeamSectionCommands:
 
     # ── Bloco 6: Cotas ────────────────────────────────────────────────────────
 
-    def _draw_dimensions(self, cmds: List[DrawCmd], d: SectionLayoutData) -> None:
+    def _draw_dimensions(self, cmds: list[DrawCmd], d: SectionLayoutData) -> None:
         is_t = getattr(d, "is_t", False)
         bf = d.bf if is_t else d.bw
         bw = d.bw
@@ -322,7 +332,7 @@ class BeamSectionCommands:
         hf = d.hf if is_t else 0.0
 
         y_dim = -8.0
-        
+
         if is_t:
             # bf (no topo)
             cmds.append(CmdLine(x1=0, y1=h + 8.0, x2=bf, y2=h + 8.0,
@@ -333,7 +343,7 @@ class BeamSectionCommands:
                 text=f"bf={bf/10:.0f} cm",
                 font_size=7.0, color=_C_DIM, align="C",
             ))
-            
+
             # hf (na lateral esquerda)
             x_dim_f = -8.0
             cmds.append(CmdLine(x1=x_dim_f, y1=h - hf, x2=x_dim_f, y2=h,
@@ -402,7 +412,7 @@ class BeamSectionCommands:
 
     # ── Bloco 7: Rótulos de armadura ──────────────────────────────────────────
 
-    def _draw_labels(self, cmds: List[DrawCmd], d: SectionLayoutData) -> None:
+    def _draw_labels(self, cmds: list[DrawCmd], d: SectionLayoutData) -> None:
         is_t = getattr(d, "is_t", False)
         bf = d.bf if is_t else d.bw
         for lyr in d.layers:
@@ -431,9 +441,9 @@ class BeamSectionCommands:
     @staticmethod
     def _rounded_rect_polyline(
         x: float, y: float, w: float, h: float, r: float, steps: int = 6
-    ) -> List[Tuple[float, float]]:
+    ) -> list[tuple[float, float]]:
         """Gera pontos de um retângulo com cantos arredondados (Y↑)."""
-        pts: List[Tuple[float, float]] = []
+        pts: list[tuple[float, float]] = []
 
         def arc_pts(cx, cy, r, a_start_deg, a_end_deg):
             n = steps
@@ -515,7 +525,7 @@ class FletCanvasRenderer:
         self.scale = scale
         self.H = section_height_mm  # altura em mm (para flip Y)
 
-    def render(self, cmds: List[DrawCmd], shapes: list) -> None:
+    def render(self, cmds: list[DrawCmd], shapes: list) -> None:
         """Adiciona shapes Flet à lista `shapes`.
 
         Args:
@@ -538,12 +548,12 @@ class FletCanvasRenderer:
         """mm → pixels (Y), com flip (Y↑ domínio → Y↓ Flet)."""
         return (self.H - mm) * self.scale
 
-    def _color(self, rgb: Optional[RGB]) -> Optional[str]:
+    def _color(self, rgb: RGB | None) -> str | None:
         if rgb is None:
             return None
         return f"#{rgb[0]:02x}{rgb[1]:02x}{rgb[2]:02x}"
 
-    def _to_flet(self, cmd: DrawCmd, cv: Any) -> Optional[Any]:
+    def _to_flet(self, cmd: DrawCmd, cv: Any) -> Any | None:
         import flet as ft
 
         if isinstance(cmd, CmdRect):
@@ -700,7 +710,7 @@ class FpdfRenderer:
         self.scale = scale
         self.H = section_height_mm
 
-    def render(self, cmds: List[DrawCmd]) -> None:
+    def render(self, cmds: list[DrawCmd]) -> None:
         """Executa todos os comandos no PDF."""
         for cmd in cmds:
             self._exec(cmd)
@@ -719,7 +729,7 @@ class FpdfRenderer:
         """Escala uma dimensão."""
         return mm * self.scale
 
-    def _set_color(self, rgb: Optional[RGB], is_fill: bool) -> None:
+    def _set_color(self, rgb: RGB | None, is_fill: bool) -> None:
         if rgb is None:
             return
         if is_fill:
@@ -827,8 +837,8 @@ def desenhar_secao_com_detailer(
     phi_barra_sup_mm: float = 0.0,
     n_barras_sup: int = 0,
     d_max_agregado_mm: float = 19.0,
-    px: Optional[float] = None,
-    py: Optional[float] = None,
+    px: float | None = None,
+    py: float | None = None,
     max_h_mm_pagina: float = 80.0,
     max_w_mm_pagina: float = 55.0,
     is_t: bool = False,
@@ -917,7 +927,7 @@ def desenhar_secao_com_detailer(
         pdf.set_fill_color(197, 90, 17)   # Orange800
         # Sem contorno (apenas preenchimento)
         r_pele = max(phi_pele_mm * scale / 2.0, 1.0)
-        
+
         # Posicionamento X na alma
         if is_t:
             alma_x = px + (bf_mm - bw_mm) / 2.0 * scale
@@ -928,7 +938,7 @@ def desenhar_secao_com_detailer(
             e_off = (cob_mm + phi_estribo_mm / 2.0) * scale
             x_face_esq = px + e_off + (phi_estribo_mm / 2.0 + phi_pele_mm / 2.0) * scale
             x_face_dir = px + bw_mm * scale - e_off - (phi_estribo_mm / 2.0 + phi_pele_mm / 2.0) * scale
-            
+
         layer_count_inf = data_inf.layer_count if data_inf else 0
         layer_count_sup = data_sup.layer_count if (n_barras_sup > 0 and phi_barra_sup_mm > 0 and 'data_sup' in locals()) else 0
         ev_min_inf_mm = data_inf.ev_min if (data_inf and hasattr(data_inf, 'ev_min')) else max(20.0, phi_barra_inf_mm, 22.8)

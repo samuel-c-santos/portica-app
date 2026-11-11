@@ -1,5 +1,4 @@
 """Testes da armadura de pele (NBR 6118:17.3.5.2.3)."""
-import pytest
 from core.calculos import calcular_armadura_pele, calcular_flexao_viga_comum
 
 

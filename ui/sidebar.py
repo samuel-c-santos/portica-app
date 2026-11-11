@@ -3,13 +3,17 @@ Pórtica App - Sidebar de navegação persistente.
 """
 
 import flet as ft
+
 from core.version import APP_VERSION
-
 from ui.theme import (
-    Palette, Spacing, Radius, pad_sym, pad_only, br_all, SHADOW_SM,
-    icon_pill, icon, logo_path_for, is_dark,
+    Palette,
+    Radius,
+    Spacing,
+    br_all,
+    is_dark,
+    logo_path_for,
+    pad_only,
 )
-
 
 # IDs das rotas de navegação
 ROUTE_HOME     = "home"

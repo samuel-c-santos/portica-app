@@ -5,7 +5,6 @@ Cores, tipografia, espaçamentos e helpers de componentes para a UI Flet 0.85.
 
 import flet as ft
 
-
 # ── Paleta de cores ────────────────────────────────────────────────────────
 # Inspirada em Material 3. A classe Palette e preenchida dinamicamente
 # por apply_light()/apply_dark(), permitindo troca de tema em runtime.
@@ -125,6 +124,7 @@ def is_dark(page) -> bool:
 def logo_path_for(page) -> str:
     """Caminho do logo apropriado para o tema atual."""
     import os
+
     from core.utils_tempfile import resource_path
     name = "logo_dark.png" if is_dark(page) else "logo.png"
     return resource_path(os.path.join("core", "assets", name))

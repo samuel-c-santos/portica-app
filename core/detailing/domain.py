@@ -17,8 +17,6 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
-from typing import List, Tuple
-
 
 # ══════════════════════════════════════════════════════════════════════════════
 # Entidades de Domínio
@@ -107,14 +105,14 @@ class SectionLayoutData:
 
     # ── Layout das camadas ───────────────────────────────────────────────────
     layer_count: int
-    layers: List[ReinforcementLayer]
+    layers: list[ReinforcementLayer]
 
     # ── Posições de todas as barras ──────────────────────────────────────────
-    bar_positions: List[BarPosition]
+    bar_positions: list[BarPosition]
 
     # ── Grampos suplementares ────────────────────────────────────────────────
     requires_supplementary_stirrup: bool
-    supplementary_stirrup_positions: List[SupplementaryStirrup]
+    supplementary_stirrup_positions: list[SupplementaryStirrup]
 
     # ── Baricentro e altura útil efetiva ─────────────────────────────────────
     y_cg: float      # Coord. Y do centróide da arm. tracionada (mm, de baixo)
@@ -123,7 +121,7 @@ class SectionLayoutData:
     is_t: bool = False
     bf: float = 0.0     # Largura da mesa (mm)
     hf: float = 0.0     # Altura da mesa (mm)
-    warnings: List[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
 
     # ── Propriedades derivadas (para o Painter) ───────────────────────────────
     @property
@@ -208,7 +206,7 @@ class BeamDetailer:
                         inviável (espaço negativo, bitola impossível, etc.).
         """
         self._validate(inp)
-        warnings: List[str] = []
+        warnings: list[str] = []
 
         is_t = inp.is_t
         bf_mm = inp.bf_cm * 10.0 if is_t else inp.bw
@@ -274,7 +272,7 @@ class BeamDetailer:
         y_layer0_center = y_inf_estribo + inp.phi_barra / 2
         y_canto_center = y_sup_estribo - phi_canto / 2
         y_last_layer_center = y_layer0_center + (layer_count - 1) * (inp.phi_barra + ev_min)
-        
+
         clearance = (y_canto_center - phi_canto / 2) - (y_last_layer_center + inp.phi_barra / 2)
         if clearance < ev_min and layer_count > 1:
             warnings.append(
@@ -283,8 +281,8 @@ class BeamDetailer:
             )
 
         # ── 6. Objetos ReinforcementLayer e coordenadas X das barras ──────────
-        reinforcement_layers: List[ReinforcementLayer] = []
-        bar_positions: List[BarPosition] = []
+        reinforcement_layers: list[ReinforcementLayer] = []
+        bar_positions: list[BarPosition] = []
 
         for i, n in enumerate(layer_counts):
             y_center = y_layer0_center + i * (inp.phi_barra + ev_min)
@@ -353,7 +351,7 @@ class BeamDetailer:
 
         # ── 8. Grampos suplementares (NBR 6118:18.3.2.3) ─────────────────────
         requires_grampos = False
-        grampo_positions: List[SupplementaryStirrup] = []
+        grampo_positions: list[SupplementaryStirrup] = []
 
         for lyr in reinforcement_layers:
             if lyr.bar_count < 3:
@@ -434,8 +432,8 @@ class BeamDetailer:
 
     @staticmethod
     def _distribute_layers(
-        total_bars: int, n_max: int, warnings: List[str]
-    ) -> List[int]:
+        total_bars: int, n_max: int, warnings: list[str]
+    ) -> list[int]:
         """Distribui barras em camadas (camada inferior mais cheia).
 
         Returns:
@@ -445,7 +443,7 @@ class BeamDetailer:
         if total_bars <= n_max:
             return [total_bars]
 
-        layers: List[int] = []
+        layers: list[int] = []
         remaining = total_bars
         while remaining > 0:
             count = min(remaining, n_max)

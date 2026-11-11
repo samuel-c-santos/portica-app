@@ -1,0 +1,27 @@
+# Hooks de pre-commit do Pórtica App.
+#
+# Instalação:
+#     pip install -r requirements-dev.txt
+#     pre-commit install
+# Rodar em tudo (uma vez, para validar a base):
+#     pre-commit run --all-files
+#
+# O hook `hygiene` bloqueia PDFs normativos e valida encoding — ver
+# tools/precommit_checks.py.
+
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: local
+    hooks:
+      - id: hygiene
+        name: bloqueia docs/nbr e *.pdf; exige UTF-8 sem BOM em .py/.md
+        entry: python tools/precommit_checks.py
+        language: python
+        pass_filenames: true
+        types_or: [file]

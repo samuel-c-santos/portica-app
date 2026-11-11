@@ -1,0 +1,82 @@
+# Configuração de projeto e ferramental do Pórtica App.
+#
+# A versão vive em `core/version.py` (fonte única); o build do PyInstaller e o
+# script de release a leem de lá. O `pip install -e .` também resolve.
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "portica-app"
+description = "Calculadora estrutural de vigas de concreto armado conforme a ABNT NBR 6118:2023"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Samuel da Costa dos Santos" }]
+keywords = ["concreto-armado", "NBR-6118", "engenharia-estrutural", "vigas"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: Apache Software License",
+    "Natural Language :: Portuguese (Brazilian)",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering",
+]
+dependencies = [
+    "flet>=0.85.0",
+    "fpdf2>=2.7.0",
+    "svglib>=2.0.0",
+    "reportlab>=4.0.0",
+    "rlPyCairo>=0.4.0",
+    "ezdxf>=1.1.0",
+]
+dynamic = ["version"]
+
+[project.urls]
+Homepage = "https://samuel-c-santos.github.io/portica-app/"
+Repository = "https://github.com/samuel-c-santos/portica-app"
+Changelog = "https://github.com/samuel-c-santos/portica-app/blob/public-main/docs/CHANGELOG.md"
+
+[tool.setuptools]
+packages = ["core", "core.calculos", "core.detailing", "ui", "ui.ftool"]
+
+[tool.setuptools.dynamic]
+version = { attr = "core.version.APP_VERSION" }
+
+# ─── pytest ────────────────────────────────────────────────────────────────
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+# Benchmarks normativos (EP-03.1) vivem em tests/benchmarks/ e podem ser
+# rodados isolados: pytest tests/benchmarks -q
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
+# ─── ruff ──────────────────────────────────────────────────────────────────
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+extend-exclude = ["dist", "samples", "build/flet"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+# E501 fica desligado: strings de interface (sobre.py, tables.py) e fórmulas
+# longas são legíveis além de 100 colunas, o `ruff format` não quebra literais
+# nem comentários, e os arquivos densos serão reestruturados no EP-02/EP-04.
+# O limite de largura do código novo é aplicado pelo formatador.
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+# `__init__.py` re-exporta a API pública do pacote (core/calculos, p.ex.);
+# imports não referenciados no próprio arquivo são intencionais.
+"**/__init__.py" = ["F401"]
+# `edicoes/main.py` ajusta o sys.path antes dos imports de UI (bootstrap do
+# entry point do PyInstaller); imports no meio do arquivo são intencionais.
+"edicoes/main.py" = ["E402"]
+
+[tool.ruff.format]
+quote-style = "double"

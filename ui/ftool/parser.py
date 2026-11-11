@@ -4,50 +4,50 @@ Fase 2.1 — Parser FTOOL TXT
 """
 
 import os
-from typing import List, Tuple, Dict, Any, Literal
+from typing import Any, Literal
 
 
-def _read_and_clean_lines(filepath: str) -> List[str]:
+def _read_and_clean_lines(filepath: str) -> list[str]:
     """
     Lê as linhas de um arquivo de texto testando múltiplos encodings (UTF-8, ANSI/CP1252, Latin-1).
     Remove linhas vazias e espaços em branco nas extremidades.
     """
     if not os.path.exists(filepath):
         raise FileNotFoundError(f"Arquivo não encontrado: {filepath}")
-    
+
     if os.path.getsize(filepath) == 0:
         raise ValueError("Arquivo vazio")
-        
+
     encodings = ['utf-8', 'cp1252', 'latin-1']
     content = None
-    
+
     for enc in encodings:
         try:
-            with open(filepath, 'r', encoding=enc) as f:
+            with open(filepath, encoding=enc) as f:
                 content = f.read()
             break
         except UnicodeDecodeError:
             continue
-            
+
     if content is None:
         # Fallback para o default do sistema se nenhum dos encodings funcionar
         try:
-            with open(filepath, 'r') as f:
+            with open(filepath) as f:
                 content = f.read()
         except Exception as e:
-            raise ValueError(f"Não foi possível ler o arquivo com os encodings suportados: {e}")
-            
+            raise ValueError(f"Não foi possível ler o arquivo com os encodings suportados: {e}") from e
+
     lines = [line.strip() for line in content.splitlines()]
     # Filtrar linhas vazias
     lines = [line for line in lines if line]
-    
+
     if not lines:
         raise ValueError("Arquivo não contém dados válidos ou está vazio")
-        
+
     return lines
 
 
-def _parse_first_line_as_n(lines: List[str]) -> int:
+def _parse_first_line_as_n(lines: list[str]) -> int:
     """
     Valida e converte a primeira linha como o número de pontos (N).
     """
@@ -55,15 +55,15 @@ def _parse_first_line_as_n(lines: List[str]) -> int:
     try:
         N = int(first_line)
     except ValueError:
-        raise ValueError(f"A primeira linha do arquivo deve ser o número de pontos (inteiro válido). Encontrado: '{first_line}'")
-        
+        raise ValueError(f"A primeira linha do arquivo deve ser o número de pontos (inteiro válido). Encontrado: '{first_line}'") from None
+
     if N <= 0:
         raise ValueError(f"O número de pontos declarado deve ser maior que zero. Encontrado: {N}")
-        
+
     return N
 
 
-def parse_momento(filepath: str) -> List[Tuple[float, float]]:
+def parse_momento(filepath: str) -> list[tuple[float, float]]:
     """
     Lê arquivo TXT de momentos fletores exportado pelo FTOOL.
     Retorna uma lista de tuplas (x, M) onde:
@@ -72,34 +72,34 @@ def parse_momento(filepath: str) -> List[Tuple[float, float]]:
     """
     lines = _read_and_clean_lines(filepath)
     N = _parse_first_line_as_n(lines)
-    
+
     # O total de linhas de dados deve ser igual a N
     data_lines = lines[1:]
     if len(data_lines) != N:
         raise ValueError(f"O número de pontos declarado ({N}) não corresponde ao número de linhas de dados encontradas ({len(data_lines)})")
-        
+
     resultados = []
     for idx, line in enumerate(data_lines, start=1):
         # Tenta separar por tabulação primeiro, senão por qualquer espaço em branco
         parts = line.split('\t')
         if len(parts) < 2:
             parts = line.split()
-            
+
         if len(parts) < 2:
             raise ValueError(f"Linha {idx + 1} possui menos colunas que o esperado (mínimo 2). Encontrado: '{line}'")
-            
+
         try:
             x = float(parts[0])
             M = float(parts[1])
         except ValueError:
-            raise ValueError(f"Linha {idx + 1} contém valores numéricos inválidos: '{line}'")
-            
+            raise ValueError(f"Linha {idx + 1} contém valores numéricos inválidos: '{line}'") from None
+
         resultados.append((x, M))
-        
+
     return resultados
 
 
-def parse_cortante(filepath: str) -> List[Tuple[float, float]]:
+def parse_cortante(filepath: str) -> list[tuple[float, float]]:
     """
     Lê arquivo TXT de esforços cortantes exportado pelo FTOOL.
     Retorna uma lista de tuplas (x, V) onde:
@@ -108,32 +108,32 @@ def parse_cortante(filepath: str) -> List[Tuple[float, float]]:
     """
     lines = _read_and_clean_lines(filepath)
     N = _parse_first_line_as_n(lines)
-    
+
     data_lines = lines[1:]
     if len(data_lines) != N:
         raise ValueError(f"O número de pontos declarado ({N}) não corresponde ao número de linhas de dados encontradas ({len(data_lines)})")
-        
+
     resultados = []
     for idx, line in enumerate(data_lines, start=1):
         parts = line.split('\t')
         if len(parts) < 2:
             parts = line.split()
-            
+
         if len(parts) < 2:
             raise ValueError(f"Linha {idx + 1} possui menos colunas que o esperado (mínimo 2). Encontrado: '{line}'")
-            
+
         try:
             x = float(parts[0])
             V = float(parts[1])
         except ValueError:
-            raise ValueError(f"Linha {idx + 1} contém valores numéricos inválidos: '{line}'")
-            
+            raise ValueError(f"Linha {idx + 1} contém valores numéricos inválidos: '{line}'") from None
+
         resultados.append((x, V))
-        
+
     return resultados
 
 
-def parse_deformacao(filepath: str) -> List[Tuple[float, float, float, float]]:
+def parse_deformacao(filepath: str) -> list[tuple[float, float, float, float]]:
     """
     Lê arquivo TXT de deformações/deslocamentos exportado pelo FTOOL.
     Retorna uma lista de tuplas (x, d, θ, κ) onde:
@@ -144,34 +144,34 @@ def parse_deformacao(filepath: str) -> List[Tuple[float, float, float, float]]:
     """
     lines = _read_and_clean_lines(filepath)
     N = _parse_first_line_as_n(lines)
-    
+
     data_lines = lines[1:]
     if len(data_lines) != N:
         raise ValueError(f"O número de pontos declarado ({N}) não corresponde ao número de linhas de dados encontradas ({len(data_lines)})")
-        
+
     resultados = []
     for idx, line in enumerate(data_lines, start=1):
         parts = line.split('\t')
         if len(parts) < 4:
             parts = line.split()
-            
+
         if len(parts) < 4:
             raise ValueError(f"Linha {idx + 1} possui menos colunas que o esperado (mínimo 4). Encontrado: '{line}'")
-            
+
         try:
             x = float(parts[0])
             d = float(parts[1])
             theta = float(parts[2])
             kappa = float(parts[3])
         except ValueError:
-            raise ValueError(f"Linha {idx + 1} contém valores numéricos inválidos: '{line}'")
-            
+            raise ValueError(f"Linha {idx + 1} contém valores numéricos inválidos: '{line}'") from None
+
         resultados.append((x, d, theta, kappa))
-        
+
     return resultados
 
 
-def parse_tudo(pasta: str) -> Dict[str, Any]:
+def parse_tudo(pasta: str) -> dict[str, Any]:
     """
     Lê os 3 arquivos de uma pasta (momentos, cortantes, deformacoes) e retorna
     um dicionário com chaves:
@@ -181,13 +181,13 @@ def parse_tudo(pasta: str) -> Dict[str, Any]:
     """
     if not os.path.isdir(pasta):
         raise NotADirectoryError(f"O caminho fornecido não é um diretório válido: {pasta}")
-        
+
     arquivos = os.listdir(pasta)
-    
+
     momento_file = None
     cortante_file = None
     deformacao_file = None
-    
+
     for arq in arquivos:
         arq_lower = arq.lower()
         if arq_lower.endswith(".txt"):
@@ -197,14 +197,14 @@ def parse_tudo(pasta: str) -> Dict[str, Any]:
                 cortante_file = os.path.join(pasta, arq)
             elif "deformac" in arq_lower or "deformaç" in arq_lower:
                 deformacao_file = os.path.join(pasta, arq)
-                
+
     if not momento_file:
         raise FileNotFoundError(f"Arquivo de momentos não encontrado na pasta '{pasta}' (deve conter 'momento' no nome e extensão '.txt')")
     if not cortante_file:
         raise FileNotFoundError(f"Arquivo de cortantes não encontrado na pasta '{pasta}' (deve conter 'cortante' no nome e extensão '.txt')")
     if not deformacao_file:
         raise FileNotFoundError(f"Arquivo de deformações não encontrado na pasta '{pasta}' (deve conter 'deformac' ou 'deformaç' no nome e extensão '.txt')")
-        
+
     return {
         "momentos": parse_momento(momento_file),
         "cortantes": parse_cortante(cortante_file),
@@ -212,10 +212,10 @@ def parse_tudo(pasta: str) -> Dict[str, Any]:
     }
 
 
-def validate_file_type(filepath: str, tipo_esperado: Literal["momento", "cortante", "deformacao"]) -> Tuple[bool, str]:
+def validate_file_type(filepath: str, tipo_esperado: Literal["momento", "cortante", "deformacao"]) -> tuple[bool, str]:
     """
     Valida se o arquivo FTOOL TXT corresponde ao tipo esperado.
-    
+
     Retorna:
         (True, "") se o arquivo for válido e do tipo correto.
         (False, "mensagem de erro") caso ocorra alguma falha ou incompatibilidade.
@@ -256,7 +256,7 @@ def validate_file_type(filepath: str, tipo_esperado: Literal["momento", "cortant
             row_vals = [float(p.replace(',', '.')) for p in parts[:colunas_esperadas]]
         except ValueError:
             return False, f"Linha {idx + 1} contém valores numéricos inválidos: '{line}'"
-        
+
         pontos.append(row_vals)
 
     # Validação rápida de Deformação
@@ -273,7 +273,7 @@ def validate_file_type(filepath: str, tipo_esperado: Literal["momento", "cortant
 
     # Heurística 1: Descontinuidade vertical (dois valores de y para um mesmo x)
     tem_descontinuidade = False
-    for x, values in x_to_y.items():
+    for _x, values in x_to_y.items():
         if len(values) > 1:
             if max(values) - min(values) > 1e-4:
                 tem_descontinuidade = True
@@ -309,7 +309,7 @@ def validate_file_type(filepath: str, tipo_esperado: Literal["momento", "cortant
 
     if is_momento and tipo_esperado == "cortante":
         return False, "O arquivo apresenta curvatura contínua (típico de Momento Fletor), mas o campo selecionado é Esforço Cortante."
-    
+
     if not is_momento and tipo_esperado == "momento":
         return False, "O diagrama é linear/nulo (típico de Esforço Cortante), mas o campo selecionado é Momento Fletor."
 

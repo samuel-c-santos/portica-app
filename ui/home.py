@@ -12,20 +12,29 @@ import os
 from datetime import datetime
 
 import flet as ft
-from ui.theme import (
-    Palette, Spacing, Radius, pad_sym, pad_only, br_all,
-    surface_card,
-    display_large, headline_small,
-    title_medium, title_small,
-    body_medium, body_small,
-    overline, label_small, caption,
-    logo_path_for, is_dark,
-    border_bottom,
-    SHADOW_SM, SHADOW_LG,
-)
-from ui.recent_projects import get_recent, remove_recent
-from core.utils_tempfile import resource_path
 
+from core.utils_tempfile import resource_path
+from ui.recent_projects import get_recent, remove_recent
+from ui.theme import (
+    SHADOW_LG,
+    SHADOW_SM,
+    Palette,
+    Radius,
+    Spacing,
+    body_medium,
+    body_small,
+    border_bottom,
+    br_all,
+    caption,
+    display_large,
+    is_dark,
+    label_small,
+    overline,
+    pad_only,
+    pad_sym,
+    title_medium,
+    title_small,
+)
 
 # ── Utilitários ───────────────────────────────────────────────────────────
 

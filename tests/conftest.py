@@ -1,18 +1,11 @@
 """Fixtures compartilhadas para os testes do Pórtica App."""
-import sys
 import os
+import sys
 
 # Garante que o diretorio do app esta no path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import pytest
-from core.calculos import (
-    calcular_flexao_viga_comum,
-    calcular_flexao_viga_t,
-    calcular_cisalhamento_viga_comum,
-    calcular_armadura_pele,
-)
-
 
 # ── Fixtures de viga exemplo (caso real test/) ────────────────────────────────
 

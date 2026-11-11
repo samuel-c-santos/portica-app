@@ -4,10 +4,11 @@ As imagens sao renderizadas com matplotlib (mathtext) e salvas em
 docs/equations/. O GitHub renderiza PNGs em arquivos .md.
 """
 import os
+
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-
 
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "docs", "equations")
 os.makedirs(OUTPUT_DIR, exist_ok=True)

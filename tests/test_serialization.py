@@ -1,8 +1,11 @@
+import json
 import os
 import tempfile
+
 import pytest
-import json
+
 from ui import recent_projects
+
 
 @pytest.fixture(autouse=True)
 def mock_recent_file(monkeypatch):
@@ -30,14 +33,14 @@ def test_add_and_get_recent():
 
         recent_list = recent_projects.get_recent()
         assert len(recent_list) == 2
-        
+
         # O mais recente fica no topo
         assert recent_list[0]["path"] == os.path.abspath(path2)
         assert recent_list[0]["modo"] == "t"
-        
+
         assert recent_list[1]["path"] == os.path.abspath(path1)
         assert recent_list[1]["modo"] == "comum"
-        
+
         # Testa a remoção
         recent_projects.remove_recent(path1)
         recent_list = recent_projects.get_recent()

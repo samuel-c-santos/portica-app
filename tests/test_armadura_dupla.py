@@ -3,6 +3,7 @@ Testes para Armadura Dupla (Fase 2.6).
 """
 
 import pytest
+
 from core.calculos.engenharia import calcular_flexao_viga_comum
 
 
@@ -20,7 +21,7 @@ def test_1_secao_simples_nao_forca_armadura_dupla():
         momentos=[40.0],
         gamma_f=1.4,
     )
-    
+
     assert len(resultados) == 1
     res = resultados[0]
     assert res is not None
@@ -45,7 +46,7 @@ def test_2_secao_pequena_forca_armadura_dupla():
         momentos=[139.2],
         gamma_f=1.4,
     )
-    
+
     assert len(resultados) == 1
     res = resultados[0]
     assert res is not None
@@ -54,12 +55,12 @@ def test_2_secao_pequena_forca_armadura_dupla():
     assert res.as_linha_adotada > 0.0
     assert res.md_limite_knm < res.momento_kNm
     assert res.md_excedente_knm > 0.0
-    
+
     # O momento limite com d convergido é em torno de 46.93 kN.m
     assert res.md_limite_knm == pytest.approx(46.93, abs=1.0)
     # Momento excedente: 194.88 - 46.93 = 147.95
     assert res.md_excedente_knm == pytest.approx(194.88 - res.md_limite_knm, abs=0.1)
-    
+
     assert res.as_linha_cm2 > 0.0
     assert res.as_linha_adotada > 0.0
     assert "Armadura dupla utilizada" in res.alerta
@@ -79,7 +80,7 @@ def test_3_limite_neutral_axis_fck_alto():
         momentos=[200.0],
         gamma_f=1.4,
     )
-    
+
     res = resultados[0]
     assert res.armadura_dupla is True
     assert res.bx == 0.35
@@ -98,7 +99,7 @@ def test_4_secao_pequena_fck_alto_armadura_dupla():
         momentos=[200.0],
         gamma_f=1.4,
     )
-    
+
     res = resultados[0]
     assert res.armadura_dupla is True
     assert res.as_linha_cm2 > 0.0
@@ -120,7 +121,7 @@ def test_5_armadura_dupla_momento_negativo():
         momentos=[-139.2],
         gamma_f=1.4,
     )
-    
+
     res = resultados[0]
     assert res is not None
     assert res.armadura_dupla is True

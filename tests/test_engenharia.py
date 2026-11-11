@@ -1,5 +1,6 @@
 """Testes do motor de flexao — viga retangular."""
 import pytest
+
 from core.calculos import calcular_flexao_viga_comum
 
 

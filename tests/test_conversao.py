@@ -1,9 +1,12 @@
 """Testes de conversao de unidades e constantes do motor."""
-import pytest
 from core.calculos import (
-    fcd_mpa, fyd_kn_cm2, fctm_mpa, fck_to_kgf_cm2,
-    area_barra, rho_min, GAMMA_F_TABLE,
-    ALPHA_C, GAMMA_C, GAMMA_S,
+    GAMMA_F_TABLE,
+    area_barra,
+    fcd_mpa,
+    fck_to_kgf_cm2,
+    fctm_mpa,
+    fyd_kn_cm2,
+    rho_min,
 )
 
 
@@ -67,6 +70,6 @@ class TestGammaFTable:
         assert GAMMA_F_TABLE["excepcionais"]["gamma_f"] == 1.0
 
     def test_todos_tem_nome(self):
-        for k, v in GAMMA_F_TABLE.items():
+        for _k, v in GAMMA_F_TABLE.items():
             assert "nome" in v
             assert "gamma_f" in v

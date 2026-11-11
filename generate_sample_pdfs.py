@@ -4,12 +4,12 @@ import sys
 # Ensure the root of the project is in path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from core.relatorio_base import gerar_relatorio_viga_comum, gerar_relatorio_viga_t
 from core.calculos import (
+    calcular_cisalhamento_viga_comum,
     calcular_flexao_viga_comum,
     calcular_flexao_viga_t,
-    calcular_cisalhamento_viga_comum
 )
+from core.relatorio_base import gerar_relatorio_viga_comum, gerar_relatorio_viga_t
 
 viga_comum = {
     "h_cm": 70,

@@ -3,11 +3,10 @@ Testes para o módulo ELS (flecha e fissuração).
 """
 
 import os
-import pytest
 
 from ui.ftool.els import (
-    calcular_flecha,
     calcular_fissuracao,
+    calcular_flecha,
     gerar_relatorio_els,
 )
 
@@ -17,7 +16,7 @@ SAMPLES_DIR = os.path.join(BASE_DIR, "samples")
 
 def _ler_dados():
     """Lê momentos e deformações dos arquivos de amostra."""
-    from ui.ftool.parser import parse_momento, parse_cortante, parse_deformacao
+    from ui.ftool.parser import parse_deformacao, parse_momento
     mom = parse_momento(os.path.join(SAMPLES_DIR, "test_momento_fletor.txt"))
     deform = parse_deformacao(os.path.join(SAMPLES_DIR, "test_deformacoes.txt"))
     return mom, deform
@@ -177,7 +176,7 @@ def test_fissuracao_fctm():
 def test_els_secao_t_rigidez():
     """Valida que a rigidez maior da mesa colaborante da seção T reduz a flecha em relação à seção retangular."""
     momentos, deformacoes = _ler_dados()
-    
+
     # Seção retangular (is_t=False)
     res_ret = calcular_flecha(
         h_cm=70, bw_cm=20, d_cm=65,
@@ -185,7 +184,7 @@ def test_els_secao_t_rigidez():
         momentos=momentos, deformacoes=deformacoes,
         is_t=False,
     )
-    
+
     # Seção T (is_t=True)
     res_t = calcular_flecha(
         h_cm=70, bw_cm=20, d_cm=65,
@@ -193,7 +192,7 @@ def test_els_secao_t_rigidez():
         momentos=momentos, deformacoes=deformacoes,
         is_t=True, bf_cm=60.0, hf_cm=10.0,
     )
-    
+
     # Momento de inércia Ic e Ieq devem ser maiores na seção T
     assert res_t["ic_cm4"] > res_ret["ic_cm4"]
     assert res_t["ieq_cm4"] > res_ret["ieq_cm4"]
@@ -210,7 +209,7 @@ def test_fissuracao_secao_t_negativo_e_positivo():
         momentos=[(0.0, 120.0)],
         is_t=True, bf_cm=60.0, hf_cm=10.0,
     )
-    
+
     # Para momento negativo (tração em cima na mesa, largura bf=60)
     res_neg = calcular_fissuracao(
         h_cm=70, bw_cm=20, d_cm=65,
@@ -219,7 +218,7 @@ def test_fissuracao_secao_t_negativo_e_positivo():
         momentos=[(0.0, -120.0)],
         is_t=True, bf_cm=60.0, hf_cm=10.0,
     )
-    
+
     # Sob momento negativo, a tração está no topo, envolvendo a mesa bf_cm=60.0,
     # resultando em uma área de envolvimento Acr maior (logo rho_ri menor, o que pode alterar o limite wk2).
     # Como as duas situações têm o mesmo momento em módulo e mesma armadura, vamos garantir que ambas rodaram com sucesso.

@@ -3,17 +3,27 @@ Pórtica App - Tela principal de calculo.
 Layout: sidebar de inputs (esquerda) + tabs Flexao/Cisalhamento (centro) + sidebar de imagem/PDF (direita).
 """
 
+import json
 import os
 import platform
 import subprocess
-import tempfile
-import json
-import math
 from copy import deepcopy
 from datetime import datetime
 
+import flet as ft
+
+from core.calculos import (
+    CAA_DATA,
+    DIAM_BARRAS,
+    DIAM_BARRAS_LONG,
+    GAMMA_F_TABLE,
+    area_barra,
+    calcular_cisalhamento_viga_comum,
+    calcular_flexao_viga_comum,
+    calcular_flexao_viga_t,
+)
+from core.relatorio_base import gerar_relatorio_viga_comum, gerar_relatorio_viga_t
 from core.utils_tempfile import temp_path
-from ui.recent_projects import add_recent
 from ui.entrada import (
     ENTRADA_FTOOL,
     ENTRADA_MANUAL,
@@ -22,34 +32,40 @@ from ui.entrada import (
     entrada_para_salvar,
     ftool_visivel,
 )
-from ui.ftool.parser import parse_tudo, validate_file_type
-from ui.ftool.secoes_criticas import detectar_todas_secoes
 from ui.ftool.dimensionamento import (
     dimensionar_trechos_ftool,
-    gerar_relatorio_premium,
     gerar_relatorio_viga_comum_premium,
-    gerar_relatorio_viga_t_premium
+    gerar_relatorio_viga_t_premium,
 )
-
-import flet as ft
-
-from core.calculos import (
-    CAA_DATA, DIAM_BARRAS, DIAM_BARRAS_LONG, area_barra, GAMMA_F_TABLE,
-    calcular_flexao_viga_comum, calcular_cisalhamento_viga_comum,
-    calcular_flexao_viga_t,
-)
-from core.relatorio_base import gerar_relatorio_viga_comum, gerar_relatorio_viga_t
+from ui.ftool.parser import validate_file_type
+from ui.ftool.secoes_criticas import detectar_todas_secoes
+from ui.recent_projects import add_recent
 from ui.theme import (
-    Palette, Spacing, Radius, pad_sym, pad_only, pad_all, br_all,
-    surface_card, primary_button, tonal_button, outlined_button, success_button,
-    display_large, headline_large, headline_medium, headline_small,
-    title_large, title_medium, title_small, body_large, body_medium, body_small,
-    label_medium, label_small, caption, overline, icon_pill, icon,
-    section_header, field, info_button, status_chip,
-    is_dark, border_all,
-    SHADOW_SM, SHADOW_MD, SHADOW_LG,
+    SHADOW_SM,
+    Palette,
+    Radius,
+    Spacing,
+    body_small,
+    border_all,
+    br_all,
+    caption,
+    is_dark,
+    label_medium,
+    outlined_button,
+    overline,
+    pad_all,
+    pad_only,
+    pad_sym,
+    primary_button,
+    section_header,
+    status_chip,
+    success_button,
+    surface_card,
+    title_large,
+    title_medium,
+    title_small,
+    tonal_button,
 )
-
 
 MAX_TRECHOS = 20
 DEFAULT_TRECHOS = 3
@@ -172,8 +188,8 @@ def _make_gamma_f_options():
 
 def _build_illustrations_panel(page, title, subtitle, image_specs):
     """Cria um card contendo ilustrações técnicas com legendas clicáveis para ampliar."""
-    from ui.dialogs import open_image_preview
     from core.utils_tempfile import resource_path
+    from ui.dialogs import open_image_preview
     assets_root = resource_path("core/assets/info")
 
     controls = [
@@ -190,11 +206,11 @@ def _build_illustrations_panel(page, title, subtitle, image_specs):
                 controls.append(ft.Container(height=Spacing.SM))
                 controls.append(ft.Divider(color=Palette.OUTLINE_VARIANT, height=1))
                 controls.append(ft.Container(height=Spacing.SM))
-            
+
             # Local click handler helper
             def make_click_handler(path, title_text):
                 return lambda e: open_image_preview(page, path, title_text)
-                
+
             controls.append(
                 ft.Container(
                     content=ft.Image(
@@ -213,7 +229,7 @@ def _build_illustrations_panel(page, title, subtitle, image_specs):
             controls.append(
                 caption(label, color=Palette.TEXT_SECONDARY, text_align=ft.TextAlign.CENTER)
             )
-            
+
     return surface_card(
         ft.Column(
             controls=controls,
@@ -255,7 +271,7 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
     }
     md_rows = []      # lista de TextField para momentos
     vk_rows = []      # lista de TextField para cortantes
-    
+
     combs_column = ft.Column(spacing=Spacing.XS)
     btn_calc_envelope = ft.OutlinedButton(
         "Calcular", icon=ft.Icons.CALCULATE,
@@ -263,7 +279,7 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
         disabled=True, height=32,
         style=ft.ButtonStyle(text_style=ft.TextStyle(size=12)),
     )
-    
+
     def update_combs_ui():
         combs_column.controls.clear()
         for idx, c in enumerate(state.get("combinacoes", [])):
@@ -307,8 +323,6 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
         ),
     )
     panel_rebuilds = {}  # dicionario para armazenar funcoes de reconstrucao de trechos
-    ftool_status_text = None
-    pdf_status_text = None
 
     # Validation helpers
     def validate_positive_number(e):
@@ -326,7 +340,7 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
             except ValueError:
                 tf.error_text = "Use número com vírgula (ex: 50,0)"
 
-    
+
         page.update()
 
     def validate_non_negative_number(e):
@@ -344,7 +358,7 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
             except ValueError:
                 tf.error_text = "Use número com vírgula (ex: 50,0)"
 
-    
+
         page.update()
 
     def validate_trecho_field(e):
@@ -396,7 +410,7 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
 
     def run_manual_validations():
         ok = True
-        
+
         # Validar h
         h_val = h_tf.control.value.strip()
         if not h_val:
@@ -428,11 +442,11 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
             except ValueError:
                 bw_tf.control.error_text = "Use número (ex: 20,0)"
 
-    
+
                 ok = False
 
         if is_t:
-            for tf_ctrl, label in [(bf_tf, "bf"), (hf_tf, "hf")]:
+            for tf_ctrl, _ in [(bf_tf, "bf"), (hf_tf, "hf")]:
                 val = tf_ctrl.control.value.strip()
                 if not val:
                     tf_ctrl.control.error_text = "Campo obrigatório"
@@ -815,7 +829,7 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
         is_error_or_warn = color in (Palette.ERROR, Palette.WARNING)
         duration = 6000 if is_error_or_warn else 3000
         action = "OK" if is_error_or_warn else None
-        
+
         sb = ft.SnackBar(
             content=ft.Text(msg, color=Palette.ON_PRIMARY),
             bgcolor=color,
@@ -823,11 +837,11 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
             action=action,
             open=True,
         )
-        
+
         def close_sb(e):
             sb.open = False
             page.update()
-            
+
         sb.on_action = close_sb
         page.overlay.append(sb)
         page.update()
@@ -837,7 +851,7 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
         if not run_manual_validations():
             show_msg("Por favor, corrija os erros de validação nos campos em vermelho.", Palette.ERROR)
             return
-            
+
         state["tipo_viga"] = viga_nome_tf.control.value or ("V1" if modo == "comum" else "VT1")
         try:
             # Validar d (altura util) > 0 antes de calcular
@@ -988,10 +1002,14 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
             h_ok = bw_ok = phi_ok = False
 
         faltando = []
-        if not arquivos_ok and not dados_ok: faltando.append("3 arquivos TXT")
-        if not h_ok: faltando.append("altura h")
-        if not bw_ok: faltando.append("largura bw")
-        if not phi_ok: faltando.append("φ barra")
+        if not arquivos_ok and not dados_ok:
+            faltando.append("3 arquivos TXT")
+        if not h_ok:
+            faltando.append("altura h")
+        if not bw_ok:
+            faltando.append("largura bw")
+        if not phi_ok:
+            faltando.append("φ barra")
         btn_processar_ftool.disabled = len(faltando) > 0
         btn_processar_ftool.tooltip = f"Preencha: {', '.join(faltando)}" if faltando else "Processar arquivos FTOOL"
         page.update()
@@ -1037,7 +1055,7 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
 
             if arquivos_existem:
                 # Força a re-leitura do disco para garantir sincronia com os arquivos mais recentes
-                from ui.ftool.parser import parse_momento, parse_cortante, parse_deformacao
+                from ui.ftool.parser import parse_cortante, parse_deformacao, parse_momento
                 momentos = parse_momento(state["ftool_momento_path"])
                 cortantes = parse_cortante(state["ftool_cortante_path"])
                 deformacoes = parse_deformacao(state["ftool_deformacao_path"])
@@ -1074,7 +1092,7 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
                     deformacoes = []
             else:
                 # Se não existem arquivos e não há esforços pré-carregados no state, tenta ler dos paths salvos (deve falhar)
-                from ui.ftool.parser import parse_momento, parse_cortante, parse_deformacao
+                from ui.ftool.parser import parse_cortante, parse_deformacao, parse_momento
                 momentos = parse_momento(state["ftool_momento_path"])
                 cortantes = parse_cortante(state["ftool_cortante_path"])
                 deformacoes = parse_deformacao(state["ftool_deformacao_path"])
@@ -1108,7 +1126,7 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
                 """Monta a lista de controles do modal de resultados (flexão, cisalhamento, ELS)."""
                 resultado_els = state.get("ftool_resultado_els")
                 detalhamento = state.get("ftool_detalhamento")
-                
+
                 flex_cards = ft.Row(spacing=Spacing.MD, scroll=ft.ScrollMode.AUTO, alignment=ft.MainAxisAlignment.START, vertical_alignment=ft.CrossAxisAlignment.START)
                 sec_results = []
                 for i, secao in enumerate(secoes):
@@ -1123,7 +1141,7 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
                         "tipo": secao.tipo,
                         "descricao": secao.descricao,
                     })
-                
+
                 for item in sec_results:
                     r = item["resultado_flexao"]
                     if r is None:
@@ -1144,7 +1162,7 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
                         ], spacing=3)
                     )
                     flex_cards.controls.append(card)
-                
+
                 rows_cis = []
                 for item in sec_results:
                     r = item["resultado_cisalhamento"]
@@ -1160,7 +1178,7 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
                         ft.DataCell(body_small(f"{r.dist_estribos_cm:.1f} cm", color=Palette.TEXT_PRIMARY)),
                         ft.DataCell(status_chip(status_label, "ok" if r.passa_vrd2 == "SIM" else "error")),
                     ]))
-                
+
                 controls_resultados = [
                     section_header("Flexão (Dimensionamento por seção crítica)", icon=ft.Icon(ft.Icons.SQUARE_OUTLINED, size=16, color=Palette.PRIMARY)),
                     ft.Container(height=Spacing.SM), flex_cards,
@@ -1178,7 +1196,7 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
                         vertical_lines=ft.BorderSide(1, Palette.OUTLINE_VARIANT), horizontal_lines=ft.BorderSide(1, Palette.OUTLINE_VARIANT),
                     ) if rows_cis else caption("Nenhum trecho calculado.", color=Palette.TEXT_DISABLED),
                 ]
-                
+
                 if detalhamento:
                     controls_resultados.extend([
                         ft.Container(height=Spacing.LG),
@@ -1200,7 +1218,7 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
                             horizontal_lines=ft.BorderSide(1, Palette.OUTLINE_VARIANT),
                         ),
                     ])
-                
+
                 if resultado_els:
                     controls_resultados.extend([
                         ft.Container(height=Spacing.LG),
@@ -1210,13 +1228,13 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
                         ft.Row([ft.Text("Total:", size=11, color=Palette.TEXT_SECONDARY), ft.Text(f"{resultado_els['flecha']['flecha_total_cm']:.2f} cm", size=11, weight=ft.FontWeight.BOLD)], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
                         ft.Row([ft.Text("Limite L/250:", size=11, color=Palette.TEXT_SECONDARY), ft.Text(f"{resultado_els['flecha']['limite_total_cm']:.2f} cm", size=11, weight=ft.FontWeight.BOLD, color=Palette.SUCCESS if resultado_els['flecha']['passa_total'] else Palette.ERROR)], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
                     ])
-                    
+
                     if not resultado_els['flecha']['passa_total'] and resultado_els['flecha'].get('dica'):
                         controls_resultados.extend([
                             ft.Container(height=Spacing.XS),
                             ft.Text(resultado_els['flecha'].get('dica', ''), size=9, color=Palette.ERROR, italic=True),
                         ])
-                    
+
                     controls_resultados.extend([
                         ft.Container(height=Spacing.SM),
                         ft.Text("Fissuração", size=12, weight=ft.FontWeight.BOLD),
@@ -1228,13 +1246,13 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
                             status_chip("OK", "ok") if resultado_els['flecha']['passa_total'] else status_chip("NÃO PASSA", "error"),
                         ]),
                     ])
-                    
+
                     if not resultado_els['fissuracao']['passa'] and resultado_els['fissuracao'].get('dica'):
                         controls_resultados.extend([
                             ft.Container(height=Spacing.XS),
                             ft.Text(resultado_els['fissuracao'].get('dica', ''), size=9, color=Palette.ERROR, italic=True),
                         ])
-                    
+
                     if not resultado_els['flecha']['passa_total'] or not resultado_els['fissuracao']['passa']:
                         controles_ajustes = _criar_painel_ajustes_els(
                             resultado_els, state, dados_viga, secoes,
@@ -1246,21 +1264,21 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
                         controls_resultados.extend(controles_ajustes)
                 else:
                     controls_resultados.append(ft.Text("ELS não disponível (sem dados de deformação)", size=11, color=Palette.TEXT_DISABLED))
-                
+
                 return controls_resultados
 
             def _mostrar_modal_resultados(state, dados_viga, secoes, momentos, cortantes, deformacoes, page, show_msg):
                 """Constrói e exibe o modal de resultados do dimensionamento."""
                 controls_resultados = _build_resultados_controls(state, dados_viga, secoes, page, show_msg)
-                
+
                 results_content = ft.Column(
                     controls=controls_resultados,
                     spacing=0,
                     scroll=ft.ScrollMode.AUTO,
                 )
-                
+
                 state["_modal_results_content"] = results_content
-                
+
                 page.show_dialog(ft.AlertDialog(
                     modal=True,
                     title=ft.Row([ft.Icon(ft.Icons.CHECK_CIRCLE, color=Palette.SUCCESS), ft.Container(width=Spacing.SM), title_medium("Resultados do dimensionamento FTOOL")], vertical_alignment=ft.CrossAxisAlignment.CENTER),
@@ -1270,28 +1288,28 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
 
             def _criar_painel_ajustes_els(resultado_els, state, dados_viga, secoes, momentos, cortantes, deformacoes, page, show_msg):
                 """Cria painel de ajustes manuais para ELS quando não passa."""
-                from ui.ftool.els import AjustesELS
                 from ui.ftool.dimensionamento import dimensionar_trechos_ftool
-                
+                from ui.ftool.els import AjustesELS
+
                 # Controles do painel
                 chk_barras = ft.Checkbox(label="Adicionar barras extras", value=False)
                 spn_barras = ft.TextField(value="2", width=80, text_size=13, disabled=True)
-                
+
                 chk_phi = ft.Checkbox(label="Forçar diâmetro mínimo", value=False)
                 dd_phi = ft.Dropdown(
                     options=[ft.dropdown.Option(str(d)) for d in [10, 12.5, 16, 20, 25]],
                     value="16", width=100, disabled=True
                 )
-                
+
                 chk_h = ft.Checkbox(label="Aumentar h para", value=False)
                 tf_h = ft.TextField(value="", width=100, disabled=True, hint_text=f"{dados_viga['h_cm']:.0f}")
-                
+
                 chk_fck = ft.Checkbox(label="Aumentar fck para", value=False)
                 dd_fck = ft.Dropdown(
                     options=[ft.dropdown.Option(str(f)) for f in [25, 30, 35, 40, 45, 50]],
                     value="35", width=100, disabled=True
                 )
-                
+
                 # Habilitar/desabilitar campos
                 def toggle_barras(e):
                     spn_barras.disabled = not chk_barras.value
@@ -1305,12 +1323,12 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
                 def toggle_fck(e):
                     dd_fck.disabled = not chk_fck.value
                     dd_fck.update()
-                
+
                 chk_barras.on_change = toggle_barras
                 chk_phi.on_change = toggle_phi
                 chk_h.on_change = toggle_h
                 chk_fck.on_change = toggle_fck
-                
+
                 def on_recalcular(e):
                     """Recalcula ELS com os ajustes aplicados e atualiza o modal in-place."""
                     try:
@@ -1320,7 +1338,7 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
                             h_override_cm=float(tf_h.value) if chk_h.value and tf_h.value else None,
                             fck_override_mpa=float(dd_fck.value) if chk_fck.value else None,
                         )
-                        
+
                         resultados = dimensionar_trechos_ftool(
                             dados_viga, secoes,
                             momentos=state.get("ftool_momentos"),
@@ -1328,16 +1346,16 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
                             deformacoes=state.get("ftool_deformacoes"),
                             ajustes_els=ajustes,
                         )
-                        
+
                         resultado_els_novo = resultados.get("els")
                         state["ftool_resultado_els"] = resultado_els_novo
                         state["ftool_ajustes_els"] = ajustes
-                        
+
                         sec_results = resultados["secoes"]
                         state["resultados_flex"] = [r["resultado_flexao"] for r in sec_results]
                         state["resultados_cis"] = [r["resultado_cisalhamento"] for r in sec_results]
                         state["ftool_detalhamento"] = resultados.get("detalhamento")
-                        
+
                         # Atualizar conteúdo do modal in-place (sem fechar/reabrir)
                         results_content = state.get("_modal_results_content")
                         if results_content is not None:
@@ -1352,10 +1370,10 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
                                 state.get("ftool_deformacoes"),
                                 page, show_msg
                             )
-                        
+
                     except Exception as ex:
                         show_msg(f"Erro ao recalcular: {ex}", Palette.ERROR)
-                
+
                 # Retornar controles do painel
                 return [
                     ft.Container(height=Spacing.LG),
@@ -1432,14 +1450,12 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
                     state["resultados_cis"] = [r["resultado_cisalhamento"] for r in sec_results]
                     state["ftool_detalhamento"] = resultados.get("detalhamento")
                     state["ftool_resultado_els"] = resultados.get("els")
-                    detalhamento = resultados.get("detalhamento")
-                    resultado_els = resultados.get("els")
                     btn_gerar_pdf.disabled = False
                     btn_exportar_dxf.disabled = False
                     page.update()
 
                     page.pop_dialog()  # Fecha loading
-                    
+
                     # Mostrar modal de resultados
                     _mostrar_modal_resultados(
                         state, dados_viga, secoes,
@@ -1457,8 +1473,10 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
                 actions=[ft.OutlinedButton("Cancelar", on_click=lambda ev: page.pop_dialog()), primary_button("Calcular", icon=ft.Icons.PLAY_ARROW, on_click=on_calcular_ftool)],
                 actions_alignment=ft.MainAxisAlignment.END, bgcolor=Palette.SURFACE, shape=ft.RoundedRectangleBorder(radius=br_all(Radius.LG))))
         except Exception as ex:
-            try: page.pop_dialog()  # Fecha loading se ainda estiver aberto
-            except: pass
+            try:
+                page.pop_dialog()  # Fecha loading se ainda estiver aberto
+            except Exception:
+                pass
             show_msg(f"Erro ao processar FTOOL: {ex}", Palette.ERROR)
 
     def on_add_comb_click(e):
@@ -1466,14 +1484,14 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
         state["temp_cortante_path"] = None
         lbl_momento.value = "Nenhum selecionado"
         lbl_cortante.value = "Nenhum selecionado"
-        
+
         name_tf = ft.TextField(
             label="Nome da Combinação",
             value=f"Combinação {len(state.get('combinacoes', [])) + 1}",
             border_color=Palette.OUTLINE_VARIANT,
             height=45,
         )
-        
+
         def save_comb(ev):
             nome = name_tf.value.strip()
             if not nome:
@@ -1482,7 +1500,7 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
             if not state["temp_momento_path"] or not state["temp_cortante_path"]:
                 show_msg("Selecione ambos os arquivos (momentos e cortantes)", Palette.WARNING)
                 return
-                
+
             state.setdefault("combinacoes", []).append({
                 "nome": nome,
                 "momento_path": state["temp_momento_path"],
@@ -1491,7 +1509,7 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
             page.pop_dialog()
             update_combs_ui()
             show_msg(f"Combinação '{nome}' adicionada", Palette.SUCCESS)
-            
+
         add_dlg = ft.AlertDialog(
             modal=True,
             title=title_medium("Adicionar Combinação FTOOL"),
@@ -1536,7 +1554,7 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
 
     def on_calcular_envelope_click(e):
         try:
-            from ui.ftool.parser import parse_momento, parse_cortante
+            from ui.ftool.parser import parse_cortante, parse_momento
             combs_parsed = []
             for c in state["combinacoes"]:
                 m_pts = parse_momento(c["momento_path"])
@@ -1546,15 +1564,19 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
                     "momentos": m_pts,
                     "cortantes": v_pts
                 })
-                
-            from ui.ftool.envelope import calcular_envelope, detectar_secoes_envelope, gerar_relatorio_envelope
+
+            from ui.ftool.envelope import (
+                calcular_envelope,
+                detectar_secoes_envelope,
+                gerar_relatorio_envelope,
+            )
             env = calcular_envelope(combs_parsed)
             secoes = detectar_secoes_envelope(combs_parsed, env)
-            
+
             state["ftool_momentos"] = {"max": env["momentos_max"], "min": env["momentos_min"]}
             state["ftool_cortantes"] = {"max": env["cortantes_max"], "min": env["cortantes_min"]}
             state["ftool_secoes_criticas"] = secoes
-            
+
             rows = []
             for sec in secoes:
                 rows.append(
@@ -1568,7 +1590,7 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
                         ]
                     )
                 )
-                
+
             table = ft.DataTable(
                 columns=[
                     ft.DataColumn(ft.Text("x (m)")),
@@ -1581,15 +1603,15 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
                 heading_row_color=Palette.SURFACE_VARIANT,
                 divider_thickness=1,
             )
-            
+
             table_container = ft.Container(
                 content=ft.Column([table], scroll=ft.ScrollMode.AUTO),
                 height=300,
             )
-            
+
             def close_env_dlg(ev):
                 page.pop_dialog()
-                
+
             def on_calcular_envelope_confirm_click(ev):
                 page.pop_dialog()
                 try:
@@ -1601,7 +1623,7 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
                     caa = int(caa_dd.control.value)
                     diam_est = float(phi_est_dd.control.value)
                     diam_bar = float(phi_bar_dd.control.value)
-                    
+
                     try:
                         gamma_f = GAMMA_F_TABLE[gamma_f_dd.control.value]["gamma_f"]
                     except (KeyError, TypeError):
@@ -1609,7 +1631,7 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
                 except (ValueError, KeyError, TypeError) as ex:
                     show_msg(f"Por favor, verifique os campos da viga: {ex}", Palette.WARNING)
                     return
-                    
+
                 dados_viga = {
                     "h_cm": h,
                     "bw_cm": bw,
@@ -1622,7 +1644,7 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
                     "fyk_barra_mpa": fyk,
                     "gamma_f": gamma_f,
                 }
-                
+
                 try:
                     from ui.ftool.dimensionamento import dimensionar_trechos_ftool
                     resultados = dimensionar_trechos_ftool(dados_viga, secoes,
@@ -1630,16 +1652,16 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
                         cortantes=state.get("ftool_cortantes"),
                         deformacoes=state.get("ftool_deformacoes"))
                     sec_results = resultados["secoes"]
-                    
+
                     state["resultados_flex"] = [res["resultado_flexao"] for res in sec_results]
                     state["resultados_cis"] = [res["resultado_cisalhamento"] for res in sec_results]
-                    
+
                     btn_gerar_pdf.disabled = False
                     btn_exportar_dxf.disabled = False
                     page.update()
-                    
+
                     relatorio_text = gerar_relatorio_envelope(dados_viga, env, secoes)
-                    
+
                     results_dlg = ft.AlertDialog(
                         modal=True,
                         title=ft.Row(
@@ -1684,7 +1706,7 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
                     page.show_dialog(results_dlg)
                 except Exception as ex:
                     show_msg(f"Erro no dimensionamento do envelope: {ex}", Palette.ERROR)
-            
+
             env_dlg = ft.AlertDialog(
                 modal=True,
                 title=ft.Row(
@@ -1716,7 +1738,7 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
                 shape=ft.RoundedRectangleBorder(radius=br_all(Radius.LG)),
             )
             page.show_dialog(env_dlg)
-            
+
         except Exception as ex:
             show_msg(f"Erro ao processar envelope: {ex}", Palette.ERROR)
 
@@ -1731,7 +1753,7 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
             "h_override_cm": ajustes.h_override_cm,
             "fck_override_mpa": ajustes.fck_override_mpa,
         }
-    
+
     def _desserializar_ajustes_els(data):
         """Desserializa dict JSON para AjustesELS."""
         if data is None:
@@ -1830,7 +1852,7 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
         file_path = pick_res.files[0].path
 
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
+            with open(file_path, encoding="utf-8") as f:
                 proj_data = json.load(f)
 
             # Verificar modo (eixo retangular x T) — inalterado
@@ -1898,7 +1920,7 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
             state["ftool_momentos"] = saved_ftool.get("ftool_momentos")
             state["ftool_cortantes"] = saved_ftool.get("ftool_cortantes")
             state["ftool_deformacoes"] = saved_ftool.get("ftool_deformacoes")
-            
+
             # Conversão explícita para tuplas para garantir imutabilidade nos dados de esforços
             if state.get("ftool_momentos"):
                 state["ftool_momentos"] = [tuple(pt) for pt in state["ftool_momentos"]]
@@ -1913,11 +1935,11 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
                 state["ftool_secoes_criticas"] = [SecaoCritica(**s) for s in raw_secoes]
             else:
                 state["ftool_secoes_criticas"] = None
-            
+
             # Carregar ajustes ELS
             ajustes_data = saved_ftool.get("ajustes_els")
             state["ftool_ajustes_els"] = _desserializar_ajustes_els(ajustes_data)
-            
+
             # Reconstroi o painel conforme a entrada do projeto ANTES de tocar
             # nos controles do painel FTOOL (eles so existem na pagina quando a
             # fonte de entrada e FTOOL; caso contrario, update() falharia).
@@ -1978,11 +2000,11 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
             for i, r in enumerate(res_flex or []):
                 if r is None:
                     continue
-                
+
                 bx_status = "SIM" if r.bx_passa == "SIM" else "NÃO"
                 bx_color = Palette.SUCCESS if r.bx_passa == "SIM" else Palette.ERROR
                 alerta_msg = getattr(r, "alerta", "")
-                
+
                 try:
                     bw = float(bw_tf.control.value or 12.0)
                     caa = int(caa_dd.control.value)
@@ -2354,7 +2376,7 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
         if state["resultados_flex"] is None and state["resultados_cis"] is None:
             show_msg("Calcule primeiro antes de gerar o PDF", Palette.WARNING)
             return
-        
+
         # B3: Desabilitar o botão e mostrar spinner text
         btn_gerar_pdf.disabled = True
         btn_gerar_pdf.text = "Gerando PDF..."
@@ -2374,7 +2396,7 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
             if not sanitized_viga:
                 sanitized_viga = "V1" if modo == "comum" else "VT1"
             default_filename = f"PorticaApp_{sanitized_viga}_{ts}.pdf"
-            
+
             # Abre o diálogo para salvar arquivo
             out = await fp_pdf.save_file(
                 dialog_title="Salvar Relatório PDF",
@@ -2382,7 +2404,7 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
                 allowed_extensions=["pdf"],
                 file_type=ft.FilePickerFileType.CUSTOM,
             )
-            
+
             # Se o usuário cancelou o diálogo, não faz nada
             if not out:
                 return
@@ -2393,7 +2415,8 @@ def build_viga_screen(page, modo, on_back, fp_image, fp_pdf, fp_load_project, fp
 
             ftool = state["ftool_path"] if state.get("ftool_path") and os.path.exists(state["ftool_path"]) else None
             if is_t:
-                bf = float(bf_tf.control.value or 0); hf = float(hf_tf.control.value or 0)
+                bf = float(bf_tf.control.value or 0)
+                hf = float(hf_tf.control.value or 0)
                 if state.get("ftool_momentos"):
                     gerar_relatorio_viga_t_premium(
                         out, nome_viga=state["tipo_viga"],
@@ -2481,7 +2504,7 @@ nome_engenheiro=nome_eng,
             page.update()
             # B11: feedback de sucesso claro e persistente
             show_msg(f"PDF gerado com sucesso: {out}", Palette.SUCCESS)
-            
+
             # Abre o PDF gerado automaticamente
             on_abrir_pdf(None)
         except (OSError, ValueError, TypeError) as ex:
@@ -2567,11 +2590,11 @@ nome_engenheiro=nome_eng,
                 return
 
             # Chamar a função de exportação DXF
-            from core.detailing.dxf_export import exportar_secao_dxf
             from core.detailing import BeamDetailer, BeamDetailingInput
+            from core.detailing.dxf_export import exportar_secao_dxf
 
             layout = resultado_valido.layout_convergido
-            
+
             # Coletar dados da seção
             if layout:
                 bw_cm = layout.bw / 10.0
@@ -2590,7 +2613,7 @@ nome_engenheiro=nome_eng,
 
             if is_t:
                 bw_cm = float(bw_tf.control.value.replace(",", ".")) if bw_tf.control.value else bw_cm
-            
+
             # Encontrar armadura máxima para o desenho da seção transversal representativa
             max_bars_inf = 0
             max_bars_sup = 0
@@ -2627,7 +2650,7 @@ nome_engenheiro=nome_eng,
                     total_bars=n_inf_dxf,
                 )
                 layout_inf = detailer.detail(inp_inf)
-                
+
                 # 2. Detalhar armadura superior (como se fosse inferior, depois espelhamos)
                 inp_sup = BeamDetailingInput(
                     bw=bw_cm * 10.0,
@@ -2650,7 +2673,7 @@ nome_engenheiro=nome_eng,
                             "is_corner_bar": False,
                             "phi_mm": phi_inf_adot
                         })
-                        
+
                 # Adiciona barras superiores (espelhadas em Y)
                 h_mm = h_cm * 10.0
                 for bar in layout_sup.bar_positions:
@@ -2666,7 +2689,7 @@ nome_engenheiro=nome_eng,
             else:
                 # Posições calculadas manualmente
                 e_off_mm = cob_cm * 10.0 + phi_estribo_mm
-                
+
                 # Inferiores
                 y_inf = e_off_mm + phi_inf_adot / 2.0
                 avail_w_inf = bw_cm * 10.0 - 2.0 * e_off_mm - phi_inf_adot
@@ -2682,7 +2705,7 @@ nome_engenheiro=nome_eng,
                         "is_corner_bar": False,
                         "phi_mm": phi_inf_adot
                     })
-                    
+
                 # Superiores
                 h_mm = h_cm * 10.0
                 y_sup = h_mm - e_off_mm - phi_sup_adot / 2.0
@@ -2834,11 +2857,12 @@ nome_engenheiro=nome_eng,
             # SVG: converter para PNG temporario para preview (Flet desktop nao renderiza SVG)
             if img_path.lower().endswith(".svg"):
                 try:
-                    from svglib.svglib import svg2rlg
+                    import re
+
                     from reportlab.graphics import renderPM
-                    import tempfile, re
+                    from svglib.svglib import svg2rlg
                     # Sanitizar dash arrays invalidos do FTOOL
-                    with open(img_path, "r", encoding="utf-8", errors="ignore") as f:
+                    with open(img_path, encoding="utf-8", errors="ignore") as f:
                         svg_content = f.read()
                     svg_clean = re.sub(r'stroke-dasharray\s*=\s*"[^"]*"', 'stroke-dasharray="1"', svg_content)
                     svg_clean = re.sub(r"stroke-dasharray\s*=\s*'[^']*'", "stroke-dasharray='1'", svg_clean)
@@ -2884,7 +2908,7 @@ nome_engenheiro=nome_eng,
             ftool_filename_text.color = Palette.TEXT_DISABLED
 
     # ── Sidebar direita (imagem + acoes) ─────────────────────────────────
-    ftool_card = surface_card(
+    ftool_card = surface_card(  # noqa: F841  # card construído e não renderizado (backlog EP-04/EP-05)
         ft.Column(
             controls=[
                 section_header(
@@ -3094,7 +3118,7 @@ nome_engenheiro=nome_eng,
         ),
         padding=pad_all(Spacing.MD),
     )
-    
+
     page_cis_content = ft.Container(
         content=ft.Row(
             controls=[
@@ -3296,7 +3320,7 @@ nome_engenheiro=nome_eng,
     if initial_file:
         async def _auto_load():
             try:
-                with open(initial_file, "r", encoding="utf-8") as f:
+                with open(initial_file, encoding="utf-8") as f:
                     proj_data = json.load(f)
                 saved_modo = proj_data.get("modo", "comum")
                 if saved_modo != modo:
@@ -3359,7 +3383,7 @@ nome_engenheiro=nome_eng,
                 state["ftool_momentos"] = saved_ftool.get("ftool_momentos")
                 state["ftool_cortantes"] = saved_ftool.get("ftool_cortantes")
                 state["ftool_deformacoes"] = saved_ftool.get("ftool_deformacoes")
-                
+
                 # Conversão explícita para tuplas para garantir imutabilidade nos dados de esforços
                 if state.get("ftool_momentos"):
                     state["ftool_momentos"] = [tuple(pt) for pt in state["ftool_momentos"]]

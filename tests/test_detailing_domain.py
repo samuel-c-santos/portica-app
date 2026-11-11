@@ -12,11 +12,9 @@ Cobre todos os critérios de aceite (DoD):
   ✓ Baricentro = média das posições Y das barras de cálculo
   ✓ Validação de entrada (ValueError para parâmetros ruins)
 """
-import math
 import pytest
 
 from core.detailing.domain import BeamDetailer, BeamDetailingInput
-
 
 # ─── Fixture base ────────────────────────────────────────────────────────────
 
@@ -176,7 +174,6 @@ class TestGrampos:
         )
         data = detailer.detail(inp)
         if data.layer_count == 1 and data.layers[0].bar_count >= 3:
-            layer = data.layers[0]
             bars = sorted([b for b in data.bar_positions if b.layer == 0], key=lambda b: b.x)
             span = bars[-1].x - bars[0].x
             if span > 150:
@@ -322,15 +319,15 @@ class TestVigaTDetailing:
             is_superior=False
         )
         data = detailer.detail(inp)
-        
+
         # Alma centralizada na mesa de largura 600mm. Alma vai de X=200mm a X=400mm.
         # Barras principais (não de canto) devem estar dentro da alma (200 a 400)
         x_web_esq = (600.0 - 200.0) / 2.0  # 200.0
         x_web_dir = x_web_esq + 200.0       # 400.0
-        
+
         main_bars = [b for b in data.bar_positions if not b.is_corner_bar]
         assert len(main_bars) == 3
-        
+
         r = inp.phi_barra / 2.0
         for bar in main_bars:
             assert bar.x - r >= x_web_esq + inp.c_nom + inp.phi_estribo - 0.1
@@ -344,16 +341,16 @@ class TestVigaTDetailing:
             is_superior=True
         )
         data = detailer.detail(inp)
-        
+
         # Mesa de largura 600mm. Barras superiores devem estar entre X=0 e X=600.
         main_bars = [b for b in data.bar_positions if not b.is_corner_bar]
         assert len(main_bars) == 6
-        
+
         r = inp.phi_barra / 2.0
         for bar in main_bars:
             assert bar.x - r >= inp.c_nom + inp.phi_estribo - 0.1
             assert bar.x + r <= 600.0 - inp.c_nom - inp.phi_estribo + 0.1
-            
+
         # Pelo menos algumas barras devem estar fora da projeção da alma (X < 200 ou X > 400)
         out_of_web = [b for b in main_bars if b.x < 200.0 or b.x > 400.0]
         assert len(out_of_web) > 0, "Deveria haver barras fora da alma na mesa"
@@ -369,7 +366,7 @@ class TestVigaTDetailing:
         data_inf = detailer.detail(inp_inf)
         # 1 única camada, y_cg deve ser cob + phi_estribo + phi_barra/2 = 25 + 6.3 + 8 = 39.3
         assert abs(data_inf.y_cg - 39.3) < 0.1
-        
+
         # Superior (is_superior=True)
         inp_sup = BeamDetailingInput(
             bw=200.0, h=500.0, c_nom=25.0, phi_estribo=6.3, phi_barra=16.0,

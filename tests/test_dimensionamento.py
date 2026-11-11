@@ -3,15 +3,15 @@ Testes para o módulo de dimensionamento automático (Fase 2.3).
 """
 
 import os
-import pytest
-from typing import Tuple, List
 
-from ui.ftool.parser import parse_momento, parse_cortante
-from ui.ftool.secoes_criticas import detectar_todas_secoes, SecaoCritica
+import pytest
+
 from ui.ftool.dimensionamento import (
     dimensionar_trechos_ftool,
     gerar_relatorio_premium,
 )
+from ui.ftool.parser import parse_cortante, parse_momento
+from ui.ftool.secoes_criticas import SecaoCritica, detectar_todas_secoes
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TEST_DATA_DIR = os.path.join(BASE_DIR, "samples")
@@ -20,7 +20,7 @@ CORTANTE_FILE = os.path.join(TEST_DATA_DIR, "test_esforcos_cortantes.txt")
 
 
 @pytest.fixture
-def secoes_reais() -> Tuple[dict, List[SecaoCritica]]:
+def secoes_reais() -> tuple[dict, list[SecaoCritica]]:
     """Fixture que fornece a viga padrão de teste e as seções críticas detectadas."""
     dados_viga = {
         "h_cm": 70.0,
@@ -59,10 +59,10 @@ def test_2_secao_momento_maximo(secoes_reais):
     """2. Testa o dimensionamento na seção de momento máximo local (vão)."""
     dados_viga, secoes = secoes_reais
     resultados = dimensionar_trechos_ftool(dados_viga, secoes)["secoes"]
-    
+
     # Encontra a seção correspondente ao momento máximo
     sec_max_m = [r for r in resultados if r["tipo"] == "MÁX"][0]
-    
+
     assert pytest.approx(sec_max_m["x"], abs=0.1) == 3.1
     rf = sec_max_m["resultado_flexao"]
     assert rf is not None
@@ -75,7 +75,7 @@ def test_3_secao_momento_minimo(secoes_reais):
     """3. Testa o dimensionamento na seção de momento mínimo local (apoio de extremo x=0)."""
     dados_viga, secoes = secoes_reais
     resultados = dimensionar_trechos_ftool(dados_viga, secoes)["secoes"]
-    
+
     # x=0.0 é o mínimo e extremo
     sec_x0 = [r for r in resultados if r["x"] == 0.0][0]
     rf = sec_x0["resultado_flexao"]
@@ -89,7 +89,7 @@ def test_4_secao_apoio_interno_cisalhamento(secoes_reais):
     """4. Testa o dimensionamento ao cisalhamento no apoio interno (x=3.0)."""
     dados_viga, secoes = secoes_reais
     resultados = dimensionar_trechos_ftool(dados_viga, secoes)["secoes"]
-    
+
     sec_apoio = [r for r in resultados if r["x"] == 3.0][0]
     rc = sec_apoio["resultado_cisalhamento"]
     assert rc is not None
@@ -103,7 +103,7 @@ def test_5_gerar_relatorio_premium(secoes_reais):
     """5. Testa a geração do relatório resumo textual e seus elementos."""
     dados_viga, secoes = secoes_reais
     sec_results = dimensionar_trechos_ftool(dados_viga, secoes)["secoes"]
-    
+
     relatorio = gerar_relatorio_premium(dados_viga, sec_results)
     assert isinstance(relatorio, str)
     assert "PÓRTICA APP" in relatorio

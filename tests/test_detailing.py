@@ -3,7 +3,7 @@ Testes para o modulo de detailing de estribos.
 """
 
 import os
-import pytest
+
 from ui.ftool.detailing import detalhar_estribos, gerar_tabela_detailing
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

@@ -19,7 +19,7 @@ import matplotlib
 matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
-from matplotlib.patches import Arc, Circle, Polygon, Rectangle
+from matplotlib.patches import Circle, Polygon, Rectangle
 
 # ── Estilo ──────────────────────────────────────────────────────────────────
 FUNDO = "#eef1f5"
@@ -157,7 +157,7 @@ def figura_bielas_tirantes():
     # Bielas diagonais (compressão): zigue-zague continuous
     bielas = [(1.2, yb), (2.4, yt), (3.6, yb), (4.8, yt), (6.0, yb), (7.2, yt),
               (7.9, 0.5)]
-    for (xa, ya), (xb, yb_) in zip(bielas[::2], bielas[1::2]):
+    for (xa, ya), (xb, yb_) in zip(bielas[::2], bielas[1::2], strict=False):
         ax.plot([xa, xb], [ya, yb_], color=TRACO, lw=2.2, ls=(0, (6, 3)), zorder=2)
 
     # Tirantes verticais (tração)

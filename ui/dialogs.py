@@ -3,14 +3,32 @@ Pórtica App - Dialogs de informacao com tabelas NBR.
 """
 
 import flet as ft
-from ui.theme import (
-    Palette, Spacing, Radius, pad_sym, pad_only, pad_all, br_all,
-    title_medium, title_small, body_medium, body_small, caption,
-)
+
 from ui.tables import (
-    TABELA_CAA, TABELA_COBRIMENTO, TABELA_RHO_MIN, TABELA_DIAMETROS,
-    TABELA_FCK, TABELA_ACO, TABELA_GAMMA_F,
-    INFO_GEOMETRIA, INFO_VIGA_T, INFO_B1,
+    INFO_B1,
+    INFO_GEOMETRIA,
+    INFO_VIGA_T,
+    TABELA_ACO,
+    TABELA_CAA,
+    TABELA_COBRIMENTO,
+    TABELA_DIAMETROS,
+    TABELA_FCK,
+    TABELA_GAMMA_F,
+    TABELA_RHO_MIN,
+)
+from ui.theme import (
+    Palette,
+    Radius,
+    Spacing,
+    body_medium,
+    body_small,
+    br_all,
+    caption,
+    pad_all,
+    pad_only,
+    pad_sym,
+    title_medium,
+    title_small,
 )
 
 

@@ -1,19 +1,20 @@
-import math
+from typing import Any
+
 import ezdxf
-from typing import List, Dict, Any, Optional
+
 
 def exportar_secao_dxf(
     bw_cm: float,
     h_cm: float,
     cob_cm: float,
     phi_estribo_mm: float,
-    bar_positions: List[Any],
+    bar_positions: list[Any],
     phi_barra_mm: float,
     n_barras_pele: int = 0,
     phi_pele_mm: float = 0.0,
     is_t: bool = False,
-    bf_cm: Optional[float] = None,
-    hf_cm: Optional[float] = None,
+    bf_cm: float | None = None,
+    hf_cm: float | None = None,
     nome_arquivo: str = "secao_viga.dxf"
 ):
     """
@@ -33,13 +34,13 @@ def exportar_secao_dxf(
         doc.layers.add('ARMADURA_COSTURA', color=3) # Cor 3 (Verde)
 
     phi_est_cm = phi_estribo_mm / 10.0
-    
+
     # Define deslocamento horizontal se for seção T para centralizar
     if is_t and bf_cm and hf_cm:
         half_bf = bf_cm / 2.0
         half_bw = bw_cm / 2.0
         x_shift = -half_bw
-        
+
         # 1. Contorno de Concreto (T-shape)
         vertices_concreto = [
             (-half_bw, 0.0),
@@ -51,13 +52,13 @@ def exportar_secao_dxf(
             (-half_bf, h_cm - hf_cm),
             (-half_bw, h_cm - hf_cm)
         ]
-        
+
         # Armadura de costura: duas linhas horizontais na mesa
         y_costura_sup = h_cm - cob_cm
         y_costura_inf = h_cm - hf_cm + cob_cm
         x_mesa_esq = -half_bf + cob_cm
         x_mesa_dir = half_bf - cob_cm
-        
+
         msp.add_line(
             (x_mesa_esq, y_costura_sup),
             (x_mesa_dir, y_costura_sup),
@@ -162,12 +163,12 @@ def exportar_secao_dxf(
                             is_bottom = True
                         else:
                             is_top = True
-                    
+
                     if is_bottom:
                         bottom_bars_tops.append((by + b_phi / 2.0) / 10.0)
                     if is_top:
                         top_bars_bottoms.append((by - b_phi / 2.0) / 10.0)
-                        
+
             if bottom_bars_tops:
                 topo_cm = max(bottom_bars_tops)
             if top_bars_bottoms:
@@ -227,16 +228,16 @@ def exportar_secao_dxf(
         layer = bar.get("layer") if isinstance(bar, dict) else getattr(bar, "layer", None)
         is_corner = bar.get("is_corner_bar") if isinstance(bar, dict) else getattr(bar, "is_corner_bar", False)
         b_phi = (bar.get("phi_mm") if isinstance(bar, dict) else getattr(bar, "phi_mm", None)) or phi_barra_mm
-        
+
         # Camada 0 (1ª camada inferior) e Camada -1 (1ª camada superior) não precisam de grampos
         if is_corner or layer is None or layer in (0, -1) or bx is None or by is None:
             continue
-            
+
         if layer not in layers_dict:
             layers_dict[layer] = []
         layers_dict[layer].append(by)
         layers_phi[layer] = b_phi
-        
+
     for layer_idx, ys in layers_dict.items():
         if len(ys) >= 3:
             y_bar_cm = sum(ys) / len(ys) / 10.0
@@ -244,11 +245,11 @@ def exportar_secao_dxf(
             phi_barra_cm = b_phi / 10.0
             phi_est_cm = phi_estribo_mm / 10.0
             grampo_off_cm = (phi_est_cm / 2.0) + (phi_barra_cm / 2.0)
-            
+
             x_left = cob_cm
             x_right = bw_cm - cob_cm
             hook_len_cm = 1.0  # Gancho de ancoragem de 1cm (10mm)
-            
+
             # Se layer_idx > 0: Camada inferior suspensa (∪ - pernas para cima, dobra horizontal no topo)
             if layer_idx > 0:
                 y_closed = y_bar_cm - grampo_off_cm
@@ -257,7 +258,7 @@ def exportar_secao_dxf(
             else:
                 y_closed = y_bar_cm + grampo_off_cm
                 y_open = y_bar_cm - grampo_off_cm
-                
+
             vertices_grampo = [
                 (x_left + hook_len_cm + x_shift, y_open),
                 (x_left + x_shift, y_open),

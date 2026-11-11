@@ -16,7 +16,7 @@ _RECENT_FILE = os.path.join(
 def _load_raw() -> list[dict]:
     """Carrega a lista bruta do disco (pode ser vazia se nao existir)."""
     try:
-        with open(_RECENT_FILE, "r", encoding="utf-8") as f:
+        with open(_RECENT_FILE, encoding="utf-8") as f:
             data = json.load(f)
             if isinstance(data, list):
                 return data
@@ -55,7 +55,7 @@ def add_recent(path: str, modo: str = None) -> None:
     # Se modo não for especificado, tenta ler do arquivo
     if not modo:
         try:
-            with open(path, "r", encoding="utf-8") as f:
+            with open(path, encoding="utf-8") as f:
                 data = json.load(f)
                 modo = data.get("modo", "comum")
         except Exception:

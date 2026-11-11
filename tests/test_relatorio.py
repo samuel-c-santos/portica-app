@@ -1,8 +1,14 @@
 import os
 import tempfile
+
 import pytest
+
+from core.calculos import (
+    calcular_cisalhamento_viga_comum,
+    calcular_flexao_viga_comum,
+    calcular_flexao_viga_t,
+)
 from core.relatorio_base import gerar_relatorio_viga_comum, gerar_relatorio_viga_t
-from core.calculos import calcular_flexao_viga_comum, calcular_cisalhamento_viga_comum, calcular_flexao_viga_t
 
 # Texto do rodapé de aviso de responsabilidade (deve estar em todas as páginas)
 RODAPE_AVISO = "Uso sob responsabilidade do usuário — ver README do projeto"
@@ -19,7 +25,7 @@ def test_gerar_relatorio_viga_comum_sucesso(viga_exemplo, momentos_exemplo, cort
         momentos=momentos_exemplo,
         gamma_f=viga_exemplo["gamma_f"],
     )
-    
+
     res_cis = calcular_cisalhamento_viga_comum(
         h_cm=viga_exemplo["h_cm"],
         bw_cm=viga_exemplo["bw_cm"],
@@ -32,10 +38,10 @@ def test_gerar_relatorio_viga_comum_sucesso(viga_exemplo, momentos_exemplo, cort
         forcas_cortantes=cortantes_exemplo,
         gamma_f=viga_exemplo["gamma_f"],
     )
-    
+
     fd, temp_pdf_path = tempfile.mkstemp(suffix=".pdf")
     os.close(fd)
-    
+
     try:
         gerar_relatorio_viga_comum(
             temp_pdf_path,
@@ -53,7 +59,7 @@ def test_gerar_relatorio_viga_comum_sucesso(viga_exemplo, momentos_exemplo, cort
             nome_engenheiro="Samuel Santos",
             crea="123456/D-SP",
         )
-        
+
         assert os.path.exists(temp_pdf_path)
         assert os.path.getsize(temp_pdf_path) > 0
     finally:
@@ -76,7 +82,7 @@ def test_gerar_relatorio_viga_t_sucesso(viga_exemplo_t, momentos_exemplo, cortan
         b1dir_cm=viga_exemplo_t["b1dir_cm"],
         gamma_f=viga_exemplo_t["gamma_f"],
     )
-    
+
     res_cis = calcular_cisalhamento_viga_comum(
         h_cm=viga_exemplo_t["h_cm"],
         bw_cm=viga_exemplo_t["bw_cm"],
@@ -89,10 +95,10 @@ def test_gerar_relatorio_viga_t_sucesso(viga_exemplo_t, momentos_exemplo, cortan
         forcas_cortantes=cortantes_exemplo,
         gamma_f=viga_exemplo_t["gamma_f"],
     )
-    
+
     fd, temp_pdf_path = tempfile.mkstemp(suffix=".pdf")
     os.close(fd)
-    
+
     try:
         gerar_relatorio_viga_t(
             temp_pdf_path,
@@ -112,7 +118,7 @@ def test_gerar_relatorio_viga_t_sucesso(viga_exemplo_t, momentos_exemplo, cortan
             nome_engenheiro="Samuel Santos",
             crea="123456/D-SP",
         )
-        
+
         assert os.path.exists(temp_pdf_path)
         assert os.path.getsize(temp_pdf_path) > 0
     finally:

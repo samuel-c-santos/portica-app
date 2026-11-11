@@ -3,11 +3,12 @@ Módulo para cálculo e processamento de envelope de combinações de esforços 
 Fase 2.5 — Envelope de Combinações
 """
 
-from typing import List, Dict, Tuple, Any
+from typing import Any
+
 from ui.ftool.secoes_criticas import SecaoCritica, interpolar_y
 
 
-def calcular_envelope(combinacoes: List[Dict[str, Any]]) -> Dict[str, Any]:
+def calcular_envelope(combinacoes: list[dict[str, Any]]) -> dict[str, Any]:
     """
     Recebe uma lista de dicionários, cada um com "momentos" e "cortantes" (listas de (x, valor)).
     Retorna um dicionário com as curvas envolventes máximas e mínimas:
@@ -44,7 +45,7 @@ def calcular_envelope(combinacoes: List[Dict[str, Any]]) -> Dict[str, Any]:
     cortantes_max = []
     cortantes_min = []
 
-    def get_valores_no_x(curva: List[Tuple[float, float]], x_target: float) -> List[float]:
+    def get_valores_no_x(curva: list[tuple[float, float]], x_target: float) -> list[float]:
         # Se houver pontos correspondentes exatos na curva (dentro de uma tolerância pequena de 1e-5),
         # retornamos todos eles (pode ser mais de um no caso de descontinuidade)
         matches = [pt[1] for pt in curva if abs(pt[0] - x_target) < 1e-5]
@@ -76,7 +77,7 @@ def calcular_envelope(combinacoes: List[Dict[str, Any]]) -> Dict[str, Any]:
     }
 
 
-def detectar_secoes_envelope(combinacoes: List[Dict[str, Any]], envelope: Dict[str, Any]) -> List[SecaoCritica]:
+def detectar_secoes_envelope(combinacoes: list[dict[str, Any]], envelope: dict[str, Any]) -> list[SecaoCritica]:
     """
     Detecta as seções críticas no envelope de esforços, identificando a origem (combinação)
     de cada esforço crítico.
@@ -90,9 +91,9 @@ def detectar_secoes_envelope(combinacoes: List[Dict[str, Any]], envelope: Dict[s
         return []
 
     from ui.ftool.secoes_criticas import (
+        detectar_apoios,
         detectar_maximos_locais,
         detectar_minimos_locais,
-        detectar_apoios,
         detectar_pontos_momento_nulo,
     )
 
@@ -196,7 +197,7 @@ def detectar_secoes_envelope(combinacoes: List[Dict[str, Any]], envelope: Dict[s
     return secoes
 
 
-def gerar_relatorio_envelope(dados_viga: Dict[str, Any], envelope: Dict[str, Any], secoes: List[SecaoCritica]) -> str:
+def gerar_relatorio_envelope(dados_viga: dict[str, Any], envelope: dict[str, Any], secoes: list[SecaoCritica]) -> str:
     """
     Gera um relatório textual completo detalhando os resultados do dimensionamento
     com base nas seções críticas do envelope.
@@ -218,7 +219,7 @@ def gerar_relatorio_envelope(dados_viga: Dict[str, Any], envelope: Dict[str, Any
         vk = res["Vk"]
         tipo = res["tipo"]
         desc = res["descricao"]
-        
+
         # Encontra a seção correspondente para obter origem
         sec = next((s for s in secoes if abs(s.x - x) < 1e-4), None)
         origem_str = f" | Origem: {sec.origem}" if sec else ""

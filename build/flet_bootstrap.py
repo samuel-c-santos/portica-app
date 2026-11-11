@@ -33,7 +33,6 @@ import threading
 import zipfile
 from pathlib import Path
 
-
 CLIENT_HOME = Path.home() / ".flet" / "client"
 DOWNLOAD_TIMEOUT_S = 60
 CHUNK = 256 * 1024
@@ -238,7 +237,7 @@ def _download_with_tkinter(flet_desktop) -> None:
     status = tk.Label(root, text="Iniciando...", anchor="w", justify="left")
     status.pack(fill="x", pady=(8, 0))
 
-    events: "queue.Queue[tuple]" = queue.Queue()
+    events: queue.Queue[tuple] = queue.Queue()
     failure: list[Exception] = []
 
     def worker() -> None:

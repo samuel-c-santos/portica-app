@@ -1,5 +1,4 @@
 """Testes do motor de cisalhamento."""
-import pytest
 from core.calculos import calcular_cisalhamento_viga_comum
 
 

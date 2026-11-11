@@ -3,7 +3,6 @@ Testes para o loop de convergência iterativa de dimensionamento à flexão.
 Verifica a integração do BeamDetailer com o motor de cálculo à flexão.
 """
 
-import pytest
 from core.calculos.engenharia import (
     calcular_flexao_viga_comum,
     calcular_flexao_viga_t,

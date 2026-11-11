@@ -1,2 +1,16 @@
-# Dependências de desenvolvimento
+# Dependências de desenvolvimento e verificação
+#
+# - `pre-commit` (hooks locais): pre-commit install && pre-commit run --all-files
+# - `ruff` (lint + format): ruff check . && ruff format --check .
+# - `pytest-cov` (cobertura, EP-03.6): pytest --cov=core --cov=ui
+# - `build` (empacotamento PEP 517): python -m build --sdist --wheel
+# - `mypy` (opcional): mypy core
+# - `pyinstaller`: necessário ao `python build/build_portica.py` (não instalado
+#   por aqui para manter o ambiente leve; o job build-smoke do CI o instala).
+
 pytest>=7.0.0
+pytest-cov>=4.1.0
+ruff>=0.6.0
+pre-commit>=3.7.0
+build>=1.2.0
+mypy>=1.10.0

@@ -4,8 +4,8 @@ Usa a curva V(x) completa + decalagem NBR 6118:17.4.2.2.
 Divide cada vao em 3 zonas: Apoio Esq / Vao / Apoio Dir.
 """
 
-from typing import List, Tuple, Dict
 import math
+
 from core.calculos.engenharia import calcular_cisalhamento_viga_comum
 
 
@@ -27,7 +27,7 @@ def _calc_espacamento(asw_s_cm2m, phi_mm):
     return max(5.0, min(s, 30.0))
 
 
-def _encontrar_apoios(cortantes: List[Tuple[float, float]]) -> List[float]:
+def _encontrar_apoios(cortantes: list[tuple[float, float]]) -> list[float]:
     """Detecta apoios por descontinuidade em x."""
     apoios = []
     for i in range(1, len(cortantes)):
@@ -37,8 +37,8 @@ def _encontrar_apoios(cortantes: List[Tuple[float, float]]) -> List[float]:
 
 
 def detalhar_estribos(h_cm, bw_cm, fck_mpa, fyk_mpa, fyk_estribo_mpa, caa,
-                      cortantes: List[Tuple[float, float]],
-                      phi_estribo_mm=5.0, gamma_f=1.4) -> List[Dict]:
+                      cortantes: list[tuple[float, float]],
+                      phi_estribo_mm=5.0, gamma_f=1.4) -> list[dict]:
     """
     Divide a viga em zonas de estribos usando decalagem al = d.
     Para cada vao, gera 3 zonas: Apoio Esq / Vao / Apoio Dir.
@@ -115,7 +115,7 @@ def detalhar_estribos(h_cm, bw_cm, fck_mpa, fyk_mpa, fyk_estribo_mpa, caa,
     return zonas
 
 
-def calcular_qtd_estribos(regioes: List[Dict]) -> List[Dict]:
+def calcular_qtd_estribos(regioes: list[dict]) -> list[dict]:
     """Calcula quantidade de estribos por zona."""
     for r in regioes:
         comprimento_cm = (r["x_fim"] - r["x_inicio"]) * 100
@@ -126,7 +126,7 @@ def calcular_qtd_estribos(regioes: List[Dict]) -> List[Dict]:
     return regioes
 
 
-def gerar_tabela_detailing(regioes: List[Dict]) -> str:
+def gerar_tabela_detailing(regioes: list[dict]) -> str:
     if not regioes:
         return "Nenhuma regiao calculada."
     linhas = ["-" * 60, "  DETALHAMENTO DE ESTRIBOS", "-" * 60,

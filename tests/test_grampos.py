@@ -3,7 +3,6 @@ import os
 import sys
 import tempfile
 
-import pytest
 from fpdf import FPDF
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -119,10 +118,8 @@ def test_grampos_fechado_na_1a_camada_e_pernas_passam_pela_2a():
     phi_barra = 16.0
     phi_estribo = 5.0
     s = 0.5
-    grampo_off = (phi_estribo / 2 + phi_barra / 2) * s  # = 6.5
 
     y_bar = 100.0      # 2a camada
-    y_camada_1 = 110.0  # 1a camada (10 unidades abaixo)
     n = _desenhar_grampos_segunda_camada(
         pdf, n_camada=3, phi_barra=phi_barra, phi_estribo=phi_estribo,
         x_left=20.0, x_right=80.0,
@@ -155,7 +152,6 @@ def test_grampos_2a_camada_superior_fechado_na_1a_camada_sup():
     s = 0.5
 
     y_bar = 40.0       # 2a camada sup (menor Y, mais ao topo)
-    y_camada_1 = 30.0  # 1a camada sup (acima da 2a)
     n = _desenhar_grampos_segunda_camada(
         pdf, n_camada=3, phi_barra=phi_barra, phi_estribo=phi_estribo,
         x_left=20.0, x_right=80.0,
