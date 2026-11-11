@@ -402,6 +402,54 @@ def overline(s, color=None, **kwargs):
     return text(s, size=Type.OVERLINE[1], weight=Type.OVERLINE[2], color=color, **kwargs)
 
 
+def numeric_text(
+    content,
+    *,
+    casas: int | None = None,
+    grandeza: str | None = None,
+    sinal: bool = False,
+    milhar: bool = True,
+    unidade: str = "",
+    size=12,
+    weight=ft.FontWeight.W_500,
+    color=None,
+    text_align=ft.TextAlign.RIGHT,
+    **kwargs,
+):
+    """Texto numérico padronizado (formatação pt-BR, alinhamento à direita e fonte tabular)."""
+    from core.format import fmt_grandeza, fmt_num
+
+    if grandeza is not None and not isinstance(content, str):
+        val_str = fmt_grandeza(content, grandeza, sinal=sinal, milhar=milhar)
+    elif (casas is not None or unidade or not isinstance(content, str)) and not isinstance(
+        content, str
+    ):
+        val_str = fmt_num(
+            content,
+            casas=2 if casas is None else casas,
+            sinal=sinal,
+            milhar=milhar,
+            unidade=unidade,
+        )
+    else:
+        val_str = str(content)
+        if unidade:
+            val_str = f"{val_str} {unidade}"
+
+    c = color if color is not None else Palette.TEXT_PRIMARY
+    style = ft.TextStyle(size=size, weight=weight, font_family="Roboto Mono", color=c)
+    return ft.Text(
+        val_str,
+        size=size,
+        weight=weight,
+        color=c,
+        font_family="Roboto Mono",
+        style=style,
+        text_align=text_align,
+        **kwargs,
+    )
+
+
 # ── Icon helpers ───────────────────────────────────────────────────────────
 def icon(name, *, color=None, size=20):
     return ft.Icon(name, color=color, size=size)

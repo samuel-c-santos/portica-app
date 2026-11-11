@@ -26,6 +26,7 @@ from core.calculos.engenharia import (
 )
 from core.calculos.secao import altura_util_cm, d_linha_cm, lambda_f
 from core.detailing.presentation import desenhar_secao_com_detailer
+from core.format import _diam, _n
 from core.utils_tempfile import temp_path
 
 # Cores oficiais do design HTML do usuário
@@ -60,22 +61,6 @@ MT = 20  # Margem Superior
 MB = 20  # Margem Inferior
 PW = 210  # Largura da Página A4
 IW = PW - ML - MR  # Largura Útil = 170mm
-
-
-def _n(valor, casas: int = 2, fallback: str = "—") -> str:
-    if valor is None:
-        return fallback
-    try:
-        s = f"{float(valor):,.{casas}f}"
-        return s.replace(",", "X").replace(".", ",").replace("X", ".")
-    except (TypeError, ValueError):
-        return str(valor)
-
-
-def _diam(d_mm) -> str:
-    if d_mm is None:
-        return "—"
-    return f"{d_mm:g}".replace(".", ",")
 
 
 def _caa_nome(caa: int) -> str:

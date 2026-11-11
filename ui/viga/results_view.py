@@ -11,6 +11,7 @@ from core.calculos import (
     CAA_DATA,
     area_barra,
 )
+from core.format import fmt_diam, fmt_num
 from ui.theme import (
     SHADOW_SM,
     Palette,
@@ -91,7 +92,7 @@ def open_resultados_modal(ctx):
                 r.barras_suportadas = r.qtd_barras
                 r.barras_cima = 0
                 obs_det = ""
-                eh_tooltip = f"As barras cabem em 1 única camada. Espaçamento horizontal livre eh = {eh_val:.2f} cm (mínimo {eh_min:.1f} cm)."
+                eh_tooltip = f"As barras cabem em 1 única camada. Espaçamento horizontal livre eh = {fmt_num(eh_val, 2, unidade='cm')} (mínimo {fmt_num(eh_min, 1, unidade='cm')})."
             else:
                 n_max_layer = math.ceil(r.qtd_barras / 2)
                 if n_max_layer <= 1:
@@ -108,12 +109,12 @@ def open_resultados_modal(ctx):
                     r.eh_passa = "SIM"
                     r.barras_suportadas = n_max_layer
                     r.barras_cima = r.qtd_barras - n_max_layer
-                    obs_det = "Requer cavaletes transversais (ex: φ12.5 a cada 1m) para separar as camadas"
+                    obs_det = "Requer cavaletes transversais (ex: φ12,5 a cada 1 m) para separar as camadas"
                     if n_max_layer >= 4 and bw >= 30:
                         obs_det += (
-                            " | Adotar grampos de travamento φ5.0 conectando as barras centrais"
+                            " | Adotar grampos de travamento φ5,0 conectando as barras centrais"
                         )
-                    eh_tooltip = f"As barras não cabem em 1 camada, mas cabem em 2 camadas. Espaçamento horizontal livre eh = {eh_val:.2f} cm (mínimo {eh_min:.1f} cm). {obs_det}"
+                    eh_tooltip = f"As barras não cabem em 1 camada, mas cabem em 2 camadas. Espaçamento horizontal livre eh = {fmt_num(eh_val, 2, unidade='cm')} (mínimo {fmt_num(eh_min, 1, unidade='cm')}). {obs_det}"
                 else:
                     eh_status = "NÃO CABE"
                     status_type = "error"
@@ -122,7 +123,7 @@ def open_resultados_modal(ctx):
                     r.barras_suportadas = r.qtd_barras
                     r.barras_cima = 0
                     obs_det = ""
-                    eh_tooltip = f"O espaçamento horizontal livre ({eh_val:.2f} cm) é inferior ao mínimo regulamentar de {eh_min:.1f} cm, mesmo em 2 camadas."
+                    eh_tooltip = f"O espaçamento horizontal livre ({fmt_num(eh_val, 2, unidade='cm')}) é inferior ao mínimo regulamentar de {fmt_num(eh_min, 1, unidade='cm')}, mesmo em 2 camadas."
 
             if hasattr(r, "eh_suportado"):
                 r.eh_suportado = round(eh_val, 2)
@@ -147,7 +148,7 @@ def open_resultados_modal(ctx):
                     ft.Row(
                         controls=[
                             ft.Text(
-                                f"Ø {d:g}" + (" (atual)" if is_chosen else ""),
+                                fmt_diam(d, prefixo="Ø ") + (" (atual)" if is_chosen else ""),
                                 size=11,
                                 color=text_color,
                                 weight=text_weight,
@@ -228,14 +229,14 @@ def open_resultados_modal(ctx):
                         ft.Row(
                             [
                                 ft.Text("KC:", size=10, color=Palette.TEXT_SECONDARY),
-                                ft.Text(f"{r.kc:.2f}", size=10, weight=ft.FontWeight.BOLD),
+                                ft.Text(fmt_num(r.kc, 2), size=10, weight=ft.FontWeight.BOLD),
                             ],
                             alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                         ),
                         ft.Row(
                             [
                                 ft.Text("Bx:", size=10, color=Palette.TEXT_SECONDARY),
-                                ft.Text(f"{r.bx:.3f}", size=10, weight=ft.FontWeight.BOLD),
+                                ft.Text(fmt_num(r.bx, 3), size=10, weight=ft.FontWeight.BOLD),
                             ],
                             alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                         ),
@@ -254,21 +255,25 @@ def open_resultados_modal(ctx):
                         ft.Row(
                             [
                                 ft.Text("KS:", size=10, color=Palette.TEXT_SECONDARY),
-                                ft.Text(f"{r.ks:.3f}", size=10, weight=ft.FontWeight.BOLD),
+                                ft.Text(fmt_num(r.ks, 3), size=10, weight=ft.FontWeight.BOLD),
                             ],
                             alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                         ),
                         ft.Row(
                             [
                                 ft.Text("As:", size=10, color=Palette.TEXT_SECONDARY),
-                                ft.Text(f"{r.as_req_cm2:.2f}", size=10, weight=ft.FontWeight.BOLD),
+                                ft.Text(
+                                    fmt_num(r.as_req_cm2, 2), size=10, weight=ft.FontWeight.BOLD
+                                ),
                             ],
                             alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                         ),
                         ft.Row(
                             [
                                 ft.Text("Asmin:", size=10, color=Palette.TEXT_SECONDARY),
-                                ft.Text(f"{r.asmin_cm2:.2f}", size=10, weight=ft.FontWeight.BOLD),
+                                ft.Text(
+                                    fmt_num(r.asmin_cm2, 2), size=10, weight=ft.FontWeight.BOLD
+                                ),
                             ],
                             alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                         ),
@@ -276,7 +281,7 @@ def open_resultados_modal(ctx):
                             [
                                 ft.Text("AsUSADO:", size=10, color=Palette.TEXT_SECONDARY),
                                 ft.Text(
-                                    f"{r.as_necessaria_cm2:.2f}",
+                                    fmt_num(r.as_necessaria_cm2, 2),
                                     size=10,
                                     weight=ft.FontWeight.BOLD,
                                 ),
@@ -311,7 +316,7 @@ def open_resultados_modal(ctx):
                             alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                         ),
                         ft.Text(
-                            f"eh: {eh_val:.1f} cm (mín 2cm)",
+                            f"eh: {fmt_num(eh_val, 1, unidade='cm')} (mín 2 cm)",
                             size=10,
                             color=Palette.TEXT_SECONDARY,
                         ),
@@ -350,7 +355,7 @@ def open_resultados_modal(ctx):
                         text_align=ft.TextAlign.CENTER,
                     ),
                     ft.Text(
-                        f"As,min/face: {r.as_pele_min_face_cm2:.2f} cm² | s,máx: {r.s_pele_max_cm:.0f} cm",
+                        f"As,min/face: {fmt_num(r.as_pele_min_face_cm2, 2, unidade='cm²')} | s,máx: {fmt_num(r.s_pele_max_cm, 0, unidade='cm')}",
                         size=9,
                         color=Palette.TEXT_SECONDARY,
                         text_align=ft.TextAlign.CENTER,
@@ -370,9 +375,13 @@ def open_resultados_modal(ctx):
                         pele_diam_rows.append(
                             ft.Row(
                                 controls=[
-                                    ft.Text(f"Ø {phi:g}", size=10, color=Palette.TEXT_PRIMARY),
                                     ft.Text(
-                                        f"{n}x  s={s:.0f}cm  {as_val:.2f}cm²",
+                                        fmt_diam(phi, prefixo="Ø "),
+                                        size=10,
+                                        color=Palette.TEXT_PRIMARY,
+                                    ),
+                                    ft.Text(
+                                        f"{n}x  s={fmt_num(s, 0, unidade='cm')}  {fmt_num(as_val, 2, unidade='cm²')}",
                                         size=10,
                                         color=Palette.TEXT_PRIMARY,
                                     ),
@@ -438,7 +447,7 @@ def open_resultados_modal(ctx):
                                 weight=ft.FontWeight.W_500,
                             ),
                             ft.Text(
-                                f"s: {r.s_pele_cm:.0f} cm",
+                                f"s: {fmt_num(r.s_pele_cm, 0, unidade='cm')}",
                                 size=11,
                                 color=Palette.TEXT_SECONDARY,
                             ),
@@ -448,7 +457,7 @@ def open_resultados_modal(ctx):
                 )
                 pele_controls.append(
                     ft.Text(
-                        f"As/face: {r.as_pele_face_cm2:.2f} cm²",
+                        f"As/face: {fmt_num(r.as_pele_face_cm2, 2, unidade='cm²')}",
                         size=10,
                         color=Palette.TEXT_SECONDARY,
                     )
@@ -486,12 +495,21 @@ def open_resultados_modal(ctx):
                 cells=[
                     ft.DataCell(title_small(f"V{i + 1}", color=Palette.TEXT_PRIMARY)),
                     ft.DataCell(
-                        body_small(f"{r.vsd_verdadeiro_kn:.1f} kN", color=Palette.TEXT_PRIMARY)
+                        body_small(
+                            fmt_num(r.vsd_verdadeiro_kn, 1, unidade="kN"),
+                            color=Palette.TEXT_PRIMARY,
+                        )
                     ),
-                    ft.DataCell(body_small(f"{r.vrd2_kn:.1f} kN", color=Palette.TEXT_PRIMARY)),
-                    ft.DataCell(body_small(f"{r.vsw_kn:.1f} kN", color=Palette.TEXT_PRIMARY)),
                     ft.DataCell(
-                        body_small(f"{r.dist_estribos_cm:.1f} cm", color=Palette.TEXT_PRIMARY)
+                        body_small(fmt_num(r.vrd2_kn, 1, unidade="kN"), color=Palette.TEXT_PRIMARY)
+                    ),
+                    ft.DataCell(
+                        body_small(fmt_num(r.vsw_kn, 1, unidade="kN"), color=Palette.TEXT_PRIMARY)
+                    ),
+                    ft.DataCell(
+                        body_small(
+                            fmt_num(r.dist_estribos_cm, 1, unidade="cm"), color=Palette.TEXT_PRIMARY
+                        )
                     ),
                     ft.DataCell(
                         status_chip(status_label, "ok" if r.passa_vrd2 == "SIM" else "error")
@@ -630,7 +648,7 @@ def _atualizar_viewer(ctx):
                 ft.Row(
                     [
                         ft.Text("Vão total:", size=12, color=Palette.TEXT_SECONDARY),
-                        ft.Text(f"{L:.2f} m", size=12, weight=ft.FontWeight.W_500),
+                        ft.Text(fmt_num(L, 2, unidade="m"), size=12, weight=ft.FontWeight.W_500),
                     ],
                     alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                 ),
@@ -645,7 +663,7 @@ def _atualizar_viewer(ctx):
                     [
                         ft.Text("M máx:", size=12, color=Palette.TEXT_SECONDARY),
                         ft.Text(
-                            f"{m_max:+.1f} kN·m",
+                            fmt_num(m_max, 1, sinal=True, unidade="kN·m"),
                             size=12,
                             weight=ft.FontWeight.W_500,
                             color=Palette.PRIMARY,
@@ -657,7 +675,7 @@ def _atualizar_viewer(ctx):
                     [
                         ft.Text("M mín:", size=12, color=Palette.TEXT_SECONDARY),
                         ft.Text(
-                            f"{m_min:+.1f} kN·m",
+                            fmt_num(m_min, 1, sinal=True, unidade="kN·m"),
                             size=12,
                             weight=ft.FontWeight.W_500,
                             color=Palette.SECONDARY,
@@ -676,7 +694,7 @@ def _atualizar_viewer(ctx):
                     [
                         ft.Text("V máx:", size=12, color=Palette.TEXT_SECONDARY),
                         ft.Text(
-                            f"{v_max:+.1f} kN",
+                            fmt_num(v_max, 1, sinal=True, unidade="kN"),
                             size=12,
                             weight=ft.FontWeight.W_500,
                             color=Palette.PRIMARY,
@@ -688,7 +706,7 @@ def _atualizar_viewer(ctx):
                     [
                         ft.Text("V mín:", size=12, color=Palette.TEXT_SECONDARY),
                         ft.Text(
-                            f"{v_min:+.1f} kN",
+                            fmt_num(v_min, 1, sinal=True, unidade="kN"),
                             size=12,
                             weight=ft.FontWeight.W_500,
                             color=Palette.SECONDARY,
@@ -706,10 +724,10 @@ def _atualizar_viewer(ctx):
         rows = [
             ft.DataRow(
                 cells=[
-                    ft.DataCell(ft.Text(f"{s.x:.2f}", size=11)),
-                    ft.DataCell(ft.Text(f"{s.momento:.1f}", size=11)),
-                    ft.DataCell(ft.Text(f"{s.cortante:.1f}", size=11)),
-                    ft.DataCell(status_chip(s.tipo, "ok")),
+                    ft.DataCell(ft.Text(fmt_num(s.x, 2), size=11)),
+                    ft.DataCell(ft.Text(fmt_num(s.momento, 1), size=11)),
+                    ft.DataCell(ft.Text(fmt_num(s.cortante, 1), size=11)),
+                    ft.DataCell(status_chip(s.tipo, "info")),
                     ft.DataCell(
                         ft.Container(
                             ft.Text(

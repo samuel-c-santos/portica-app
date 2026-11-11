@@ -22,6 +22,7 @@ from core.calculos import (
     calcular_flexao_viga_t,
 )
 from core.calculos.secao import d_linha_cm
+from core.format import fmt_num
 from core.relatorio_base import gerar_relatorio_viga_comum, gerar_relatorio_viga_t
 from ui.entrada import (
     EDICAO_ATUAL,
@@ -95,7 +96,7 @@ def on_calculate(ctx, e):
         bw = float(ctx.bw_tf.control.value or 0)
         if h <= d_lin_est:
             ctx.show_msg(
-                f"Altura h={h} cm incorreta. d'={d_lin_est:.1f} cm. h deve ser maior.",
+                f"Altura h={fmt_num(h, 1, unidade='cm')} incorreta. d'={fmt_num(d_lin_est, 1, unidade='cm')}. h deve ser maior.",
                 Palette.ERROR,
             )
             return

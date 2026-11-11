@@ -12,6 +12,7 @@ import flet as ft
 from core.calculos import (
     GAMMA_F_TABLE,
 )
+from core.format import fmt_diam, fmt_num
 from ui.ftool.dimensionamento import (
     dimensionar_trechos_ftool,
 )
@@ -151,9 +152,9 @@ def processar_ftool(ctx):
         rows = [
             ft.DataRow(
                 cells=[
-                    ft.DataCell(ft.Text(f"{s.x:.2f} m")),
-                    ft.DataCell(ft.Text(f"{s.momento:.2f}")),
-                    ft.DataCell(ft.Text(f"{s.cortante:.2f}")),
+                    ft.DataCell(ft.Text(fmt_num(s.x, 2, unidade="m"))),
+                    ft.DataCell(ft.Text(fmt_num(s.momento, 2))),
+                    ft.DataCell(ft.Text(fmt_num(s.cortante, 2))),
                     ft.DataCell(ft.Text(s.tipo)),
                     ft.DataCell(
                         ft.Text(s.descricao[:25] + ".." if len(s.descricao) > 25 else s.descricao)
@@ -223,14 +224,20 @@ def processar_ftool(ctx):
                                 color=Palette.PRIMARY,
                             ),
                             ft.Text(
-                                f"x = {item['x']:.2f} m", size=10, color=Palette.TEXT_SECONDARY
+                                f"x = {fmt_num(item['x'], 2, unidade='m')}",
+                                size=10,
+                                color=Palette.TEXT_SECONDARY,
                             ),
                             ft.Container(height=Spacing.XS),
                             ft.Row(
                                 [
                                     ft.Text("Md:", size=10, color=Palette.TEXT_SECONDARY),
                                     ft.Text(
-                                        f"{r.momento_kNm * dados_viga.get('gamma_f', 1.4):.1f} kN·m",
+                                        fmt_num(
+                                            r.momento_kNm * dados_viga.get("gamma_f", 1.4),
+                                            1,
+                                            unidade="kN·m",
+                                        ),
                                         size=10,
                                         weight=ft.FontWeight.BOLD,
                                     ),
@@ -241,7 +248,7 @@ def processar_ftool(ctx):
                                 [
                                     ft.Text("As:", size=10, color=Palette.TEXT_SECONDARY),
                                     ft.Text(
-                                        f"{r.as_req_cm2:.2f} cm²",
+                                        fmt_num(r.as_req_cm2, 2, unidade="cm²"),
                                         size=10,
                                         weight=ft.FontWeight.BOLD,
                                     ),
@@ -252,7 +259,7 @@ def processar_ftool(ctx):
                                 [
                                     ft.Text("Adotado:", size=10, color=Palette.TEXT_SECONDARY),
                                     ft.Text(
-                                        f"{r.qtd_barras}φ{r.diametro_mm:.1f} ({r.as_necessaria_cm2:.2f} cm²)",
+                                        f"{r.qtd_barras}φ{fmt_diam(r.diametro_mm)} ({fmt_num(r.as_necessaria_cm2, 2, unidade='cm²')})",
                                         size=10,
                                     ),
                                 ],
@@ -279,7 +286,7 @@ def processar_ftool(ctx):
                 r = item["resultado_cisalhamento"]
                 if r is None:
                     continue
-                label = f"x={item['x']:.2f}m"
+                label = f"x={fmt_num(item['x'], 2)} m"
                 status_label = "OK" if r.passa_vrd2 == "SIM" else "NAO"
                 rows_cis.append(
                     ft.DataRow(
@@ -287,18 +294,24 @@ def processar_ftool(ctx):
                             ft.DataCell(title_small(label, color=Palette.TEXT_PRIMARY)),
                             ft.DataCell(
                                 body_small(
-                                    f"{r.vsd_verdadeiro_kn:.1f} kN", color=Palette.TEXT_PRIMARY
+                                    fmt_num(r.vsd_verdadeiro_kn, 1, unidade="kN"),
+                                    color=Palette.TEXT_PRIMARY,
                                 )
                             ),
                             ft.DataCell(
-                                body_small(f"{r.vrd2_kn:.1f} kN", color=Palette.TEXT_PRIMARY)
-                            ),
-                            ft.DataCell(
-                                body_small(f"{r.vsw_kn:.1f} kN", color=Palette.TEXT_PRIMARY)
+                                body_small(
+                                    fmt_num(r.vrd2_kn, 1, unidade="kN"), color=Palette.TEXT_PRIMARY
+                                )
                             ),
                             ft.DataCell(
                                 body_small(
-                                    f"{r.dist_estribos_cm:.1f} cm", color=Palette.TEXT_PRIMARY
+                                    fmt_num(r.vsw_kn, 1, unidade="kN"), color=Palette.TEXT_PRIMARY
+                                )
+                            ),
+                            ft.DataCell(
+                                body_small(
+                                    fmt_num(r.dist_estribos_cm, 1, unidade="cm"),
+                                    color=Palette.TEXT_PRIMARY,
                                 )
                             ),
                             ft.DataCell(
@@ -364,11 +377,19 @@ def processar_ftool(ctx):
                                 ft.DataRow(
                                     cells=[
                                         ft.DataCell(
-                                            body_small(f"{r['x_inicio']:.1f}–{r['x_fim']:.1f}m")
+                                            body_small(
+                                                f"{fmt_num(r['x_inicio'], 1)}–{fmt_num(r['x_fim'], 1, unidade='m')}"
+                                            )
                                         ),
-                                        ft.DataCell(body_small(f"{r['phi_mm']:.0f}mm")),
-                                        ft.DataCell(body_small(f"{r['espacamento_cm']:.0f}cm")),
-                                        ft.DataCell(body_small(f"{r['asw_s_cm2m']:.2f}")),
+                                        ft.DataCell(
+                                            body_small(fmt_diam(r["phi_mm"], unidade="mm"))
+                                        ),
+                                        ft.DataCell(
+                                            body_small(
+                                                fmt_num(r["espacamento_cm"], 0, unidade="cm")
+                                            )
+                                        ),
+                                        ft.DataCell(body_small(fmt_num(r["asw_s_cm2m"], 2))),
                                     ]
                                 )
                                 for r in detalhamento
@@ -410,7 +431,11 @@ def processar_ftool(ctx):
                             [
                                 ft.Text("Total:", size=11, color=Palette.TEXT_SECONDARY),
                                 ft.Text(
-                                    f"{resultado_els['flecha']['flecha_total_cm']:.2f} cm",
+                                    fmt_num(
+                                        resultado_els["flecha"]["flecha_total_cm"],
+                                        2,
+                                        unidade="cm",
+                                    ),
                                     size=11,
                                     weight=ft.FontWeight.BOLD,
                                 ),
@@ -421,7 +446,11 @@ def processar_ftool(ctx):
                             [
                                 ft.Text("Limite L/250:", size=11, color=Palette.TEXT_SECONDARY),
                                 ft.Text(
-                                    f"{resultado_els['flecha']['limite_total_cm']:.2f} cm",
+                                    fmt_num(
+                                        resultado_els["flecha"]["limite_total_cm"],
+                                        2,
+                                        unidade="cm",
+                                    ),
                                     size=11,
                                     weight=ft.FontWeight.BOLD,
                                     color=Palette.SUCCESS
@@ -457,7 +486,7 @@ def processar_ftool(ctx):
                             [
                                 ft.Text("w_k:", size=11, color=Palette.TEXT_SECONDARY),
                                 ft.Text(
-                                    f"{resultado_els['fissuracao']['wk_mm']:.2f} mm",
+                                    fmt_num(resultado_els["fissuracao"]["wk_mm"], 2, unidade="mm"),
                                     size=11,
                                     weight=ft.FontWeight.BOLD,
                                 ),
@@ -468,7 +497,11 @@ def processar_ftool(ctx):
                             [
                                 ft.Text("w_lim:", size=11, color=Palette.TEXT_SECONDARY),
                                 ft.Text(
-                                    f"{resultado_els['fissuracao']['wk_limite_mm']:.1f} mm",
+                                    fmt_num(
+                                        resultado_els["fissuracao"]["wk_limite_mm"],
+                                        1,
+                                        unidade="mm",
+                                    ),
                                     size=11,
                                     weight=ft.FontWeight.BOLD,
                                     color=Palette.SUCCESS
@@ -603,7 +636,7 @@ def processar_ftool(ctx):
 
             chk_h = ft.Checkbox(label="Aumentar h para", value=False)
             tf_h = ft.TextField(
-                value="", width=100, disabled=True, hint_text=f"{dados_viga['h_cm']:.0f}"
+                value="", width=100, disabled=True, hint_text=fmt_num(dados_viga["h_cm"], 0)
             )
 
             chk_fck = ft.Checkbox(label="Aumentar fck para", value=False)

@@ -82,3 +82,23 @@ def test_ep05_6_coerencia_marca_e_nomenclatura():
     ctx = montar_contexto(page, "comum", lambda: None, None, None, None, None, None)
     top_badge = ctx.topbar.content.controls[-1]
     assert top_badge.bgcolor == Palette.SURFACE_VARIANT
+
+
+def test_ep05_2_formatacao_pt_br_unica():
+    """EP-05.2: core/format.py unifica formatacao pt-BR com virgula decimal entre UI e PDF."""
+    import core.relatorio_base as rb
+    from core.format import _diam, _n, fmt_diam, fmt_grandeza, fmt_num
+    from ui.theme import numeric_text
+
+    assert fmt_num(10.51, 2) == "10,51"
+    assert fmt_num(12345.6, 2, unidade="kN·m") == "12.345,60 kN·m"
+    assert fmt_num(15.2, 1, sinal=True, unidade="kN·m") == "+15,2 kN·m"
+    assert fmt_grandeza(4.567, "as") == "4,57 cm²"
+    assert fmt_diam(12.5, prefixo="Ø", unidade="mm") == "Ø12,5 mm"
+    assert fmt_diam(16.0, prefixo="Ø") == "Ø16"
+    assert rb._n is _n
+    assert rb._diam is _diam
+
+    t = numeric_text(10.51, casas=2, unidade="cm²")
+    assert t.value == "10,51 cm²"
+    assert t.font_family == "Roboto Mono"

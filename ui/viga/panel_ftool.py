@@ -12,6 +12,7 @@ import flet as ft
 from core.calculos import (
     GAMMA_F_TABLE,
 )
+from core.format import fmt_num
 from core.utils_tempfile import temp_path
 from ui.entrada import (
     ENTRADA_FTOOL,
@@ -383,9 +384,9 @@ def on_calcular_envelope_click(ctx, e):
             rows.append(
                 ft.DataRow(
                     cells=[
-                        ft.DataCell(ft.Text(f"{sec.x:.2f} m")),
-                        ft.DataCell(ft.Text(f"{sec.momento:.2f}")),
-                        ft.DataCell(ft.Text(f"{sec.cortante:.2f}")),
+                        ft.DataCell(ft.Text(fmt_num(sec.x, 2, unidade="m"))),
+                        ft.DataCell(ft.Text(fmt_num(sec.momento, 2))),
+                        ft.DataCell(ft.Text(fmt_num(sec.cortante, 2))),
                         ft.DataCell(ft.Text(sec.tipo)),
                         ft.DataCell(ft.Text(sec.origem)),
                     ]
