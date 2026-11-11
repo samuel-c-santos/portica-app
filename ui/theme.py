@@ -652,8 +652,24 @@ def themed_dialog(
     modal: bool = True,
     bgcolor=None,
     actions_alignment=ft.MainAxisAlignment.END,
+    width: int | None = None,
+    height: int | None = None,
+    content_padding=None,
     **kwargs,
 ) -> ft.AlertDialog:
+    if (
+        content is not None
+        and (width is not None or height is not None or content_padding is not None)
+        and not isinstance(content, ft.Container)
+    ):
+        content = ft.Container(
+            content=content,
+            width=width,
+            height=height,
+            padding=content_padding
+            if content_padding is not None
+            else pad_sym(horizontal=Spacing.MD, vertical=Spacing.SM),
+        )
     dlg = ft.AlertDialog(
         modal=modal,
         title=title,
@@ -668,3 +684,165 @@ def themed_dialog(
     if len(_ACTIVE_DIALOGS) > 32:
         del _ACTIVE_DIALOGS[:-32]
     return dlg
+
+
+# ── Componentes padronizados de layout, cards, tabelas e seções (EP-05.7) ─
+def spacer(*, height: int | None = None, width: int | None = None, expand: bool = False):
+    """Espaçador padronizado do design system."""
+    return ft.Container(height=height, width=width, expand=expand)
+
+
+def polarity_badge(tipo: str):
+    """Badge semântico para tipo de momento (POSITIVO azul / NEGATIVO roxo)."""
+    return ft.Container(
+        content=ft.Text(
+            tipo,
+            size=9,
+            weight=ft.FontWeight.BOLD,
+            color=Palette.ON_PRIMARY,
+        ),
+        bgcolor=Palette.PRIMARY if tipo == "POSITIVO" else Palette.SECONDARY,
+        padding=pad_sym(horizontal=4, vertical=1),
+        border_radius=br_all(3),
+    )
+
+
+def alert_banner(message: str):
+    """Caixa de alerta de erro normativo dentro de card de resultado."""
+    return ft.Container(
+        content=ft.Text(
+            f"⚠ {message}",
+            size=10,
+            color=Palette.ON_PRIMARY,
+            weight=ft.FontWeight.BOLD,
+        ),
+        bgcolor=Palette.ERROR,
+        padding=pad_all(8),
+        border_radius=br_all(Radius.SM),
+        margin=pad_only(top=6, bottom=6),
+    )
+
+
+def result_card(
+    controls: list,
+    *,
+    width: int = 200,
+    padding: int = Spacing.MD,
+    spacing: int = 5,
+    shadow: bool = True,
+):
+    """Card padronizado de resultado por seção/trecho."""
+    card = surface_card(
+        ft.Column(controls=controls, spacing=spacing),
+        padding=padding,
+        radius=Radius.SM,
+        shadow=shadow,
+    )
+    card.width = width
+    return card
+
+
+def results_table(
+    columns: list,
+    rows: list,
+    *,
+    column_spacing: int | None = None,
+    heading_row_height: int = Spacing.XL + 8,
+    data_row_min_height: int = Spacing.XL + 4,
+    vertical_lines: bool = False,
+    scroll_height: int | None = None,
+):
+    """Tabela padronizada do design system (cabeçalho em SURFACE_VARIANT e bordas sutis)."""
+    kwargs = {}
+    if column_spacing is not None:
+        kwargs["column_spacing"] = column_spacing
+    if vertical_lines:
+        kwargs["vertical_lines"] = ft.BorderSide(1, Palette.OUTLINE_VARIANT)
+    table = ft.DataTable(
+        columns=columns,
+        rows=rows,
+        heading_row_color=Palette.SURFACE_VARIANT,
+        heading_row_height=heading_row_height,
+        data_row_min_height=data_row_min_height,
+        border=border_all(1, Palette.OUTLINE_VARIANT),
+        border_radius=br_all(Radius.SM),
+        horizontal_lines=ft.BorderSide(1, Palette.OUTLINE_VARIANT),
+        **kwargs,
+    )
+    if scroll_height is not None:
+        return ft.Container(
+            content=ft.Column([table], scroll=ft.ScrollMode.AUTO),
+            height=scroll_height,
+        )
+    return table
+
+
+def collapsible_section(
+    title: str,
+    controls: list,
+    *,
+    icon=None,
+    initially_expanded: bool = True,
+):
+    """Seção colapsável padronizada do design system."""
+    body = ft.Column(controls=controls, spacing=Spacing.SM, visible=initially_expanded)
+    toggle_icon = ft.Icon(
+        ft.Icons.EXPAND_LESS if initially_expanded else ft.Icons.EXPAND_MORE,
+        size=18,
+        color=Palette.TEXT_SECONDARY,
+    )
+
+    def _toggle(e):
+        body.visible = not body.visible
+        toggle_icon.name = ft.Icons.EXPAND_LESS if body.visible else ft.Icons.EXPAND_MORE
+        try:
+            body.update()
+            toggle_icon.update()
+        except (AssertionError, RuntimeError):
+            pass
+
+    header = section_header(
+        title,
+        icon=icon,
+        action=ft.IconButton(
+            icon=ft.Icons.EXPAND_LESS if initially_expanded else ft.Icons.EXPAND_MORE,
+            icon_size=18,
+            icon_color=Palette.TEXT_SECONDARY,
+            tooltip="Expandir/recolher seção",
+            on_click=_toggle,
+        ),
+    )
+    return surface_card(
+        ft.Column(controls=[header, body], spacing=Spacing.XS),
+        padding=Spacing.MD,
+    )
+
+
+# ── Absorção de tabelas e diálogos normativos no design system (EP-05.7) ───
+from ui.dialogs import (  # noqa: E402, F401
+    build_info_dialog,
+    build_text_dialog,
+    open_aco_info,
+    open_b1_info,
+    open_caa_info,
+    open_cobrimento_info,
+    open_diametros_info,
+    open_fck_info,
+    open_gamma_f_info,
+    open_geometria_info,
+    open_image_preview,
+    open_rho_min_info,
+    open_viga_t_info,
+)
+from ui.tables import (  # noqa: E402, F401
+    INFO_B1,
+    INFO_GEOMETRIA,
+    INFO_VIGA_T,
+    TABELA_ACO,
+    TABELA_CAA,
+    TABELA_COBRIMENTO,
+    TABELA_DIAMETROS,
+    TABELA_FCK,
+    TABELA_GAMMA_F,
+    TABELA_RHO_MIN,
+)

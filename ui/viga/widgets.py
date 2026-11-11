@@ -14,7 +14,19 @@ from ui.theme import (
     Spacing,
     br_all,
     caption,
+    info_button,
+    open_aco_info,
+    open_b1_info,
+    open_caa_info,
+    open_cobrimento_info,
+    open_diametros_info,
+    open_fck_info,
+    open_gamma_f_info,
+    open_geometria_info,
+    open_image_preview,
+    open_viga_t_info,
     section_header,
+    spacer,
     surface_card,
 )
 
@@ -69,6 +81,7 @@ def _styled_textfield(
     hint="",
     on_change=None,
     info_on_click=None,
+    info_tooltip=None,
     keyboard_type=ft.KeyboardType.NUMBER,
     max_length=None,
 ):
@@ -76,12 +89,9 @@ def _styled_textfield(
     Retorna Container que expoe .control (o TextField) para acesso a .value."""
     info_btn = None
     if info_on_click is not None:
-        info_btn = ft.IconButton(
-            icon=ft.Icons.INFO_OUTLINE,
-            icon_color=Palette.PRIMARY,
-            icon_size=16,
-            tooltip="Ver tabela",
-            on_click=info_on_click,
+        info_btn = info_button(
+            info_on_click,
+            tooltip=info_tooltip or f"Informações sobre {label_text} (NBR 6118:2023)",
         )
 
     # Campos numéricos: substitui ponto por vírgula automaticamente
@@ -109,17 +119,16 @@ def _styled_textfield(
     return _StyledContainer(tf, info_btn)
 
 
-def _styled_dropdown(label_text, value, options, *, on_change=None, info_on_click=None):
+def _styled_dropdown(
+    label_text, value, options, *, on_change=None, info_on_click=None, info_tooltip=None
+):
     """Dropdown com label e opcional botao de info.
     Retorna Container que expoe .control (o Dropdown) para acesso a .value."""
     info_btn = None
     if info_on_click is not None:
-        info_btn = ft.IconButton(
-            icon=ft.Icons.INFO_OUTLINE,
-            icon_color=Palette.PRIMARY,
-            icon_size=16,
-            tooltip="Ver tabela",
-            on_click=info_on_click,
+        info_btn = info_button(
+            info_on_click,
+            tooltip=info_tooltip or f"Ver tabela normativa de {label_text} (NBR 6118:2023)",
         )
     dd = ft.Dropdown(
         label=label_text,
@@ -156,7 +165,6 @@ def _make_gamma_f_options():
 def _build_illustrations_panel(page, title, subtitle, image_specs):
     """Cria um card contendo ilustrações técnicas com legendas clicáveis para ampliar."""
     from core.utils_tempfile import resource_path
-    from ui.dialogs import open_image_preview
 
     assets_root = resource_path("core/assets/info")
 
@@ -165,7 +173,7 @@ def _build_illustrations_panel(page, title, subtitle, image_specs):
             title, icon=ft.Icon(ft.Icons.IMAGE_OUTLINED, size=16, color=Palette.TEXT_SECONDARY)
         ),
         caption(subtitle, color=Palette.TEXT_SECONDARY),
-        ft.Container(height=Spacing.SM),
+        spacer(height=Spacing.SM),
     ]
 
     for i, spec in enumerate(image_specs):
@@ -173,9 +181,9 @@ def _build_illustrations_panel(page, title, subtitle, image_specs):
         img_path = os.path.join(assets_root, filename)
         if os.path.exists(img_path):
             if i > 0:
-                controls.append(ft.Container(height=Spacing.SM))
+                controls.append(spacer(height=Spacing.SM))
                 controls.append(ft.Divider(color=Palette.OUTLINE_VARIANT, height=1))
-                controls.append(ft.Container(height=Spacing.SM))
+                controls.append(spacer(height=Spacing.SM))
 
             # Local click handler helper
             def make_click_handler(path, title_text):
@@ -195,7 +203,7 @@ def _build_illustrations_panel(page, title, subtitle, image_specs):
                     tooltip="Clique para ampliar",
                 )
             )
-            controls.append(ft.Container(height=Spacing.XXS))
+            controls.append(spacer(height=Spacing.XXS))
             controls.append(
                 caption(label, color=Palette.TEXT_SECONDARY, text_align=ft.TextAlign.CENTER)
             )
@@ -210,58 +218,40 @@ def _build_illustrations_panel(page, title, subtitle, image_specs):
     )
 
 
-# ── Helpers de dialogs NBR (locais para evitar dependencia circular) ──────
+# ── Helpers de dialogs NBR (importados do design system ui/theme.py) ──────
 
 
 def _open_caa(page):
-    from ui.dialogs import open_caa_info
-
     open_caa_info(page)
 
 
 def _open_cobrimento(page):
-    from ui.dialogs import open_cobrimento_info
-
     open_cobrimento_info(page)
 
 
 def _open_diametros(page):
-    from ui.dialogs import open_diametros_info
-
     open_diametros_info(page)
 
 
 def _open_fck(page):
-    from ui.dialogs import open_fck_info
-
     open_fck_info(page)
 
 
 def _open_aco(page):
-    from ui.dialogs import open_aco_info
-
     open_aco_info(page)
 
 
 def _open_gamma_f(page):
-    from ui.dialogs import open_gamma_f_info
-
     open_gamma_f_info(page)
 
 
 def _open_geometria(page):
-    from ui.dialogs import open_geometria_info
-
     open_geometria_info(page)
 
 
 def _open_viga_t(page):
-    from ui.dialogs import open_viga_t_info
-
     open_viga_t_info(page)
 
 
 def _open_b1(page):
-    from ui.dialogs import open_b1_info
-
     open_b1_info(page)

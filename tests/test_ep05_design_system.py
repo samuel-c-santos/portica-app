@@ -245,3 +245,34 @@ def test_ep05_8_sem_card_duplicado_no_modal_resultados():
     x_txt = card_col.controls[1].value
     assert badge_txt == "POSITIVO"
     assert x_txt == "x = 3,70–3,80 m"
+
+
+def test_ep05_7_padronizacao_componentes_e_zero_elevated_button():
+    """EP-05.7: Zero usos de ft.ElevatedButton em ui/, e componentes absorvidos em ui/theme.py."""
+    import os
+
+    from ui import theme
+
+    base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    ui_dir = os.path.join(base, "ui")
+    for root, _, files in os.walk(ui_dir):
+        for fname in files:
+            if fname.endswith(".py"):
+                path = os.path.join(root, fname)
+                with open(path, encoding="utf-8") as f:
+                    src = f.read()
+                assert "ElevatedButton" not in src, f"ElevatedButton encontrado em {path}"
+
+    # Componentes do design system e tabelas/dialogos absorvidos em ui.theme
+    for sym in (
+        "result_card",
+        "results_table",
+        "polarity_badge",
+        "alert_banner",
+        "collapsible_section",
+        "TABELA_CAA",
+        "TABELA_FCK",
+        "open_caa_info",
+        "build_info_dialog",
+    ):
+        assert hasattr(theme, sym), f"{sym} ausente em ui.theme"

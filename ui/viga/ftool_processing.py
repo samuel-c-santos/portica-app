@@ -21,16 +21,19 @@ from ui.theme import (
     Palette,
     Radius,
     Spacing,
-    border_all,
-    br_all,
     caption,
     numeric_text,
     outlined_button,
     pad_all,
     pad_sym,
+    polarity_badge,
     primary_button,
+    result_card,
+    results_table,
     section_header,
+    spacer,
     status_chip,
+    surface_card,
     themed_dialog,
     title_medium,
     title_small,
@@ -165,7 +168,7 @@ def processar_ftool(ctx):
             )
             for s in secoes
         ]
-        table = ft.DataTable(
+        table_container = results_table(
             columns=[
                 ft.DataColumn(ft.Text("x (m)"), numeric=True),
                 ft.DataColumn(ft.Text("Mk (kN·m)"), numeric=True),
@@ -174,11 +177,7 @@ def processar_ftool(ctx):
                 ft.DataColumn(ft.Text("Descrição")),
             ],
             rows=rows,
-            heading_row_color=Palette.SURFACE_VARIANT,
-            divider_thickness=1,
-        )
-        table_container = ft.Container(
-            content=ft.Column([table], scroll=ft.ScrollMode.AUTO), height=300
+            scroll_height=300,
         )
 
         def _build_resultados_controls(state, dados_viga, secoes, page, show_msg):
@@ -239,94 +238,78 @@ def processar_ftool(ctx):
                     if abs(item["x_fim"] - item["x"]) < 1e-6
                     else f"x = {fmt_num(item['x'], 2)}–{fmt_num(item['x_fim'], 2, unidade='m')}"
                 )
-                card = ft.Container(
+                card = result_card(
+                    controls=[
+                        ft.Row(
+                            [
+                                ft.Text(
+                                    f"{item['descricao']}",
+                                    size=11,
+                                    weight=ft.FontWeight.BOLD,
+                                    color=Palette.PRIMARY,
+                                    expand=True,
+                                ),
+                                polarity_badge(sinal_tipo),
+                            ],
+                            alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                        ),
+                        ft.Text(
+                            x_label,
+                            size=10,
+                            color=Palette.TEXT_SECONDARY,
+                        ),
+                        spacer(height=Spacing.XS),
+                        ft.Row(
+                            [
+                                ft.Text("Md:", size=10, color=Palette.TEXT_SECONDARY),
+                                numeric_text(
+                                    fmt_num(
+                                        r.momento_kNm * dados_viga.get("gamma_f", 1.4),
+                                        1,
+                                        unidade="kN·m",
+                                    ),
+                                    size=10,
+                                    weight=ft.FontWeight.BOLD,
+                                ),
+                            ],
+                            alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                        ),
+                        ft.Row(
+                            [
+                                ft.Text("As:", size=10, color=Palette.TEXT_SECONDARY),
+                                numeric_text(
+                                    fmt_num(r.as_req_cm2, 2, unidade="cm²"),
+                                    size=10,
+                                    weight=ft.FontWeight.BOLD,
+                                ),
+                            ],
+                            alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                        ),
+                        ft.Row(
+                            [
+                                ft.Text("Adotado:", size=10, color=Palette.TEXT_SECONDARY),
+                                numeric_text(
+                                    f"{r.qtd_barras}φ{fmt_diam(r.diametro_mm)} ({fmt_num(r.as_necessaria_cm2, 2, unidade='cm²')})",
+                                    size=10,
+                                ),
+                            ],
+                            alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                        ),
+                        ft.Row(
+                            [
+                                ft.Text("Status:", size=10, color=Palette.TEXT_SECONDARY),
+                                status_chip(
+                                    "OK" if passa_flex else "NÃO PASSA",
+                                    "ok" if passa_flex else "error",
+                                ),
+                            ],
+                            alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                        ),
+                    ],
                     width=220,
-                    padding=pad_all(Spacing.SM),
-                    bgcolor=Palette.SURFACE,
-                    border=border_all(1, Palette.OUTLINE_VARIANT),
-                    border_radius=br_all(Radius.SM),
-                    content=ft.Column(
-                        [
-                            ft.Row(
-                                [
-                                    ft.Text(
-                                        f"{item['descricao']}",
-                                        size=11,
-                                        weight=ft.FontWeight.BOLD,
-                                        color=Palette.PRIMARY,
-                                        expand=True,
-                                    ),
-                                    ft.Container(
-                                        content=ft.Text(
-                                            sinal_tipo,
-                                            size=9,
-                                            weight=ft.FontWeight.BOLD,
-                                            color=Palette.ON_PRIMARY,
-                                        ),
-                                        bgcolor=Palette.PRIMARY
-                                        if sinal_tipo == "POSITIVO"
-                                        else Palette.SECONDARY,
-                                        padding=pad_sym(horizontal=4, vertical=1),
-                                        border_radius=br_all(3),
-                                    ),
-                                ],
-                                alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
-                            ),
-                            ft.Text(
-                                x_label,
-                                size=10,
-                                color=Palette.TEXT_SECONDARY,
-                            ),
-                            ft.Container(height=Spacing.XS),
-                            ft.Row(
-                                [
-                                    ft.Text("Md:", size=10, color=Palette.TEXT_SECONDARY),
-                                    numeric_text(
-                                        fmt_num(
-                                            r.momento_kNm * dados_viga.get("gamma_f", 1.4),
-                                            1,
-                                            unidade="kN·m",
-                                        ),
-                                        size=10,
-                                        weight=ft.FontWeight.BOLD,
-                                    ),
-                                ],
-                                alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
-                            ),
-                            ft.Row(
-                                [
-                                    ft.Text("As:", size=10, color=Palette.TEXT_SECONDARY),
-                                    numeric_text(
-                                        fmt_num(r.as_req_cm2, 2, unidade="cm²"),
-                                        size=10,
-                                        weight=ft.FontWeight.BOLD,
-                                    ),
-                                ],
-                                alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
-                            ),
-                            ft.Row(
-                                [
-                                    ft.Text("Adotado:", size=10, color=Palette.TEXT_SECONDARY),
-                                    numeric_text(
-                                        f"{r.qtd_barras}φ{fmt_diam(r.diametro_mm)} ({fmt_num(r.as_necessaria_cm2, 2, unidade='cm²')})",
-                                        size=10,
-                                    ),
-                                ],
-                                alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
-                            ),
-                            ft.Row(
-                                [
-                                    ft.Text("Status:", size=10, color=Palette.TEXT_SECONDARY),
-                                    status_chip(
-                                        "OK" if passa_flex else "NÃO PASSA",
-                                        "ok" if passa_flex else "error",
-                                    ),
-                                ],
-                                alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
-                            ),
-                        ],
-                        spacing=3,
-                    ),
+                    padding=Spacing.SM,
+                    spacing=3,
+                    shadow=False,
                 )
                 flex_cards.controls.append(card)
 
@@ -383,15 +366,15 @@ def processar_ftool(ctx):
                     "Flexão (Dimensionamento por seção crítica)",
                     icon=ft.Icon(ft.Icons.SQUARE_OUTLINED, size=16, color=Palette.PRIMARY),
                 ),
-                ft.Container(height=Spacing.SM),
+                spacer(height=Spacing.SM),
                 flex_cards,
-                ft.Container(height=Spacing.LG),
+                spacer(height=Spacing.LG),
                 section_header(
                     "Cisalhamento",
                     icon=ft.Icon(ft.Icons.SWAP_VERT, size=16, color=Palette.PRIMARY),
                 ),
-                ft.Container(height=Spacing.SM),
-                ft.DataTable(
+                spacer(height=Spacing.SM),
+                results_table(
                     columns=[
                         ft.DataColumn(title_small("Seção")),
                         ft.DataColumn(title_small("Vsolic (kN)"), numeric=True),
@@ -401,13 +384,7 @@ def processar_ftool(ctx):
                         ft.DataColumn(title_small("Status")),
                     ],
                     rows=rows_cis,
-                    heading_row_color=Palette.SURFACE_VARIANT,
-                    heading_row_height=Spacing.XL + 8,
-                    data_row_min_height=Spacing.XL + 4,
-                    border=border_all(1, Palette.OUTLINE_VARIANT),
-                    border_radius=br_all(Radius.SM),
-                    vertical_lines=ft.BorderSide(1, Palette.OUTLINE_VARIANT),
-                    horizontal_lines=ft.BorderSide(1, Palette.OUTLINE_VARIANT),
+                    vertical_lines=True,
                 )
                 if rows_cis
                 else caption("Nenhum trecho calculado.", color=Palette.TEXT_DISABLED),
@@ -416,13 +393,13 @@ def processar_ftool(ctx):
             if detalhamento:
                 controls_resultados.extend(
                     [
-                        ft.Container(height=Spacing.LG),
+                        spacer(height=Spacing.LG),
                         section_header(
                             "Detalhamento de Estribos",
                             icon=ft.Icon(ft.Icons.SWAP_VERT, size=16, color=Palette.PRIMARY),
                         ),
-                        ft.Container(height=Spacing.SM),
-                        ft.DataTable(
+                        spacer(height=Spacing.SM),
+                        results_table(
                             columns=[
                                 ft.DataColumn(title_small("Trecho")),
                                 ft.DataColumn(title_small("φ"), numeric=True),
@@ -457,12 +434,8 @@ def processar_ftool(ctx):
                                 )
                                 for r in detalhamento
                             ],
-                            heading_row_color=Palette.SURFACE_VARIANT,
                             heading_row_height=Spacing.XL + 4,
                             data_row_min_height=Spacing.XL + 2,
-                            border=border_all(1, Palette.OUTLINE_VARIANT),
-                            border_radius=br_all(Radius.SM),
-                            horizontal_lines=ft.BorderSide(1, Palette.OUTLINE_VARIANT),
                         ),
                     ]
                 )
@@ -473,7 +446,7 @@ def processar_ftool(ctx):
                 # motivo em vez de quebrar o modal inteiro com KeyError.
                 controls_resultados.extend(
                     [
-                        ft.Container(height=Spacing.LG),
+                        spacer(height=Spacing.LG),
                         section_header(
                             "ELS — Flecha e Fissuração",
                             icon=ft.Icon(ft.Icons.STRAIGHTEN, size=16, color=Palette.PRIMARY),
@@ -484,13 +457,18 @@ def processar_ftool(ctx):
             elif resultado_els:
                 controls_resultados.extend(
                     [
-                        ft.Container(height=Spacing.LG),
+                        spacer(height=Spacing.LG),
                         section_header(
                             "ELS — Flecha e Fissuração",
                             icon=ft.Icon(ft.Icons.STRAIGHTEN, size=16, color=Palette.PRIMARY),
                         ),
-                        ft.Container(height=Spacing.SM),
-                        ft.Text("Flecha", size=12, weight=ft.FontWeight.BOLD),
+                        spacer(height=Spacing.SM),
+                        ft.Text(
+                            "Flecha",
+                            size=12,
+                            weight=ft.FontWeight.BOLD,
+                            color=Palette.TEXT_PRIMARY,
+                        ),
                         ft.Row(
                             [
                                 ft.Text("Total:", size=11, color=Palette.TEXT_SECONDARY),
@@ -532,7 +510,7 @@ def processar_ftool(ctx):
                 ):
                     controls_resultados.extend(
                         [
-                            ft.Container(height=Spacing.XS),
+                            spacer(height=Spacing.XS),
                             ft.Text(
                                 resultado_els["flecha"].get("dica", ""),
                                 size=9,
@@ -544,8 +522,13 @@ def processar_ftool(ctx):
 
                 controls_resultados.extend(
                     [
-                        ft.Container(height=Spacing.SM),
-                        ft.Text("Fissuração", size=12, weight=ft.FontWeight.BOLD),
+                        spacer(height=Spacing.SM),
+                        ft.Text(
+                            "Fissuração",
+                            size=12,
+                            weight=ft.FontWeight.BOLD,
+                            color=Palette.TEXT_PRIMARY,
+                        ),
                         ft.Row(
                             [
                                 ft.Text("w_k:", size=11, color=Palette.TEXT_SECONDARY),
@@ -580,7 +563,7 @@ def processar_ftool(ctx):
                                 status_chip("OK", "ok")
                                 if resultado_els["fissuracao"]["passa"]
                                 else status_chip("NÃO PASSA", "error"),
-                                ft.Container(width=Spacing.SM),
+                                spacer(width=Spacing.SM),
                                 status_chip("OK", "ok")
                                 if resultado_els["flecha"]["passa_total"]
                                 else status_chip("NÃO PASSA", "error"),
@@ -594,7 +577,7 @@ def processar_ftool(ctx):
                 ):
                     controls_resultados.extend(
                         [
-                            ft.Container(height=Spacing.XS),
+                            spacer(height=Spacing.XS),
                             ft.Text(
                                 resultado_els["fissuracao"].get("dica", ""),
                                 size=9,
@@ -652,19 +635,16 @@ def processar_ftool(ctx):
                     title=ft.Row(
                         [
                             ft.Icon(ft.Icons.CHECK_CIRCLE, color=Palette.PRIMARY),
-                            ft.Container(width=Spacing.SM),
+                            spacer(width=Spacing.SM),
                             title_medium(
                                 "Resultados do dimensionamento FTOOL", color=Palette.TEXT_PRIMARY
                             ),
                         ],
                         vertical_alignment=ft.CrossAxisAlignment.CENTER,
                     ),
-                    content=ft.Container(
-                        content=results_content,
-                        width=800,
-                        height=540,
-                        padding=pad_sym(horizontal=Spacing.MD, vertical=Spacing.SM),
-                    ),
+                    content=results_content,
+                    width=800,
+                    height=540,
                     actions=[outlined_button("Fechar", on_click=lambda ev: page.pop_dialog())],
                 )
             )
@@ -785,9 +765,9 @@ def processar_ftool(ctx):
 
             # Retornar controles do painel
             return [
-                ft.Container(height=Spacing.LG),
-                ft.Container(
-                    content=ft.Column(
+                spacer(height=Spacing.LG),
+                surface_card(
+                    ft.Column(
                         [
                             ft.Text(
                                 "Ajustes Manuais para ELS",
@@ -795,24 +775,39 @@ def processar_ftool(ctx):
                                 weight=ft.FontWeight.BOLD,
                                 color=Palette.PRIMARY,
                             ),
-                            ft.Container(height=Spacing.SM),
-                            ft.Row([chk_barras, spn_barras, ft.Text("barras", size=11)]),
+                            spacer(height=Spacing.SM),
+                            ft.Row(
+                                [
+                                    chk_barras,
+                                    spn_barras,
+                                    ft.Text("barras", size=11, color=Palette.TEXT_PRIMARY),
+                                ]
+                            ),
                             ft.Row([chk_phi, dd_phi]),
-                            ft.Row([chk_h, tf_h, ft.Text("cm", size=11)]),
-                            ft.Row([chk_fck, dd_fck, ft.Text("MPa", size=11)]),
-                            ft.Container(height=Spacing.SM),
-                            ft.ElevatedButton(
+                            ft.Row(
+                                [
+                                    chk_h,
+                                    tf_h,
+                                    ft.Text("cm", size=11, color=Palette.TEXT_PRIMARY),
+                                ]
+                            ),
+                            ft.Row(
+                                [
+                                    chk_fck,
+                                    dd_fck,
+                                    ft.Text("MPa", size=11, color=Palette.TEXT_PRIMARY),
+                                ]
+                            ),
+                            spacer(height=Spacing.SM),
+                            primary_button(
                                 "Recalcular com Ajustes",
                                 icon=ft.Icons.REFRESH,
                                 on_click=on_recalcular,
-                                bgcolor=Palette.PRIMARY,
-                                color=Palette.ON_PRIMARY,
                             ),
                         ]
                     ),
-                    padding=pad_all(Spacing.MD),
-                    border=border_all(1, Palette.PRIMARY),
-                    border_radius=br_all(Radius.SM),
+                    padding=Spacing.MD,
+                    radius=Radius.SM,
                     bgcolor=ft.Colors.with_opacity(0.05, Palette.PRIMARY),
                 ),
             ]

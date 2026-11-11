@@ -31,10 +31,13 @@ from ui.theme import (
     pad_all,
     pad_sym,
     primary_button,
+    results_table,
     section_header,
+    spacer,
     surface_card,
     themed_dialog,
     title_medium,
+    tonal_button,
 )
 
 logger = logging.getLogger(__name__)
@@ -308,50 +311,54 @@ def on_add_comb_click(ctx, e):
 
     add_dlg = themed_dialog(
         title=title_medium("Adicionar Combinação FTOOL", color=Palette.TEXT_PRIMARY),
-        content=ft.Container(
-            content=ft.Column(
-                controls=[
-                    name_tf,
-                    ft.Container(height=Spacing.XS),
-                    ft.Text(
-                        "Arquivo de Momento Fletor (x vs M):",
-                        size=12,
-                        weight=ft.FontWeight.BOLD,
-                        color=Palette.TEXT_PRIMARY,
-                    ),
-                    ft.Row(
-                        controls=[
-                            ft.ElevatedButton("Selecionar...", on_click=ctx.select_momento_click),
-                            ctx.lbl_momento,
-                        ],
-                        spacing=Spacing.MD,
-                    ),
-                    ft.Container(height=Spacing.XS),
-                    ft.Text(
-                        "Arquivo de Esforço Cortante (x vs V):",
-                        size=12,
-                        weight=ft.FontWeight.BOLD,
-                        color=Palette.TEXT_PRIMARY,
-                    ),
-                    ft.Row(
-                        controls=[
-                            ft.ElevatedButton("Selecionar...", on_click=ctx.select_cortante_click),
-                            ctx.lbl_cortante,
-                        ],
-                        spacing=Spacing.MD,
-                    ),
-                ],
-                spacing=Spacing.SM,
-                tight=True,
-            ),
-            width=420,
-            padding=pad_all(Spacing.MD),
+        content=ft.Column(
+            controls=[
+                name_tf,
+                spacer(height=Spacing.XS),
+                ft.Text(
+                    "Arquivo de Momento Fletor (x vs M):",
+                    size=12,
+                    weight=ft.FontWeight.BOLD,
+                    color=Palette.TEXT_PRIMARY,
+                ),
+                ft.Row(
+                    controls=[
+                        tonal_button(
+                            "Selecionar...",
+                            icon=ft.Icons.UPLOAD_FILE,
+                            on_click=ctx.select_momento_click,
+                        ),
+                        ctx.lbl_momento,
+                    ],
+                    spacing=Spacing.MD,
+                ),
+                spacer(height=Spacing.XS),
+                ft.Text(
+                    "Arquivo de Esforço Cortante (x vs V):",
+                    size=12,
+                    weight=ft.FontWeight.BOLD,
+                    color=Palette.TEXT_PRIMARY,
+                ),
+                ft.Row(
+                    controls=[
+                        tonal_button(
+                            "Selecionar...",
+                            icon=ft.Icons.UPLOAD_FILE,
+                            on_click=ctx.select_cortante_click,
+                        ),
+                        ctx.lbl_cortante,
+                    ],
+                    spacing=Spacing.MD,
+                ),
+            ],
+            spacing=Spacing.SM,
+            tight=True,
         ),
+        width=420,
+        content_padding=pad_all(Spacing.MD),
         actions=[
-            ft.TextButton("Cancelar", on_click=lambda ev: ctx.page.pop_dialog()),
-            ft.ElevatedButton(
-                "Salvar", on_click=save_comb, bgcolor=Palette.PRIMARY, color=Palette.ON_PRIMARY
-            ),
+            outlined_button("Cancelar", on_click=lambda ev: ctx.page.pop_dialog()),
+            primary_button("Salvar", icon=ft.Icons.CHECK, on_click=save_comb),
         ],
     )
     ctx.page.show_dialog(add_dlg)
@@ -396,7 +403,7 @@ def on_calcular_envelope_click(ctx, e):
                 )
             )
 
-        table = ft.DataTable(
+        table_container = results_table(
             columns=[
                 ft.DataColumn(ft.Text("x (m)"), numeric=True),
                 ft.DataColumn(ft.Text("Mk (kN·m)"), numeric=True),
@@ -405,13 +412,7 @@ def on_calcular_envelope_click(ctx, e):
                 ft.DataColumn(ft.Text("Origem")),
             ],
             rows=rows,
-            heading_row_color=Palette.SURFACE_VARIANT,
-            divider_thickness=1,
-        )
-
-        table_container = ft.Container(
-            content=ft.Column([table], scroll=ft.ScrollMode.AUTO),
-            height=300,
+            scroll_height=300,
         )
 
         def close_env_dlg(ev):
@@ -475,42 +476,39 @@ def on_calcular_envelope_click(ctx, e):
                     title=ft.Row(
                         controls=[
                             ft.Icon(ft.Icons.CHECK_CIRCLE, color=Palette.PRIMARY),
-                            ft.Container(width=Spacing.SM),
+                            spacer(width=Spacing.SM),
                             title_medium(
                                 "Dimensionamento Automático - Envelope", color=Palette.TEXT_PRIMARY
                             ),
                         ],
                         vertical_alignment=ft.CrossAxisAlignment.CENTER,
                     ),
-                    content=ft.Container(
-                        content=ft.Column(
-                            controls=[
-                                ft.Text(
-                                    "Dimensionamento concluído com base no envelope de combinações.",
-                                    size=14,
-                                    color=Palette.TEXT_SECONDARY,
+                    content=ft.Column(
+                        controls=[
+                            ft.Text(
+                                "Dimensionamento concluído com base no envelope de combinações.",
+                                size=14,
+                                color=Palette.TEXT_SECONDARY,
+                            ),
+                            spacer(height=Spacing.SM),
+                            ft.TextField(
+                                value=relatorio_text,
+                                multiline=True,
+                                read_only=True,
+                                text_size=12,
+                                color=Palette.TEXT_PRIMARY,
+                                text_style=ft.TextStyle(
+                                    font_family="Roboto Mono", color=Palette.TEXT_PRIMARY
                                 ),
-                                ft.Container(height=Spacing.SM),
-                                ft.TextField(
-                                    value=relatorio_text,
-                                    multiline=True,
-                                    read_only=True,
-                                    text_size=12,
-                                    color=Palette.TEXT_PRIMARY,
-                                    text_style=ft.TextStyle(
-                                        font_family="Roboto Mono", color=Palette.TEXT_PRIMARY
-                                    ),
-                                    expand=True,
-                                    bgcolor=Palette.SURFACE_VARIANT,
-                                    border_color=Palette.OUTLINE_VARIANT,
-                                ),
-                            ],
-                            expand=True,
-                        ),
-                        width=800,
-                        height=540,
-                        padding=pad_sym(horizontal=Spacing.MD, vertical=Spacing.SM),
+                                expand=True,
+                                bgcolor=Palette.SURFACE_VARIANT,
+                                border_color=Palette.OUTLINE_VARIANT,
+                            ),
+                        ],
+                        expand=True,
                     ),
+                    width=800,
+                    height=540,
                     actions=[
                         outlined_button(
                             "Fechar",
@@ -527,27 +525,24 @@ def on_calcular_envelope_click(ctx, e):
             title=ft.Row(
                 controls=[
                     ft.Icon(ft.Icons.AUTO_GRAPH, color=Palette.PRIMARY),
-                    ft.Container(width=Spacing.SM),
+                    spacer(width=Spacing.SM),
                     title_medium("Envelope - Seções Críticas", color=Palette.TEXT_PRIMARY),
                 ],
                 vertical_alignment=ft.CrossAxisAlignment.CENTER,
             ),
-            content=ft.Container(
-                content=ft.Column(
-                    controls=[
-                        ft.Text(
-                            f"Identificadas {len(secoes)} seções críticas a partir do envelope das combinações.",
-                            size=14,
-                            color=Palette.TEXT_SECONDARY,
-                        ),
-                        ft.Container(height=Spacing.SM),
-                        table_container,
-                    ],
-                    tight=True,
-                ),
-                width=750,
-                padding=pad_sym(horizontal=Spacing.MD, vertical=Spacing.SM),
+            content=ft.Column(
+                controls=[
+                    ft.Text(
+                        f"Identificadas {len(secoes)} seções críticas a partir do envelope das combinações.",
+                        size=14,
+                        color=Palette.TEXT_SECONDARY,
+                    ),
+                    spacer(height=Spacing.SM),
+                    table_container,
+                ],
+                tight=True,
             ),
+            width=750,
             actions=[
                 outlined_button("Cancelar", on_click=close_env_dlg),
                 primary_button(
