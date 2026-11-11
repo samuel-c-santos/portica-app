@@ -21,10 +21,10 @@ from ui.theme import (
     Palette,
     Radius,
     Spacing,
-    body_small,
     border_all,
     br_all,
     caption,
+    numeric_text,
     pad_all,
     pad_sym,
     primary_button,
@@ -152,9 +152,9 @@ def processar_ftool(ctx):
         rows = [
             ft.DataRow(
                 cells=[
-                    ft.DataCell(ft.Text(fmt_num(s.x, 2, unidade="m"))),
-                    ft.DataCell(ft.Text(fmt_num(s.momento, 2))),
-                    ft.DataCell(ft.Text(fmt_num(s.cortante, 2))),
+                    ft.DataCell(numeric_text(fmt_num(s.x, 2, unidade="m"), size=12)),
+                    ft.DataCell(numeric_text(fmt_num(s.momento, 2), size=12)),
+                    ft.DataCell(numeric_text(fmt_num(s.cortante, 2), size=12)),
                     ft.DataCell(ft.Text(s.tipo)),
                     ft.DataCell(
                         ft.Text(s.descricao[:25] + ".." if len(s.descricao) > 25 else s.descricao)
@@ -165,9 +165,9 @@ def processar_ftool(ctx):
         ]
         table = ft.DataTable(
             columns=[
-                ft.DataColumn(ft.Text("x (m)")),
-                ft.DataColumn(ft.Text("Mk (kN·m)")),
-                ft.DataColumn(ft.Text("Vk (kN)")),
+                ft.DataColumn(ft.Text("x (m)"), numeric=True),
+                ft.DataColumn(ft.Text("Mk (kN·m)"), numeric=True),
+                ft.DataColumn(ft.Text("Vk (kN)"), numeric=True),
                 ft.DataColumn(ft.Text("Tipo")),
                 ft.DataColumn(ft.Text("Descrição")),
             ],
@@ -232,7 +232,7 @@ def processar_ftool(ctx):
                             ft.Row(
                                 [
                                     ft.Text("Md:", size=10, color=Palette.TEXT_SECONDARY),
-                                    ft.Text(
+                                    numeric_text(
                                         fmt_num(
                                             r.momento_kNm * dados_viga.get("gamma_f", 1.4),
                                             1,
@@ -247,7 +247,7 @@ def processar_ftool(ctx):
                             ft.Row(
                                 [
                                     ft.Text("As:", size=10, color=Palette.TEXT_SECONDARY),
-                                    ft.Text(
+                                    numeric_text(
                                         fmt_num(r.as_req_cm2, 2, unidade="cm²"),
                                         size=10,
                                         weight=ft.FontWeight.BOLD,
@@ -258,7 +258,7 @@ def processar_ftool(ctx):
                             ft.Row(
                                 [
                                     ft.Text("Adotado:", size=10, color=Palette.TEXT_SECONDARY),
-                                    ft.Text(
+                                    numeric_text(
                                         f"{r.qtd_barras}φ{fmt_diam(r.diametro_mm)} ({fmt_num(r.as_necessaria_cm2, 2, unidade='cm²')})",
                                         size=10,
                                     ),
@@ -293,24 +293,30 @@ def processar_ftool(ctx):
                         cells=[
                             ft.DataCell(title_small(label, color=Palette.TEXT_PRIMARY)),
                             ft.DataCell(
-                                body_small(
+                                numeric_text(
                                     fmt_num(r.vsd_verdadeiro_kn, 1, unidade="kN"),
+                                    size=12,
                                     color=Palette.TEXT_PRIMARY,
                                 )
                             ),
                             ft.DataCell(
-                                body_small(
-                                    fmt_num(r.vrd2_kn, 1, unidade="kN"), color=Palette.TEXT_PRIMARY
+                                numeric_text(
+                                    fmt_num(r.vrd2_kn, 1, unidade="kN"),
+                                    size=12,
+                                    color=Palette.TEXT_PRIMARY,
                                 )
                             ),
                             ft.DataCell(
-                                body_small(
-                                    fmt_num(r.vsw_kn, 1, unidade="kN"), color=Palette.TEXT_PRIMARY
+                                numeric_text(
+                                    fmt_num(r.vsw_kn, 1, unidade="kN"),
+                                    size=12,
+                                    color=Palette.TEXT_PRIMARY,
                                 )
                             ),
                             ft.DataCell(
-                                body_small(
+                                numeric_text(
                                     fmt_num(r.dist_estribos_cm, 1, unidade="cm"),
+                                    size=12,
                                     color=Palette.TEXT_PRIMARY,
                                 )
                             ),
@@ -339,10 +345,10 @@ def processar_ftool(ctx):
                 ft.DataTable(
                     columns=[
                         ft.DataColumn(title_small("Seção")),
-                        ft.DataColumn(title_small("Vsolic (kN)")),
-                        ft.DataColumn(title_small("Vrd2 (kN)")),
-                        ft.DataColumn(title_small("Vsw (kN)")),
-                        ft.DataColumn(title_small("Espaçamento")),
+                        ft.DataColumn(title_small("Vsolic (kN)"), numeric=True),
+                        ft.DataColumn(title_small("Vrd2 (kN)"), numeric=True),
+                        ft.DataColumn(title_small("Vsw (kN)"), numeric=True),
+                        ft.DataColumn(title_small("Espaçamento"), numeric=True),
                         ft.DataColumn(title_small("Status")),
                     ],
                     rows=rows_cis,
@@ -369,27 +375,34 @@ def processar_ftool(ctx):
                         ft.DataTable(
                             columns=[
                                 ft.DataColumn(title_small("Trecho")),
-                                ft.DataColumn(title_small("φ")),
-                                ft.DataColumn(title_small("Esp.")),
-                                ft.DataColumn(title_small("Asw/s")),
+                                ft.DataColumn(title_small("φ"), numeric=True),
+                                ft.DataColumn(title_small("Esp."), numeric=True),
+                                ft.DataColumn(title_small("Asw/s"), numeric=True),
                             ],
                             rows=[
                                 ft.DataRow(
                                     cells=[
                                         ft.DataCell(
-                                            body_small(
-                                                f"{fmt_num(r['x_inicio'], 1)}–{fmt_num(r['x_fim'], 1, unidade='m')}"
+                                            numeric_text(
+                                                f"{fmt_num(r['x_inicio'], 1)}–{fmt_num(r['x_fim'], 1, unidade='m')}",
+                                                size=12,
+                                                text_align=ft.TextAlign.LEFT,
                                             )
                                         ),
                                         ft.DataCell(
-                                            body_small(fmt_diam(r["phi_mm"], unidade="mm"))
-                                        ),
-                                        ft.DataCell(
-                                            body_small(
-                                                fmt_num(r["espacamento_cm"], 0, unidade="cm")
+                                            numeric_text(
+                                                fmt_diam(r["phi_mm"], unidade="mm"), size=12
                                             )
                                         ),
-                                        ft.DataCell(body_small(fmt_num(r["asw_s_cm2m"], 2))),
+                                        ft.DataCell(
+                                            numeric_text(
+                                                fmt_num(r["espacamento_cm"], 0, unidade="cm"),
+                                                size=12,
+                                            )
+                                        ),
+                                        ft.DataCell(
+                                            numeric_text(fmt_num(r["asw_s_cm2m"], 2), size=12)
+                                        ),
                                     ]
                                 )
                                 for r in detalhamento
@@ -430,7 +443,7 @@ def processar_ftool(ctx):
                         ft.Row(
                             [
                                 ft.Text("Total:", size=11, color=Palette.TEXT_SECONDARY),
-                                ft.Text(
+                                numeric_text(
                                     fmt_num(
                                         resultado_els["flecha"]["flecha_total_cm"],
                                         2,
@@ -445,7 +458,7 @@ def processar_ftool(ctx):
                         ft.Row(
                             [
                                 ft.Text("Limite L/250:", size=11, color=Palette.TEXT_SECONDARY),
-                                ft.Text(
+                                numeric_text(
                                     fmt_num(
                                         resultado_els["flecha"]["limite_total_cm"],
                                         2,
@@ -485,7 +498,7 @@ def processar_ftool(ctx):
                         ft.Row(
                             [
                                 ft.Text("w_k:", size=11, color=Palette.TEXT_SECONDARY),
-                                ft.Text(
+                                numeric_text(
                                     fmt_num(resultado_els["fissuracao"]["wk_mm"], 2, unidade="mm"),
                                     size=11,
                                     weight=ft.FontWeight.BOLD,
@@ -496,7 +509,7 @@ def processar_ftool(ctx):
                         ft.Row(
                             [
                                 ft.Text("w_lim:", size=11, color=Palette.TEXT_SECONDARY),
-                                ft.Text(
+                                numeric_text(
                                     fmt_num(
                                         resultado_els["fissuracao"]["wk_limite_mm"],
                                         1,

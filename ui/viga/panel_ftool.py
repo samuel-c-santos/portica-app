@@ -26,6 +26,7 @@ from ui.theme import (
     body_small,
     br_all,
     caption,
+    numeric_text,
     pad_all,
     pad_sym,
     primary_button,
@@ -384,9 +385,9 @@ def on_calcular_envelope_click(ctx, e):
             rows.append(
                 ft.DataRow(
                     cells=[
-                        ft.DataCell(ft.Text(fmt_num(sec.x, 2, unidade="m"))),
-                        ft.DataCell(ft.Text(fmt_num(sec.momento, 2))),
-                        ft.DataCell(ft.Text(fmt_num(sec.cortante, 2))),
+                        ft.DataCell(numeric_text(fmt_num(sec.x, 2, unidade="m"), size=12)),
+                        ft.DataCell(numeric_text(fmt_num(sec.momento, 2), size=12)),
+                        ft.DataCell(numeric_text(fmt_num(sec.cortante, 2), size=12)),
                         ft.DataCell(ft.Text(sec.tipo)),
                         ft.DataCell(ft.Text(sec.origem)),
                     ]
@@ -395,9 +396,9 @@ def on_calcular_envelope_click(ctx, e):
 
         table = ft.DataTable(
             columns=[
-                ft.DataColumn(ft.Text("x (m)")),
-                ft.DataColumn(ft.Text("Mk (kN·m)")),
-                ft.DataColumn(ft.Text("Vk (kN)")),
+                ft.DataColumn(ft.Text("x (m)"), numeric=True),
+                ft.DataColumn(ft.Text("Mk (kN·m)"), numeric=True),
+                ft.DataColumn(ft.Text("Vk (kN)"), numeric=True),
                 ft.DataColumn(ft.Text("Tipo")),
                 ft.DataColumn(ft.Text("Origem")),
             ],

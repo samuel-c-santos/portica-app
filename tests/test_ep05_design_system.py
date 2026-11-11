@@ -102,3 +102,42 @@ def test_ep05_2_formatacao_pt_br_unica():
     t = numeric_text(10.51, casas=2, unidade="cm²")
     assert t.value == "10,51 cm²"
     assert t.font_family == "Roboto Mono"
+
+
+def test_ep05_3_fonte_tabular_em_campos_e_tabelas():
+    """EP-05.3: Campos numericos e colunas de tabelas usam Roboto Mono tabular e alinhamento a direita."""
+    import flet as ft
+
+    from core.calculos import calcular_cisalhamento_viga_comum, calcular_flexao_viga_comum
+    from ui.ftool.secoes_criticas import SecaoCritica
+
+    page = _FakePage()
+    ctx = montar_contexto(page, "comum", lambda: None, None, None, None, None, None)
+    ctx.state["resultados_flex"] = calcular_flexao_viga_comum(50, 20, 2, 25, 5, 12.5, 50, [100.0])
+    ctx.state["resultados_cis"] = calcular_cisalhamento_viga_comum(
+        50, 20, 25, 5, 12.5, 60, 50, 2, [80.0]
+    )
+    ctx.open_resultados_modal()
+    dlg = page.dialogs[-1]
+    results_col = dlg.content.content
+    cis_table = results_col.controls[1].controls[3]
+    # Colunas numericas marcadas com numeric=True
+    assert cis_table.columns[1].numeric is True
+    assert cis_table.columns[2].numeric is True
+    assert cis_table.columns[3].numeric is True
+    assert cis_table.columns[4].numeric is True
+    # Celulas numericas usam Roboto Mono e alinhamento a direita
+    cell_ctrl = cis_table.rows[0].cells[1].content
+    assert cell_ctrl.font_family == "Roboto Mono"
+    assert cell_ctrl.text_align == ft.TextAlign.RIGHT
+
+    # Viewer FTOOL tambem usa numeric_text
+    ctx.state["ftool_momentos"] = [(0.0, 0.0), (2.0, 120.5)]
+    ctx.state["ftool_cortantes"] = [(0.0, 80.0), (2.0, -80.0)]
+    ctx.state["ftool_secoes_criticas"] = [
+        SecaoCritica(x=2.0, momento=120.5, cortante=0.0, tipo="M_MAX_POS", descricao="Meio do vão")
+    ]
+    ctx._atualizar_viewer()
+    viewer_table = ctx.viewer_flexao.controls[-1]
+    assert viewer_table.columns[0].numeric is True
+    assert viewer_table.rows[0].cells[0].content.font_family == "Roboto Mono"

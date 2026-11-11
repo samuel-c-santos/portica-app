@@ -17,9 +17,9 @@ from ui.theme import (
     Palette,
     Radius,
     Spacing,
-    body_small,
     br_all,
     caption,
+    numeric_text,
     pad_all,
     pad_only,
     pad_sym,
@@ -229,14 +229,14 @@ def open_resultados_modal(ctx):
                         ft.Row(
                             [
                                 ft.Text("KC:", size=10, color=Palette.TEXT_SECONDARY),
-                                ft.Text(fmt_num(r.kc, 2), size=10, weight=ft.FontWeight.BOLD),
+                                numeric_text(fmt_num(r.kc, 2), size=10, weight=ft.FontWeight.BOLD),
                             ],
                             alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                         ),
                         ft.Row(
                             [
                                 ft.Text("Bx:", size=10, color=Palette.TEXT_SECONDARY),
-                                ft.Text(fmt_num(r.bx, 3), size=10, weight=ft.FontWeight.BOLD),
+                                numeric_text(fmt_num(r.bx, 3), size=10, weight=ft.FontWeight.BOLD),
                             ],
                             alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                         ),
@@ -255,14 +255,14 @@ def open_resultados_modal(ctx):
                         ft.Row(
                             [
                                 ft.Text("KS:", size=10, color=Palette.TEXT_SECONDARY),
-                                ft.Text(fmt_num(r.ks, 3), size=10, weight=ft.FontWeight.BOLD),
+                                numeric_text(fmt_num(r.ks, 3), size=10, weight=ft.FontWeight.BOLD),
                             ],
                             alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                         ),
                         ft.Row(
                             [
                                 ft.Text("As:", size=10, color=Palette.TEXT_SECONDARY),
-                                ft.Text(
+                                numeric_text(
                                     fmt_num(r.as_req_cm2, 2), size=10, weight=ft.FontWeight.BOLD
                                 ),
                             ],
@@ -271,7 +271,7 @@ def open_resultados_modal(ctx):
                         ft.Row(
                             [
                                 ft.Text("Asmin:", size=10, color=Palette.TEXT_SECONDARY),
-                                ft.Text(
+                                numeric_text(
                                     fmt_num(r.asmin_cm2, 2), size=10, weight=ft.FontWeight.BOLD
                                 ),
                             ],
@@ -280,7 +280,7 @@ def open_resultados_modal(ctx):
                         ft.Row(
                             [
                                 ft.Text("AsUSADO:", size=10, color=Palette.TEXT_SECONDARY),
-                                ft.Text(
+                                numeric_text(
                                     fmt_num(r.as_necessaria_cm2, 2),
                                     size=10,
                                     weight=ft.FontWeight.BOLD,
@@ -495,20 +495,31 @@ def open_resultados_modal(ctx):
                 cells=[
                     ft.DataCell(title_small(f"V{i + 1}", color=Palette.TEXT_PRIMARY)),
                     ft.DataCell(
-                        body_small(
+                        numeric_text(
                             fmt_num(r.vsd_verdadeiro_kn, 1, unidade="kN"),
+                            size=12,
                             color=Palette.TEXT_PRIMARY,
                         )
                     ),
                     ft.DataCell(
-                        body_small(fmt_num(r.vrd2_kn, 1, unidade="kN"), color=Palette.TEXT_PRIMARY)
+                        numeric_text(
+                            fmt_num(r.vrd2_kn, 1, unidade="kN"),
+                            size=12,
+                            color=Palette.TEXT_PRIMARY,
+                        )
                     ),
                     ft.DataCell(
-                        body_small(fmt_num(r.vsw_kn, 1, unidade="kN"), color=Palette.TEXT_PRIMARY)
+                        numeric_text(
+                            fmt_num(r.vsw_kn, 1, unidade="kN"),
+                            size=12,
+                            color=Palette.TEXT_PRIMARY,
+                        )
                     ),
                     ft.DataCell(
-                        body_small(
-                            fmt_num(r.dist_estribos_cm, 1, unidade="cm"), color=Palette.TEXT_PRIMARY
+                        numeric_text(
+                            fmt_num(r.dist_estribos_cm, 1, unidade="cm"),
+                            size=12,
+                            color=Palette.TEXT_PRIMARY,
                         )
                     ),
                     ft.DataCell(
@@ -528,10 +539,10 @@ def open_resultados_modal(ctx):
             ft.DataTable(
                 columns=[
                     ft.DataColumn(title_small("Trecho")),
-                    ft.DataColumn(title_small("Vsolic (kN)")),
-                    ft.DataColumn(title_small("Vrd2 (kN)")),
-                    ft.DataColumn(title_small("Vsw (kN)")),
-                    ft.DataColumn(title_small("Espacamento")),
+                    ft.DataColumn(title_small("Vsolic (kN)"), numeric=True),
+                    ft.DataColumn(title_small("Vrd2 (kN)"), numeric=True),
+                    ft.DataColumn(title_small("Vsw (kN)"), numeric=True),
+                    ft.DataColumn(title_small("Espaçamento"), numeric=True),
                     ft.DataColumn(title_small("Status")),
                 ],
                 rows=rows_cis,
@@ -648,24 +659,23 @@ def _atualizar_viewer(ctx):
                 ft.Row(
                     [
                         ft.Text("Vão total:", size=12, color=Palette.TEXT_SECONDARY),
-                        ft.Text(fmt_num(L, 2, unidade="m"), size=12, weight=ft.FontWeight.W_500),
+                        numeric_text(fmt_num(L, 2, unidade="m"), size=12),
                     ],
                     alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                 ),
                 ft.Row(
                     [
                         ft.Text("Pontos de momento:", size=12, color=Palette.TEXT_SECONDARY),
-                        ft.Text(f"{n_mom}", size=12, weight=ft.FontWeight.W_500),
+                        numeric_text(f"{n_mom}", size=12),
                     ],
                     alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                 ),
                 ft.Row(
                     [
                         ft.Text("M máx:", size=12, color=Palette.TEXT_SECONDARY),
-                        ft.Text(
+                        numeric_text(
                             fmt_num(m_max, 1, sinal=True, unidade="kN·m"),
                             size=12,
-                            weight=ft.FontWeight.W_500,
                             color=Palette.PRIMARY,
                         ),
                     ],
@@ -674,10 +684,9 @@ def _atualizar_viewer(ctx):
                 ft.Row(
                     [
                         ft.Text("M mín:", size=12, color=Palette.TEXT_SECONDARY),
-                        ft.Text(
+                        numeric_text(
                             fmt_num(m_min, 1, sinal=True, unidade="kN·m"),
                             size=12,
-                            weight=ft.FontWeight.W_500,
                             color=Palette.SECONDARY,
                         ),
                     ],
@@ -686,17 +695,16 @@ def _atualizar_viewer(ctx):
                 ft.Row(
                     [
                         ft.Text("Pontos de cortante:", size=12, color=Palette.TEXT_SECONDARY),
-                        ft.Text(f"{n_cort}", size=12, weight=ft.FontWeight.W_500),
+                        numeric_text(f"{n_cort}", size=12),
                     ],
                     alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                 ),
                 ft.Row(
                     [
                         ft.Text("V máx:", size=12, color=Palette.TEXT_SECONDARY),
-                        ft.Text(
+                        numeric_text(
                             fmt_num(v_max, 1, sinal=True, unidade="kN"),
                             size=12,
-                            weight=ft.FontWeight.W_500,
                             color=Palette.PRIMARY,
                         ),
                     ],
@@ -705,10 +713,9 @@ def _atualizar_viewer(ctx):
                 ft.Row(
                     [
                         ft.Text("V mín:", size=12, color=Palette.TEXT_SECONDARY),
-                        ft.Text(
+                        numeric_text(
                             fmt_num(v_min, 1, sinal=True, unidade="kN"),
                             size=12,
-                            weight=ft.FontWeight.W_500,
                             color=Palette.SECONDARY,
                         ),
                     ],
@@ -724,9 +731,9 @@ def _atualizar_viewer(ctx):
         rows = [
             ft.DataRow(
                 cells=[
-                    ft.DataCell(ft.Text(fmt_num(s.x, 2), size=11)),
-                    ft.DataCell(ft.Text(fmt_num(s.momento, 1), size=11)),
-                    ft.DataCell(ft.Text(fmt_num(s.cortante, 1), size=11)),
+                    ft.DataCell(numeric_text(fmt_num(s.x, 2), size=11)),
+                    ft.DataCell(numeric_text(fmt_num(s.momento, 1), size=11)),
+                    ft.DataCell(numeric_text(fmt_num(s.cortante, 1), size=11)),
                     ft.DataCell(status_chip(s.tipo, "info")),
                     ft.DataCell(
                         ft.Container(
@@ -744,9 +751,9 @@ def _atualizar_viewer(ctx):
         ]
         tabela = ft.DataTable(
             columns=[
-                ft.DataColumn(ft.Text("x (m)", size=11)),
-                ft.DataColumn(ft.Text("Mk", size=11)),
-                ft.DataColumn(ft.Text("Vk", size=11)),
+                ft.DataColumn(ft.Text("x (m)", size=11), numeric=True),
+                ft.DataColumn(ft.Text("Mk", size=11), numeric=True),
+                ft.DataColumn(ft.Text("Vk", size=11), numeric=True),
                 ft.DataColumn(ft.Text("Tipo", size=11)),
                 ft.DataColumn(ft.Text("Descrição", size=11)),
             ],
