@@ -25,10 +25,9 @@
   <meta name="twitter:description" content="Equações e critérios da ABNT NBR 6118:2023 implementados no Pórtica App.">
   <meta name="twitter:image" content="https://samuel-c-santos.github.io/portica-app/img/ilustracao-viga-t-escura.png">
 
-  <link rel="stylesheet" href="vendor/aipim/aipim.css">
-  <link rel="stylesheet" href="vendor/aipim/aipim-components.css">
-  <link rel="stylesheet" href="theme.css">
-  <link rel="stylesheet" href="base.css">
+  <link rel="preload" href="vendor/fonts/karla.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="vendor/fonts/antonio.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="bundle.css">
   <script src="theme.js"></script>
 </head>
 <body id="top">
@@ -174,9 +173,9 @@
             <h3>Quando a linha neutra cai na alma</h3>
             <p style="margin-top: var(--aipim-space-8);">O momento é decomposto em duas parcelas: a resistida pelas abas (M<sub>d1</sub>) e a resistida pela alma (M<sub>d2</sub>). A armadura total é <code>As = As1 + As2</code>, com a equação do 2º grau resolvida com <code>bw</code> para a alma. Para momento negativo, o cálculo é idêntico ao da viga retangular com largura <code>bw</code>.</p>
           </div>
-          <figure class="fig">
+          <figure class="fig fig--technical">
             <div class="fig-media">
-              <img src="img/viga_t_secao.png" alt="Corte transversal cotado indicando a largura da mesa colaborante b, a espessura hf, a altura útil d e a largura da alma tw" class="invert-dark" loading="lazy" width="2170" height="1663">
+              <img src="img/viga_t_secao.webp" alt="Corte transversal cotado indicando a largura da mesa colaborante b, a espessura hf, a altura útil d e a largura da alma tw" class="invert-dark" loading="lazy" width="1200" height="920">
             </div>
             <figcaption>Seção T: mesa colaborante e alma.</figcaption>
           </figure>

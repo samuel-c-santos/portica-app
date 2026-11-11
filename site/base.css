@@ -11,14 +11,14 @@
   font-style: normal;
   font-weight: 100 700;
   font-display: swap;
-  src: url("vendor/fonts/antonio.ttf") format("truetype");
+  src: url("vendor/fonts/antonio.woff2") format("woff2");
 }
 @font-face {
   font-family: "Karla";
   font-style: normal;
   font-weight: 200 800;
   font-display: swap;
-  src: url("vendor/fonts/karla.ttf") format("truetype");
+  src: url("vendor/fonts/karla.woff2") format("woff2");
 }
 
 /* ── Base ──────────────────────────────────────────────────────────────── */
@@ -172,6 +172,11 @@ figure.fig .fig-media img {
   max-inline-size: 100%;
   max-block-size: 100%;
   object-fit: contain;
+}
+figure.fig--technical .fig-media {
+  block-size: auto;
+  min-block-size: 320px;
+  max-block-size: 520px;
 }
 figcaption { font-size: var(--aipim-text-body-sm-size); color: var(--aipim-text-muted); }
 

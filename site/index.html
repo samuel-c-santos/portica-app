@@ -48,13 +48,11 @@
   }
   </script>
 
-  <!-- Aipim (design system) — vendored, sem CDN. -->
-  <link rel="stylesheet" href="vendor/aipim/aipim.css">
-  <link rel="stylesheet" href="vendor/aipim/aipim-components.css">
-  <!-- Tema do Pórtica (sobrescreve só os tokens de cor primária/action). -->
-  <link rel="stylesheet" href="theme.css">
-  <!-- Layout e fontes compartilhados (local). -->
-  <link rel="stylesheet" href="base.css">
+  <!-- Fontes locais WOFF2 (preload sem CDN). -->
+  <link rel="preload" href="vendor/fonts/karla.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="vendor/fonts/antonio.woff2" as="font" type="font/woff2" crossorigin>
+  <!-- Bundle CSS único (Aipim DS + tokens Material 3 + layout local). -->
+  <link rel="stylesheet" href="bundle.css">
   <!-- Alternância claro/escuro + imagens temáticas (local). -->
   <script src="theme.js"></script>
 </head>
@@ -108,7 +106,7 @@
         </ul>
       </div>
       <div>
-        <img class="hero__logo" src="img/logo.png" alt="Logotipo do Pórtica App" width="539" height="694"
+        <img class="hero__logo" src="data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=" alt="Logotipo do Pórtica App" width="539" height="694"
              data-theme-img data-theme-img-light="img/logo.png" data-theme-img-dark="img/logo_dark.png">
       </div>
     </div>
@@ -308,14 +306,14 @@
         <div class="figure-grid">
           <figure class="fig">
             <div class="fig-media">
-              <img src="img/ilustracao-viga-rec.png" alt="Ilustração da seção retangular dimensionada pelo Pórtica App" loading="lazy" width="779" height="986"
+              <img src="data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=" alt="Ilustração da seção retangular dimensionada pelo Pórtica App" loading="lazy" width="779" height="986"
                    data-theme-img data-theme-img-light="img/ilustracao-viga-rec.png" data-theme-img-dark="img/ilustracao-viga-rec-escura.png">
             </div>
             <figcaption>Seção retangular: flexão, estribos e detalhamento.</figcaption>
           </figure>
           <figure class="fig">
             <div class="fig-media">
-              <img src="img/ilustracao-viga-t.png" alt="Ilustração da seção T (mesa colaborante) dimensionada pelo Pórtica App" loading="lazy" width="905" height="995"
+              <img src="data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=" alt="Ilustração da seção T (mesa colaborante) dimensionada pelo Pórtica App" loading="lazy" width="905" height="995"
                    data-theme-img data-theme-img-light="img/ilustracao-viga-t.png" data-theme-img-dark="img/ilustracao-viga-t-escura.png">
             </div>
             <figcaption>Seção T (mesa colaborante): flexão com contribuição da mesa.</figcaption>
@@ -323,32 +321,36 @@
         </div>
         <div class="figure-grid">
           <figure class="fig">
-            <div class="fig-media"><img src="img/01-tela-inicial.png" alt="Tela inicial com os dois tipos de seção (retangular e T)" loading="lazy" width="1920" height="1140"></div>
+            <div class="fig-media"><img src="img/01-tela-inicial.png" alt="Tela inicial com os dois tipos de seção (retangular e T)" loading="lazy" width="960" height="570"></div>
             <figcaption>Tela inicial: escolha da seção.</figcaption>
           </figure>
           <figure class="fig">
-            <div class="fig-media"><img src="img/02-entrada-manual.png" alt="Tela da viga com entrada manual de trechos de flexão e cisalhamento" loading="lazy" width="1920" height="1140"></div>
+            <div class="fig-media"><img src="img/02-entrada-manual.png" alt="Tela da viga com entrada manual de trechos de flexão e cisalhamento" loading="lazy" width="960" height="570"></div>
             <figcaption>Entrada manual de trechos.</figcaption>
           </figure>
           <figure class="fig">
-            <div class="fig-media"><img src="img/03-importacao-ftool.png" alt="Painel de importação do FTOOL com os arquivos de esforços carregados" loading="lazy" width="1920" height="1140"></div>
+            <div class="fig-media"><img src="img/03-importacao-ftool.png" alt="Painel de importação do FTOOL com os arquivos de esforços carregados" loading="lazy" width="960" height="570"></div>
             <figcaption>Importação de esforços do FTOOL.</figcaption>
           </figure>
           <figure class="fig">
-            <div class="fig-media"><img src="img/04-secoes.png" alt="Seções dimensionadas" loading="lazy" width="1920" height="1140"></div>
+            <div class="fig-media"><img src="img/04-secoes.png" alt="Seções dimensionadas" loading="lazy" width="960" height="570"></div>
             <figcaption>Seções dimensionadas.</figcaption>
           </figure>
           <figure class="fig">
-            <div class="fig-media"><img src="img/05-resultados-flexao.png" alt="Resultados da flexão: armadura adotada, bitolas e verificações" loading="lazy" width="1920" height="1140"></div>
+            <div class="fig-media"><img src="img/05-resultados-flexao.png" alt="Resultados da flexão: armadura adotada, bitolas e verificações" loading="lazy" width="960" height="570"></div>
             <figcaption>Resultados da flexão.</figcaption>
           </figure>
           <figure class="fig">
-            <div class="fig-media"><img src="img/06-relatorio-pdf.png" alt="Relatório PDF gerado (capa, tabelas e esquema da seção)" loading="lazy" width="1920" height="1035"></div>
+            <div class="fig-media"><img src="img/06-relatorio-pdf.png" alt="Relatório PDF gerado (capa, tabelas e esquema da seção)" loading="lazy" width="960" height="518"></div>
             <figcaption>Relatório PDF.</figcaption>
           </figure>
           <figure class="fig">
-            <div class="fig-media"><img src="img/07-desenho_dxf.png" alt="Desenho DXF da seção exportada" loading="lazy" width="1920" height="1140"></div>
+            <div class="fig-media"><img src="img/07-desenho_dxf.png" alt="Desenho DXF da seção exportada" loading="lazy" width="960" height="570"></div>
             <figcaption>Desenho DXF da seção.</figcaption>
+          </figure>
+          <figure class="fig fig--technical">
+            <div class="fig-media"><img src="img/viga_t_secao.webp" alt="Corte transversal cotado indicando a largura da mesa colaborante b, a espessura hf, a altura útil d e a largura da alma tw" class="invert-dark" loading="lazy" width="1200" height="920"></div>
+            <figcaption>Nomenclatura geométrica da seção T colaborante.</figcaption>
           </figure>
         </div>
       </div>

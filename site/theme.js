@@ -26,7 +26,9 @@
       var src = theme === "dark"
         ? imgs[i].getAttribute("data-theme-img-dark")
         : imgs[i].getAttribute("data-theme-img-light");
-      if (src) imgs[i].setAttribute("src", src);
+      if (src && imgs[i].getAttribute("src") !== src) {
+        imgs[i].setAttribute("src", src);
+      }
     }
   }
 
