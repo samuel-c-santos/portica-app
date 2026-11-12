@@ -1,0 +1,184 @@
+/* Pórtica App — tema Material 3 da página pública (EP-06.6).
+ *
+ * Porta a identidade visual do aplicativo desktop (`ui/theme.py` — paleta
+ * Material 3 clara e escura, tipografia Roboto, raios 6/10/16/24 px e
+ * dimensões de botão) sobrescrevendo exclusivamente tokens semânticos e de
+ * escala `--aipim-*`. O CSS vendored do Aipim não é editado.
+ *
+ * Regras respeitadas:
+ *   - apenas tokens `--aipim-*` (nenhum seletor de componente, nenhum `!important`);
+ *   - todos os pares texto/fundo atendem WCAG 2.1 AA (≥ 4,5:1 para texto normal,
+ *     ≥ 3:1 para componentes e ícones) em claro e escuro.
+ *
+ * Carregar DEPOIS de `vendor/aipim/aipim.css`.
+ */
+
+:root {
+  /* Superfícies e contornos (Material 3 Light — ui/theme.py LIGHT_COLORS) */
+  --aipim-bg-canvas: #f5f7fa;
+  --aipim-bg-surface: #ffffff;
+  --aipim-bg-sunken: #eceff1;
+  --aipim-bg-scrim: #0f1419;
+  --aipim-border-subtle: #cfd8dc;
+  --aipim-border-strong: #5f6368;
+
+  /* Texto (Material 3 Light) */
+  --aipim-text-primary: #212121;
+  --aipim-text-secondary: #5f6368;
+  --aipim-text-muted: #5f6368;
+  --aipim-text-inverse: #ffffff;
+
+  /* Ações primária (azul Pórtica) e secundária (roxo Pórtica) */
+  --aipim-action-primary-bg: #1565c0;
+  --aipim-action-primary-hover: #0d47a1;
+  --aipim-action-primary-text: #ffffff;
+  --aipim-action-secondary-bg: #6a1b9a;
+  --aipim-action-secondary-hover: #4a148c;
+  --aipim-action-secondary-text: #ffffff;
+
+  /* Links e foco */
+  --aipim-link: #1565c0;
+  --aipim-link-hover: #0d47a1;
+  --aipim-link-visited: #0d47a1;
+  --aipim-focus-ring: #1565c0;
+
+  /* Tints, badges e estados semânticos */
+  --aipim-accent-bg: #5e92f3;
+  --aipim-accent-text: #000000;
+  --aipim-tint-primary: #5e92f3;
+  --aipim-tint-secondary: #ce93d8;
+  --aipim-tint-success: #a5d6a7;
+  --aipim-tint-error: #ef9a9a;
+  --aipim-tint-text: #000000;
+  --aipim-tint-text-muted: #212121;
+
+  --aipim-success-bg: #e8f5e9;
+  --aipim-success-text: #2e7d32;
+  --aipim-success-icon: #2e7d32;
+  --aipim-warning-bg: #fff3e0;
+  --aipim-warning-text: #b93800;
+  --aipim-warning-icon: #b93800;
+  --aipim-error-bg: #ffebee;
+  --aipim-error-text: #c62828;
+  --aipim-error-icon: #c62828;
+  --aipim-info-bg: #e1f5fe;
+  --aipim-info-text: #01579b;
+  --aipim-info-icon: #01579b;
+
+  /* Tipografia alinhada ao app (Roboto + fallback local Karla/Antonio) */
+  --aipim-font-heading: "Roboto", "Karla", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --aipim-font-body: "Roboto", "Karla", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --aipim-text-h4-transform: none;
+
+  /* Raios de borda do app (ui/theme.py Radius: SM 6, MD 10, LG 16, XL 24) */
+  --aipim-radius-sm: 6px;
+  --aipim-radius-md: 10px;
+  --aipim-radius-lg: 16px;
+  --aipim-radius-xl: 24px;
+
+  /* Botões alinhados ao app (raio 10, padding horizontal 24, 14px W600) */
+  --aipim-size-control-md: 44px;
+  --aipim-inset-md: 24px;
+  --aipim-text-label-size: 0.875rem;
+  --aipim-text-label-weight: 600;
+}
+
+/* Tema escuro explícito: <html data-theme="dark"> (ui/theme.py DARK_COLORS) */
+:root[data-theme="dark"] {
+  --aipim-bg-canvas: #0f1419;
+  --aipim-bg-surface: #1a1f26;
+  --aipim-bg-sunken: #232934;
+  --aipim-bg-scrim: #000000;
+  --aipim-border-subtle: #3a4250;
+  --aipim-border-strong: #b0b7c3;
+
+  --aipim-text-primary: #e8eaed;
+  --aipim-text-secondary: #b0b7c3;
+  --aipim-text-muted: #b0b7c3;
+  --aipim-text-inverse: #0f1419;
+
+  --aipim-action-primary-bg: #82b1ff;
+  --aipim-action-primary-hover: #448aff;
+  --aipim-action-primary-text: #000000;
+  --aipim-action-secondary-bg: #ce93d8;
+  --aipim-action-secondary-hover: #9f4dca;
+  --aipim-action-secondary-text: #000000;
+
+  --aipim-link: #82b1ff;
+  --aipim-link-hover: #448aff;
+  --aipim-link-visited: #5e92f3;
+  --aipim-focus-ring: #82b1ff;
+
+  --aipim-accent-bg: #82b1ff;
+  --aipim-accent-text: #000000;
+  --aipim-tint-primary: #1565c0;
+  --aipim-tint-secondary: #6a1b9a;
+  --aipim-tint-success: #2e7d32;
+  --aipim-tint-error: #c62828;
+  --aipim-tint-text: #ffffff;
+  --aipim-tint-text-muted: #e8eaed;
+
+  --aipim-success-bg: #1b3620;
+  --aipim-success-text: #81c784;
+  --aipim-success-icon: #81c784;
+  --aipim-warning-bg: #3e2723;
+  --aipim-warning-text: #ffb74d;
+  --aipim-warning-icon: #ffb74d;
+  --aipim-error-bg: #3b1212;
+  --aipim-error-text: #ef9a9a;
+  --aipim-error-icon: #ef9a9a;
+  --aipim-info-bg: #013c50;
+  --aipim-info-text: #4fc3f7;
+  --aipim-info-icon: #4fc3f7;
+}
+
+/* Tema escuro automático (segue o sistema). */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --aipim-bg-canvas: #0f1419;
+    --aipim-bg-surface: #1a1f26;
+    --aipim-bg-sunken: #232934;
+    --aipim-bg-scrim: #000000;
+    --aipim-border-subtle: #3a4250;
+    --aipim-border-strong: #b0b7c3;
+
+    --aipim-text-primary: #e8eaed;
+    --aipim-text-secondary: #b0b7c3;
+    --aipim-text-muted: #b0b7c3;
+    --aipim-text-inverse: #0f1419;
+
+    --aipim-action-primary-bg: #82b1ff;
+    --aipim-action-primary-hover: #448aff;
+    --aipim-action-primary-text: #000000;
+    --aipim-action-secondary-bg: #ce93d8;
+    --aipim-action-secondary-hover: #9f4dca;
+    --aipim-action-secondary-text: #000000;
+
+    --aipim-link: #82b1ff;
+    --aipim-link-hover: #448aff;
+    --aipim-link-visited: #5e92f3;
+    --aipim-focus-ring: #82b1ff;
+
+    --aipim-accent-bg: #82b1ff;
+    --aipim-accent-text: #000000;
+    --aipim-tint-primary: #1565c0;
+    --aipim-tint-secondary: #6a1b9a;
+    --aipim-tint-success: #2e7d32;
+    --aipim-tint-error: #c62828;
+    --aipim-tint-text: #ffffff;
+    --aipim-tint-text-muted: #e8eaed;
+
+    --aipim-success-bg: #1b3620;
+    --aipim-success-text: #81c784;
+    --aipim-success-icon: #81c784;
+    --aipim-warning-bg: #3e2723;
+    --aipim-warning-text: #ffb74d;
+    --aipim-warning-icon: #ffb74d;
+    --aipim-error-bg: #3b1212;
+    --aipim-error-text: #ef9a9a;
+    --aipim-error-icon: #ef9a9a;
+    --aipim-info-bg: #013c50;
+    --aipim-info-text: #4fc3f7;
+    --aipim-info-icon: #4fc3f7;
+  }
+}
