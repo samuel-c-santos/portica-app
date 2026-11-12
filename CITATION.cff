@@ -13,8 +13,8 @@ authors:
     given-names: "Samuel da Costa"
     alias: "samuel-c-santos"
     website: "https://github.com/samuel-c-santos"
-version: "1.0.1"
-date-released: "2026-10-28"
+version: "1.1.0"
+date-released: "2026-11-12"
 license: Apache-2.0
 repository-code: "https://github.com/samuel-c-santos/portica-app"
 doi: "10.5281/zenodo.23733497"
@@ -38,8 +38,8 @@ preferred-citation:
     - family-names: "dos Santos"
       given-names: "Samuel da Costa"
       alias: "samuel-c-santos"
-  version: "1.0.1"
-  date-released: "2026-10-28"
+  version: "1.1.0"
+  date-released: "2026-11-12"
   license: Apache-2.0
   repository-code: "https://github.com/samuel-c-santos/portica-app"
   doi: "10.5281/zenodo.23733497"

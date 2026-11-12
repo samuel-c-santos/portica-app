@@ -1,18 +1,69 @@
-# Pórtica App: v1.0.1
+# Pórtica App: v1.1.0
 
 Calculadora estrutural de vigas de concreto armado conforme a **ABNT NBR 6118:2023**,
 com entrada manual ou importação de esforços exportados do FTOOL. Gera relatório PDF,
 exportação DXF e verificações de ELS. Desenvolvido em Python + Flet, licenciado sob
 **Apache-2.0**.
 
-## Correções na v1.0.1
+## O que mudou na v1.1.0
 
-- Corrige o erro `Text(...) Control must be added to the page first` ao carregar
-  um projeto quando o painel FTOOL estava recolhido. O fluxo de "Carregar Projeto"
-  atualizava os rótulos do painel FTOOL mesmo quando ele não estava montado na
-  página. Agora o painel é reconstruído conforme a fonte de entrada do projeto
-  **antes** de sincronizar esses rótulos, e a sincronização só ocorre quando o
-  painel está visível.
+Esta é a maior atualização desde a primeira publicação: o motor foi reescrito e
+auditado contra a NBR 6118:2023, o detalhamento passou a ter uma única fonte de
+geometria e a página pública foi refeita.
+
+### Cálculo
+
+- **Seção que não cabia era reportada como "CABE"** — corrigido. O
+  dimensionamento agora verifica o domínio de deformação e nunca devolve uma
+  armadura menor que a necessária.
+- **Envelope de combinações do FTOOL gerava erro** — corrigido.
+- **Flecha em viga contínua/balanço** — o app agora **recusa** a verificação
+  quando o modelo não é bi-apoiado, em vez de calcular com premissa errada.
+- **Limite L/250 usava o comprimento total** — agora usa o vão.
+- **Equilíbrio da linha neutra** — a equação empírica da planilha original foi
+  substituída pelo equilíbrio da norma, `Md = fcd·b·x·(d − 0,4x)`.
+- **Domínio 4** — recusa explícita, com mensagem, em vez de resultado inválido.
+- **Viga T** — largura efetiva, `x ≤ hf`, armadura mínima da mesa e verificação
+  da linha neutra na alma.
+- **Armadura dupla** — `d'` real vindo do detalhamento e mínimo construtivo
+  `ρ'' ≥ 0,1%`.
+- **Cisalhamento** — `s_max` normativo aplicado ao espaçamento adotado.
+- **Armadura de pele** — bitolas comerciais em ordem crescente, sem fallback
+  para φ5.
+- **`fyk` em kN/cm²** em toda a API (as chaves antigas dos `.ptc` seguem
+  aceitas).
+
+### Aplicativo
+
+- **Abrir projeto pela lista de recentes** não derruba mais a tela.
+- **Modal de resultados** deixou de aparecer como um bloco cinza (falha de
+  renderização dos cards).
+- **Desenho da seção no PDF e no DXF** restaurado: estribo, barras e armadura
+  de pele na posição correta, e a viga T detalhada como T.
+- **Splash de abertura** no executável, que leva alguns segundos para
+  descompactar.
+- **Números em português** (`70,0` e `275,52`, não `70.0`).
+- **Nomenclatura** do formulário alinhada ao relatório: `h`, `bw`, `bf`, `hf`
+  (antes `d`, `tw`, `b`, `tf`).
+- **Verde** voltou a significar apenas conformidade normativa; exportar PDF ou
+  DXF não é mais verde.
+- Correção do erro de carregamento da versão anterior (`Control must be added to the
+  page first`).
+
+### Página pública
+
+- Download com recomendação explícita do `.zip` offline, tamanho e SHA-256 na
+  própria página.
+- Metadados (Open Graph, JSON-LD, sitemap), contraste AA e peso da página de
+  4,5 MB para 1,4 MB.
+- Publicação automática do site a cada push em `public-main`.
+
+### Qualidade
+
+- 61 benchmarks com valores calculados à mão e mais de 400 testes no CI
+  (Python 3.10 a 3.12), com gate de cobertura por módulo.
+- Documentação de cálculo reconciliada com o código, agora com as seções
+  **Limitações conhecidas** e **Como verificar um resultado**.
 
 ## O que é
 
@@ -81,8 +132,8 @@ gráfico do Flet: na versão **leve** ele é baixado uma única vez no primeiro 
 
 | Asset | Descrição | Tamanho | SHA-256 |
 |---|---|---|---|
-| `portica-v1.0.1-windows-x64.exe` | Executável **leve** (cliente Flet baixado no 1º uso, ~30 MB) | ≈ 58 MB | `5ee20685d26c46aebeb20b017d25f0ac7da01c179fc1d63af15311232ee4fd5c` |
-| `portica-v1.0.1-windows-x64.zip` | Pacote **offline** (cliente Flet embutido, roda sem internet desde a 1ª execução) | ≈ 96 MB | `2569694bac2a7450d0848af6ab2dbbb9b49588de53f543a5e96c80705b9bfb74` |
+| `portica-v1.1.0-windows-x64.exe` | Executável **leve** (cliente Flet baixado no 1º uso, ~30 MB) | ≈ 58,2 MB | `a44553852f033c5e61061299bea0393ee5e2a0436a1de372a0c4d45c88444892` |
+| `portica-v1.1.0-windows-x64.zip` | Pacote **offline** (cliente Flet embutido, roda sem internet desde a 1ª execução) | ≈ 98,2 MB | `1dc3876b783be5d60b142a4198ccf7fde4b99f389cea16c572dd991ba304a8cc` |
 
 O `.zip` contém `portica.exe` (com o cliente embutido) e um `SHA256SUMS.txt` próprio.
 
@@ -93,8 +144,8 @@ partir da segunda execução (o cliente fica em cache em `%USERPROFILE%\.flet\cl
 ### Conferir a integridade (PowerShell)
 
 ```powershell
-Get-FileHash .\portica-v1.0.1-windows-x64.exe -Algorithm SHA256
-Get-FileHash .\portica-v1.0.1-windows-x64.zip -Algorithm SHA256
+Get-FileHash .\portica-v1.1.0-windows-x64.exe -Algorithm SHA256
+Get-FileHash .\portica-v1.1.0-windows-x64.zip -Algorithm SHA256
 ```
 
 Os valores devem coincidir com os da tabela acima e com o arquivo
@@ -103,11 +154,12 @@ Os valores devem coincidir com os da tabela acima e com o arquivo
 ## DOI
 
 - **Concept DOI** (todas as versões; use para citar): `10.5281/zenodo.23733497`
-- **DOI da versão v1.0.1**: `10.5281/zenodo.23733498`
+- **DOI da versão v1.1.0**: emitido pelo Zenodo ao publicar esta versão;
+  consulte o registro do concept DOI para o identificador da versão.
 
 A referência formal está em [`CITATION.cff`](CITATION.cff).
 
 ## Como citar
 
 > Pórtica App: Calculadora estrutural de vigas de concreto armado (NBR 6118:2023).
-> Versão 1.0.1. DOI (todas as versões): <https://doi.org/10.5281/zenodo.23733497>.
+> Versão 1.1.0. DOI (todas as versões): <https://doi.org/10.5281/zenodo.23733497>.

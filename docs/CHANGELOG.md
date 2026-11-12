@@ -9,6 +9,72 @@ versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
 Mudanças aceitas e ainda não publicadas em uma versão.
 
+## [1.1.0]: correções de cálculo, detalhamento e nova página pública
+
+### Adicionado
+
+- Splash de abertura no executável, que aparece enquanto o pacote onefile
+  descompacta (antes a janela só surgia no fim, sem sinal de vida).
+- 61 benchmarks normativos com valores calculados à mão e gate de cobertura
+  por módulo no CI (Python 3.10 a 3.12).
+- Seções **Limitações conhecidas** e **Como verificar um resultado** em
+  `docs/calculo.md`.
+- Deploy automático do site (`gh-pages`) a cada push em `public-main`.
+- Exportação DXF com grampos e armadura de pele.
+- Teste de regressão da abertura de projeto pela lista de recentes.
+
+### Alterado
+
+- Números da interface em pt-BR (`70,0` e `275,52`, não `70.0`), com fonte
+  tabular nos campos numéricos.
+- Verde passou a significar apenas conformidade normativa; exportar PDF ou DXF
+  deixou de ser verde.
+- Nomenclatura do formulário alinhada ao relatório: `h`, `bw`, `bf`, `hf`
+  (antes `d`, `tw`, `b`, `tf`).
+- `fyk` padronizado em kN/cm² na API (chaves antigas dos `.ptc` seguem aceitas).
+- Página pública: `.zip` offline como download recomendado, com tamanho e
+  SHA-256 na página; metadados, acessibilidade AA e peso de 4,5 MB para 1,4 MB.
+- `ui.viga` importado sob demanda e pré-carregado em thread (abertura ~2x mais
+  rápida nos imports).
+
+### Corrigido
+
+- **Seção que não cabia reportada como "CABE"** (subdimensionamento silencioso).
+- Envelope de combinações do FTOOL que gerava erro.
+- Flecha em viga contínua: o app agora recusa o modelo não bi-apoiado em vez de
+  calcular com premissa errada.
+- Limite L/250 que usava o comprimento total; agora usa o vão.
+- Equilíbrio da linha neutra (`Md = fcd·b·x·(d − 0,4x)`) no lugar da equação
+  empírica da planilha.
+- Domínio 4 com recusa explícita.
+- Viga T: largura efetiva, `x ≤ hf`, armadura mínima da mesa e LN na alma.
+- Armadura dupla: `d'` real do detalhamento e mínimo `ρ'' ≥ 0,1%`.
+- Cisalhamento: `s_max` normativo aplicado ao espaçamento adotado.
+- Armadura de pele: bitolas comerciais em ordem crescente, sem fallback para φ5.
+- Abertura de projeto pela lista de recentes (`'ViewContext' object has no
+  attribute '_auto_load'`).
+- Modal de resultados que aparecia como bloco cinza (shadow booleano enviado ao
+  Flet).
+- Desenho da seção no PDF e no DXF: estribo, barras e pele na posição correta;
+  viga T detalhada como T.
+- PDF: nome sem acento (`Portica App`) e ponto decimal.
+- URLs de release que dariam 404 na versão seguinte.
+- Badge do Zenodo que fazia a única requisição externa da página.
+- Caminho pessoal exposto nos screenshots da galeria.
+
+### Removido
+
+- `ft.ElevatedButton` (deprecado desde o Flet 0.80).
+- `except Exception` genéricos no fluxo de UI.
+- Nomenclatura "Premium" residual.
+- Ícone duplicado `logo_.ico`.
+- README interno do site no deploy.
+
+### Segurança
+
+- Screenshots e páginas sem caminhos, contas ou identificações locais.
+- Badge externo do Zenodo auto-hospedado (sem vazar IP/Referer do visitante).
+
 ## [1.0.1]: correção do carregamento de projetos
 
 ### Corrigido
@@ -79,6 +145,7 @@ Mudanças aceitas e ainda não publicadas em uma versão.
   documentos internos de planejamento, movidos para fora do repositório
   público.
 
-[Não publicado]: https://github.com/samuel-c-santos/portica-app/compare/v1.0.1...HEAD
+[Não publicado]: https://github.com/samuel-c-santos/portica-app/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/samuel-c-santos/portica-app/releases/tag/v1.1.0
 [1.0.1]: https://github.com/samuel-c-santos/portica-app/releases/tag/v1.0.1
 [1.0.0]: https://github.com/samuel-c-santos/portica-app/releases/tag/v1.0.0

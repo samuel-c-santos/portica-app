@@ -1,2 +1,2 @@
-5ee20685d26c46aebeb20b017d25f0ac7da01c179fc1d63af15311232ee4fd5c  portica-v1.0.1-windows-x64.exe
-2569694bac2a7450d0848af6ab2dbbb9b49588de53f543a5e96c80705b9bfb74  portica-v1.0.1-windows-x64.zip
+a44553852f033c5e61061299bea0393ee5e2a0436a1de372a0c4d45c88444892  portica-v1.1.0-windows-x64.exe
+1dc3876b783be5d60b142a4198ccf7fde4b99f389cea16c572dd991ba304a8cc  portica-v1.1.0-windows-x64.zip
