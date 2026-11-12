@@ -31,6 +31,7 @@ SAMPLES = os.path.join(ROOT, "samples")
 class FakePage:
     def __init__(self):
         self.services, self.overlay, self.dialogs = [], [], []
+        self.tasks = []
 
     def update(self, *a, **k):
         pass
@@ -38,8 +39,8 @@ class FakePage:
     def add(self, *a, **k):
         pass
 
-    def run_task(self, *a, **k):
-        pass
+    def run_task(self, handler=None, *a, **k):
+        self.tasks.append(handler)
 
     def show_dialog(self, dialog):
         self.dialogs.append(dialog)
@@ -79,12 +80,20 @@ def montar(monkeypatch):
     for modulo in (actions, viga):
         monkeypatch.setattr(modulo, "add_recent", lambda *a, **k: None, raising=False)
 
-    def _montar(modo="comum", load=None, save=None):
+    def _montar(modo="comum", load=None, save=None, initial_file=None):
         from ui.viga import montar_contexto
 
         page = FakePage()
         ctx = montar_contexto(
-            page, modo, lambda e: None, None, None, FakePicker(load), FakePicker(save), None
+            page,
+            modo,
+            lambda e: None,
+            None,
+            None,
+            FakePicker(load),
+            FakePicker(save),
+            None,
+            initial_file,
         )
         return ctx
 
@@ -277,3 +286,23 @@ def test_importacao_ftool_ponta_a_ponta(montar, modo, arquivos):
     assert ctx.state.resultados_flex, "o dimensionamento deve produzir resultados"
     assert len(ctx.state.resultados_flex) == len(ctx.state.ftool_secoes_criticas)
     assert ctx.state.resultados_cis
+
+
+# ── Abertura de projeto pela lista de recentes ──────────────────────────────
+
+
+def test_abrir_projeto_pela_lista_de_recentes(montar):
+    """Abrir um .ptc da lista de recentes carrega o projeto (EP-04.3).
+
+    Regressao: o contexto chamava ``run_task(ctx._auto_load)``, mas a corotina
+    era local e nunca foi vinculada ao contexto, derrubando a tela com
+    ``'ViewContext' object has no attribute '_auto_load'``.
+    """
+    ctx = montar(modo="t", initial_file=os.path.join(SAMPLES, "exemplo_projeto.ptc"))
+
+    assert ctx.initial_file, "o contexto deveria guardar o arquivo inicial"
+    assert ctx.page.tasks, "nenhuma carga inicial agendada"
+
+    asyncio.run(ctx.page.tasks[-1]())
+
+    assert "Projeto importado com sucesso" in ctx.page.messages

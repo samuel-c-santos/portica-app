@@ -310,7 +310,7 @@ def _setup_carga_inicial(ctx):
                 )
                 ctx.show_msg(f"Erro ao carregar projeto: {ex}", Palette.ERROR)
 
-        ctx.page.run_task(ctx._auto_load)
+        ctx.page.run_task(_auto_load)
 
 
 def montar_contexto(
