@@ -283,12 +283,23 @@ def main() -> None:
 
     CHECKSUM_FILE.write_text(f"{digest}  {final_exe.name}\n", encoding="utf-8", newline="\n")
 
-    zip_path = DIST_DIR / f"{APP_NAME}-v{version}-windows-x64.zip"
-    if zip_path.exists():
-        zip_path.unlink()
-    with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
-        zf.write(final_exe, final_exe.name)
-        zf.write(CHECKSUM_FILE, CHECKSUM_FILE.name)
+    # O release tem dois assets, gerados em duas passadas:
+    #   sem --bundle-client -> executavel LEVE  (portica-vX-windows-x64.exe)
+    #   com --bundle-client -> pacote OFFLINE   (portica-vX-windows-x64.zip)
+    # Assim os dois nomes versionados coexistem em dist/ e o --sums consegue
+    # conferir o manifesto.
+    if args.bundle_client:
+        asset = DIST_DIR / f"{APP_NAME}-v{version}-windows-x64.zip"
+        if asset.exists():
+            asset.unlink()
+        with zipfile.ZipFile(asset, "w", zipfile.ZIP_DEFLATED) as zf:
+            zf.write(final_exe, final_exe.name)
+            zf.write(CHECKSUM_FILE, CHECKSUM_FILE.name)
+        tipo = "pacote zip (offline)"
+    else:
+        asset = DIST_DIR / f"{APP_NAME}-v{version}-windows-x64.exe"
+        shutil.copy2(final_exe, asset)
+        tipo = "executavel leve"
 
     log("")
     log("=" * 62)
@@ -296,7 +307,7 @@ def main() -> None:
     log(f"   executavel : {final_exe} ({size_mb:.1f} MB)")
     log(f"   sha256     : {digest}")
     log(f"   checksum   : {CHECKSUM_FILE}")
-    log(f"   pacote zip : {zip_path}")
+    log(f"   asset      : {asset.name} ({tipo})")
     log("=" * 62)
 
     if not args.keep_work:
