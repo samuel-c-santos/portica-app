@@ -45,7 +45,12 @@ FROZEN_SCRIPT = BUILD_DIR / "launcher.py"
 ASSETS_DIR = PROJECT_ROOT / "core" / "assets"
 ICON_FILE = ASSETS_DIR / "logo.ico"
 VERSION_FILE = PROJECT_ROOT / "core" / "version.py"
-CHECKSUM_FILE = PROJECT_ROOT / "SHA256SUMS.txt"
+# Checksum do `portica.exe` que acompanha o zip. Fica em `dist/` de proposito:
+# o `SHA256SUMS.txt` da raiz e o manifesto da release versionada (nomes
+# `portica-vX.Y.Z-windows-x64.*`), regerado por `build/release.py --sums`.
+# Quando este arquivo apontava para a raiz, um build local apagava o manifesto
+# e quebrava `release.py --check`.
+CHECKSUM_FILE = DIST_DIR / "SHA256SUMS.txt"
 
 APP_NAME = "portica"
 
