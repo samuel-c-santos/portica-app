@@ -45,6 +45,10 @@ FROZEN_SCRIPT = BUILD_DIR / "launcher.py"
 ASSETS_DIR = PROJECT_ROOT / "core" / "assets"
 ICON_FILE = ASSETS_DIR / "logo.ico"
 VERSION_FILE = PROJECT_ROOT / "core" / "version.py"
+# Imagem da splash nativa (PyInstaller): aparece enquanto o .exe onefile
+# descompacta, antes de o Python comecar a rodar. Sem ela, o executavel de
+# ~100 MB fica varios segundos sem nenhum sinal de vida.
+SPLASH_FILE = ASSETS_DIR / "splash.png"
 # Checksum do `portica.exe` que acompanha o zip. Fica em `dist/` de proposito:
 # o `SHA256SUMS.txt` da raiz e o manifesto da release versionada (nomes
 # `portica-vX.Y.Z-windows-x64.*`), regerado por `build/release.py --sums`.
@@ -174,6 +178,8 @@ def build_command(work: Path, dist: Path, data_args: list[str]) -> list[str]:
     ]
     cmd.extend(data_args)
     cmd.append(f"--icon={ICON_FILE}")
+    if SPLASH_FILE.is_file():
+        cmd.append(f"--splash={SPLASH_FILE}")
     for module in EXCLUDED_MODULES:
         cmd.append(f"--exclude-module={module}")
     for module in HIDDEN_IMPORTS:

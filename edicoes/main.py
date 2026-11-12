@@ -7,6 +7,7 @@ Entry point único da aplicação unificada.
 import json
 import os
 import sys
+import threading
 
 # Garante que a raiz do projeto está no sys.path
 _proj_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -21,11 +22,34 @@ from ui.home import build_home
 from ui.sidebar import ROUTE_HOME, ROUTE_SOBRE, ROUTE_VIGA, build_sidebar
 from ui.sobre import build_sobre
 from ui.theme import Palette, apply_dark, apply_light, is_dark
-from ui.viga import build_viga_screen
+
+# `ui.viga` (e o `core.detailing` que ele carrega) custa ~1,5 s de import.
+# Ele é importado sob demanda em `navigate()` e pré-carregado em segundo plano
+# depois da primeira tela, para a janela abrir mais rápido.
 
 LOGO_LIGHT = resource_path(os.path.join("core", "assets", "logo.png"))
 LOGO_DARK = resource_path(os.path.join("core", "assets", "logo_dark.png"))
 LOGO_ICO = resource_path(os.path.join("core", "assets", "logo.ico"))
+
+
+def _fechar_splash() -> None:
+    """Fecha a splash nativa do PyInstaller (no-op fora do executavel)."""
+    try:
+        import pyi_splash  # type: ignore[import-not-found]  # noqa: PLC0415
+    except ImportError:
+        return
+    try:
+        pyi_splash.close()
+    except (RuntimeError, OSError):
+        pass
+
+
+def _aquecer_tela_viga() -> None:
+    """Pre-carrega `ui.viga` em segundo plano, sem travar a abertura."""
+    try:
+        import ui.viga  # noqa: F401, PLC0415
+    except ImportError:
+        pass
 
 
 def main(page: ft.Page):
@@ -108,6 +132,8 @@ def main(page: ft.Page):
                 on_open_file=_open_home_file,
             )
         elif route == ROUTE_VIGA:
+            from ui.viga import build_viga_screen  # import tardio (startup)
+
             pending = state.pop("pending_file", None)
             content.content = build_viga_screen(
                 page,
@@ -170,6 +196,13 @@ def main(page: ft.Page):
     # Tela inicial
     navigate(ROUTE_HOME)
 
+    # A janela já está pintada: pode fechar a splash nativa do executável.
+    _fechar_splash()
+
+    # Pré-carrega a tela de viga sem segurar a abertura do app.
+    threading.Thread(target=_aquecer_tela_viga, daemon=True).start()
+
 
 if __name__ == "__main__":
+    print(f"Iniciando {APP_TITLE}...", flush=True)
     ft.run(main)
