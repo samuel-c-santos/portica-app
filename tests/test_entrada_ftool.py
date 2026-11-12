@@ -262,8 +262,8 @@ def test_calculo_manual_gera_resultados(ui):
     """O botao Calcular da entrada manual produz o modal de resultados."""
     page, screen, _, _ = _build_screen(ui)
 
-    _find_textfield(screen, "d (cm)").value = "70"
-    _find_textfield(screen, "tw (cm)").value = "20"
+    _find_textfield(screen, "h (cm)").value = "70"
+    _find_textfield(screen, "bw (cm)").value = "20"
     _find_textfield(screen, "Barra phi_l (mm)").value = "16"
 
     botao_calcular = _find_button(screen, "Calcular")

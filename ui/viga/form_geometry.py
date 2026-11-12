@@ -198,23 +198,23 @@ def setup_geometria(ctx):
     ctx._on_geom_change = partial(_on_geom_change, ctx)
 
     ctx.h_tf = _styled_textfield(
-        "d (cm)",
+        "h (cm)",
         "",
         on_change=ctx._on_geom_change(ctx.validate_positive_number),
         info_on_click=lambda e: _open_geometria(ctx.page),
-        info_tooltip="Altura total da seção d/h (NBR 6118:2023 — Seção 14.6)",
+        info_tooltip="Altura total da seção h (NBR 6118:2023 — Seção 14.6)",
     )
 
     ctx.bw_tf = _styled_textfield(
-        "tw (cm)",
+        "bw (cm)",
         "",
         on_change=ctx._on_geom_change(ctx.validate_positive_number),
         info_on_click=lambda e: _open_geometria(ctx.page),
-        info_tooltip="Largura da alma tw/bw (NBR 6118:2023 — Seção 13.2.2)",
+        info_tooltip="Largura da alma bw (NBR 6118:2023 — Seção 13.2.2)",
     )
 
     ctx.bf_tf = _styled_textfield(
-        "b (cm)",
+        "bf (cm)",
         "60",
         on_change=ctx.validate_positive_number,
         info_on_click=lambda e: _open_viga_t(ctx.page),
@@ -222,11 +222,11 @@ def setup_geometria(ctx):
     )
 
     ctx.hf_tf = _styled_textfield(
-        "tf (cm)",
+        "hf (cm)",
         "12",
         on_change=ctx.validate_positive_number,
         info_on_click=lambda e: _open_viga_t(ctx.page),
-        info_tooltip="Espessura da mesa hf/tf (NBR 6118:2023 — Seção 14.6.2.2)",
+        info_tooltip="Espessura da mesa hf (NBR 6118:2023 — Seção 14.6.2.2)",
     )
 
     ctx.b1esq_tf = _styled_textfield(
