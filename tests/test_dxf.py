@@ -219,11 +219,13 @@ def test_exportar_secao_dxf_com_pele_e_camadas_duplas():
         assert abs(ys[1] - 43.2333) < 1e-3
 
 
-def test_exportar_secao_dxf_t_afim():
-    """EP-02.5: barras da viga T usam translação/afim, não escala com origem no canto.
+def test_exportar_secao_dxf_t_translacao_para_o_eixo_da_alma():
+    """Barras da viga T são transladadas de bf/2; a mesa mantém a posição real.
 
     bf=60, bw=20, h=70. Barra inferior no centro da alma x=300 mm → x=0 cm.
-    Barra superior na mesa x=100 mm (fora da alma) → (10−30)·(20/60) = −6,667 cm.
+    Barra superior na mesa x=100 mm → 10 − 30 = −20 cm (dentro da mesa, que
+    vai de −30 a +30). O detalhador já entrega as barras no referencial da
+    mesa; não há mais transformação afim para a alma.
     """
     with tempfile.TemporaryDirectory() as tmpdir:
         dxf_path = os.path.join(tmpdir, "secao_t_afim.dxf")
@@ -249,4 +251,4 @@ def test_exportar_secao_dxf_t_afim():
             key=lambda c: c.dxf.center.y,
         )
         assert barras[0].dxf.center.x == pytest.approx(0.0, abs=1e-6)
-        assert barras[1].dxf.center.x == pytest.approx(-6.6666667, abs=1e-6)
+        assert barras[1].dxf.center.x == pytest.approx(-20.0, abs=1e-6)

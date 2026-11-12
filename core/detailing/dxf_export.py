@@ -105,13 +105,9 @@ def exportar_secao_dxf(
         if bx is not None and by is not None:
             x_cm = bx / 10.0
             if is_t and bf_cm:
-                # Translação: centro da mesa (bf/2) → 0.
+                # Translação: centro da mesa (bf/2) → 0. As barras já vêm
+                # detalhadas no referencial da mesa (is_t=True no detailer).
                 x_cm = x_cm - bf_cm / 2.0
-                # Barras superiores fora da alma: mapeia a largura da mesa
-                # para a largura da alma preservando o centro (afim, não
-                # escala com origem no canto).
-                if by > (h_cm * 10.0) / 2.0 and abs(x_cm) > bw_cm / 2.0:
-                    x_cm = x_cm * (bw_cm / bf_cm)
             cy = by / 10.0
             msp.add_circle((x_cm, cy), r_vis_cm, dxfattribs={"layer": "ARMADURA_LONG"})
 

@@ -2099,7 +2099,7 @@ def gerar_relatorio_viga_t(
         phi_inf=phi_inf_adot,
         n_sup=n_sup_desenho,
         phi_sup=phi_sup_adot,
-        lx=ML + 78,
+        lx=ML + 105,
         ly=y_sec + 4,
         n_pele=n_pele,
         phi_pele=phi_pele,

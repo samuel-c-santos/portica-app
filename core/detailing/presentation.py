@@ -227,7 +227,6 @@ class BeamSectionCommands:
         c = d.c_nom
         pe = d.phi_estribo
         r = d.stirrup_corner_radius  # raio interno dos cantos
-        lh = d.hook_length  # comprimento do gancho
 
         # Canto interno do estribo (eixo do fio) medido da face externa:
         # distância do fio ao canto = c + pe/2
@@ -248,34 +247,11 @@ class BeamSectionCommands:
         # flet.canvas, aproximamos cada canto com 6 segmentos de linha.
         pts = self._rounded_rect_polyline(ex, ey, ew, eh, r)
 
-        # Fecha a polyline com um ponto de ancoragem do gancho
-        # (ponto de início do gancho = topo, a 60% do comprimento superior)
-        hook_anchor_x = ex + ew * 0.6
-        hook_anchor_y = ey + eh  # topo do estribo
-
-        # Adiciona ponto de retorno ao início (para fechar a forma)
-        pts.append((hook_anchor_x, hook_anchor_y))
-
         cmds.append(
             CmdPolyline(
                 points=pts,
                 color=_C_STIRRUP,
                 line_width=pe * 0.7,  # espessura proporcional ao diâmetro
-            )
-        )
-
-        # Gancho a 135° (diagonal interior de 45°): sobe e vai para esquerda
-        sin45 = math.cos(math.radians(45))
-        hx = lh * sin45
-        hy = lh * sin45
-        cmds.append(
-            CmdPolyline(
-                points=[
-                    (hook_anchor_x, hook_anchor_y),
-                    (hook_anchor_x - hx, hook_anchor_y + hy),
-                ],
-                color=_C_STIRRUP,
-                line_width=pe * 0.7,
             )
         )
 
@@ -477,86 +453,15 @@ class BeamSectionCommands:
             )
         )
 
-        # Cota cobrimento (traço pontilhado pequeno)
-        y_cob = h * 0.25
-        x1_cob = (bf - bw) / 2.0 if is_t else 0.0
-        cmds.append(
-            CmdLine(
-                x1=x1_cob,
-                y1=y_cob,
-                x2=x1_cob + d.c_nom,
-                y2=y_cob,
-                color=_C_DIM,
-                line_width=0.3,
-                dashed=True,
-            )
-        )
-        cmds.append(
-            CmdText(
-                x=x1_cob + d.c_nom / 2.0,
-                y=y_cob + 3.0,
-                text=f"c={d.c_nom:.0f}",
-                font_size=6.0,
-                color=_C_DIM,
-                align="C",
-            )
-        )
-
-        # Linha tracejada do baricentro (vermelho)
-        cmds.append(
-            CmdLine(
-                x1=0,
-                y1=d.y_cg,
-                x2=bf,
-                y2=d.y_cg,
-                color=_C_CG_LINE,
-                line_width=0.4,
-                dashed=True,
-            )
-        )
-        cmds.append(
-            CmdText(
-                x=bf / 2.0,
-                y=d.y_cg + 3.0,
-                text="CG arm.",
-                font_size=6.0,
-                color=_C_CG_LINE,
-                align="C",
-            )
-        )
-
     # ── Bloco 7: Rótulos de armadura ──────────────────────────────────────────
 
     def _draw_labels(self, cmds: list[DrawCmd], d: SectionLayoutData) -> None:
-        is_t = getattr(d, "is_t", False)
-        bf = d.bf if is_t else d.bw
-        for lyr in d.layers:
-            cmds.append(
-                CmdText(
-                    x=bf + 5.0,
-                    y=lyr.y_centroid,
-                    text=(
-                        f"{lyr.bar_count}\u00d8{d.phi_barra:.0f}mm ({lyr.h_spacing / 10:.1f}cm)"
-                        if lyr.h_spacing > 0
-                        else f"{lyr.bar_count}\u00d8{d.phi_barra:.0f}mm"
-                    ),
-                    font_size=7.5,
-                    color=_C_TEXT,
-                    align="L",
-                )
-            )
+        """Sem rótulos extras: a legenda do relatório já informa bitola e quantidade.
 
-        # d efetiva
-        cmds.append(
-            CmdText(
-                x=-5.0,
-                y=d.d_efetiva / 2.0,
-                text=f"d={d.d_efetiva:.1f}mm",
-                font_size=6.5,
-                color=_C_DIM,
-                align="R",
-            )
-        )
+        Os textos por camada eram desenhados em `x = bf + 5` e caíam em cima da
+        legenda (regressão do EP-04.4).
+        """
+        return
 
     # ── Auxiliares ────────────────────────────────────────────────────────────
 
@@ -577,15 +482,14 @@ class BeamSectionCommands:
 
         r = min(r, w / 2, h / 2)  # garante que r não excede a seção
 
-        # Cantos em sentido antihorário, origem no lado inferior-esquerdo
-        # Inferior-esquerdo (270° → 180°)
-        pts += arc_pts(x + r, y + r, r, 270, 180)
-        # Inferior-direito (180° → 90°)
-        pts += arc_pts(x + w - r, y + r, r, 180, 90)
-        # Superior-direito (90° → 0°)
-        pts += arc_pts(x + w - r, y + h - r, r, 90, 0)
-        # Superior-esquerdo (0° → -90°)
-        pts += arc_pts(x + r, y + h - r, r, 0, -90)
+        # Cantos em sentido anti-horário, começando no inferior-esquerdo.
+        # A ordem importa: cada arco tem de terminar onde o próximo começa,
+        # senão a polyline "pula" por dentro da seção e o estribo vira um
+        # borrão (regressão do EP-04.4).
+        pts += arc_pts(x + r, y + r, r, 270, 180)  # inferior-esquerdo
+        pts += arc_pts(x + r, y + h - r, r, 180, 90)  # superior-esquerdo
+        pts += arc_pts(x + w - r, y + h - r, r, 90, 0)  # superior-direito
+        pts += arc_pts(x + w - r, y + r, r, 0, -90)  # inferior-direito
         # Fechar
         pts.append(pts[0])
         return pts
@@ -867,6 +771,14 @@ class FpdfRenderer:
         """Escala uma dimensão."""
         return mm * self.scale
 
+    def _set_lw(self, mm: float) -> None:
+        """Espessura de traço: também é uma dimensão da seção (mm → página).
+
+        Sem escalar, um estribo de φ6,3 virava uma faixa de 6,3 mm na página
+        e cobria a seção inteira.
+        """
+        self.pdf.set_line_width(max(self._sc(mm), 0.12))
+
     def _set_color(self, rgb: RGB | None, is_fill: bool) -> None:
         if rgb is None:
             return
@@ -891,7 +803,7 @@ class FpdfRenderer:
                 self._set_color(cmd.fill, is_fill=True)
             if cmd.stroke:
                 self._set_color(cmd.stroke, is_fill=False)
-                pdf.set_line_width(cmd.line_width)
+                self._set_lw(cmd.line_width)
 
             style = "FD" if (cmd.fill and cmd.stroke) else "F" if cmd.fill else "D"
             pdf.rect(x_pg, y_pg, w, h, style=style)
@@ -905,7 +817,7 @@ class FpdfRenderer:
                 self._set_color(cmd.fill, is_fill=True)
             if cmd.stroke:
                 self._set_color(cmd.stroke, is_fill=False)
-                pdf.set_line_width(cmd.line_width)
+                self._set_lw(cmd.line_width)
 
             style = "FD" if (cmd.fill and cmd.stroke) else "F" if cmd.fill else "D"
             # fpdf2: ellipse(x_topo_esq, y_topo_esq, w, h)
@@ -913,7 +825,7 @@ class FpdfRenderer:
 
         elif isinstance(cmd, CmdLine):
             self._set_color(cmd.color, is_fill=False)
-            pdf.set_line_width(cmd.line_width)
+            self._set_lw(cmd.line_width)
             if cmd.dashed:
                 pdf.set_dash_pattern(dash=2, gap=1.5)
             pdf.line(self._tx(cmd.x1), self._ty(cmd.y1), self._tx(cmd.x2), self._ty(cmd.y2))
@@ -924,7 +836,7 @@ class FpdfRenderer:
             if len(cmd.points) < 2:
                 return
             self._set_color(cmd.color, is_fill=False)
-            pdf.set_line_width(cmd.line_width)
+            self._set_lw(cmd.line_width)
             pts_pg = [(self._tx(x), self._ty(y)) for x, y in cmd.points]
             for k in range(len(pts_pg) - 1):
                 pdf.line(pts_pg[k][0], pts_pg[k][1], pts_pg[k + 1][0], pts_pg[k + 1][1])
@@ -935,10 +847,16 @@ class FpdfRenderer:
             pdf.set_font("Courier", "", cmd.font_size)
             x_pg = self._tx(cmd.x)
             y_pg = self._ty(cmd.y)
-            # Ajuste de alinhamento
-            align = {"L": "L", "C": "C", "R": "R"}.get(cmd.align, "L")
+            # O alinhamento é do PONTO, não de uma célula fixa de 40 mm: com a
+            # célula fixa o texto "R" terminava 40 mm à direita (ou 20 mm, no
+            # "C") e caía dentro do desenho.
+            largura = pdf.get_string_width(cmd.text)
+            if cmd.align == "C":
+                x_pg -= largura / 2
+            elif cmd.align == "R":
+                x_pg -= largura
             pdf.set_xy(x_pg, y_pg)
-            pdf.cell(40, 4, cmd.text, border=0, align=align)
+            pdf.cell(largura + 0.5, 4, cmd.text, border=0)
 
         elif isinstance(cmd, CmdPolygon):
             if len(cmd.points) < 3:
@@ -947,7 +865,7 @@ class FpdfRenderer:
                 self._set_color(cmd.fill, is_fill=True)
             if cmd.stroke:
                 self._set_color(cmd.stroke, is_fill=False)
-                pdf.set_line_width(cmd.line_width)
+                self._set_lw(cmd.line_width)
             pts_pg = [(self._tx(x), self._ty(y)) for x, y in cmd.points]
             style = "FD" if (cmd.fill and cmd.stroke) else "F" if cmd.fill else "D"
             pdf.polygon(pts_pg, style=style)

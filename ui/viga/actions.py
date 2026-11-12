@@ -816,6 +816,22 @@ async def on_exportar_dxf(ctx, e):
         n_inf_dxf = max_bars_inf if max_bars_inf > 0 else 3
         n_sup_dxf = max_bars_sup if max_bars_sup > 0 else 2
 
+        # Seção T: o detalhador precisa da mesa para posicionar as barras.
+        is_t = ctx.modo == "t"
+        bf_cm = None
+        hf_cm = None
+        if is_t:
+            bf_cm = (
+                float(ctx.bf_tf.control.value.replace(",", "."))
+                if ctx.bf_tf.control.value
+                else None
+            )
+            hf_cm = (
+                float(ctx.hf_tf.control.value.replace(",", "."))
+                if ctx.hf_tf.control.value
+                else None
+            )
+
         detailer = BeamDetailer()
         combined_bar_positions = []
 
@@ -829,6 +845,9 @@ async def on_exportar_dxf(ctx, e):
                 phi_barra=phi_inf_adot,
                 d_max_agregado=d_max_agregado_mm,
                 total_bars=n_inf_dxf,
+                is_t=is_t,
+                bf_cm=bf_cm or 0.0,
+                hf_cm=hf_cm or 0.0,
             )
             layout_inf = detailer.detail(inp_inf)
 
@@ -841,6 +860,9 @@ async def on_exportar_dxf(ctx, e):
                 phi_barra=phi_sup_adot,
                 d_max_agregado=d_max_agregado_mm,
                 total_bars=n_sup_dxf,
+                is_t=is_t,
+                bf_cm=bf_cm or 0.0,
+                hf_cm=hf_cm or 0.0,
             )
             layout_sup = detailer.detail(inp_sup)
 
@@ -921,22 +943,6 @@ async def on_exportar_dxf(ctx, e):
         # Dados de armadura de pele
         n_barras_pele = getattr(resultado_valido, "n_barras_pele_face", 0)
         phi_pele_mm = getattr(resultado_valido, "phi_pele_mm", 0.0)
-
-        # Verificar se é seção T
-        is_t = ctx.modo == "t"
-        bf_cm = None
-        hf_cm = None
-        if is_t:
-            bf_cm = (
-                float(ctx.bf_tf.control.value.replace(",", "."))
-                if ctx.bf_tf.control.value
-                else None
-            )
-            hf_cm = (
-                float(ctx.hf_tf.control.value.replace(",", "."))
-                if ctx.hf_tf.control.value
-                else None
-            )
 
         exportar_secao_dxf(
             bw_cm=bw_cm,
