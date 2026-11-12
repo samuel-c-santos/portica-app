@@ -135,3 +135,43 @@ def test_dxf_viga_t_mantem_barras_dentro_do_concreto(tmp_path: Path):
         na_mesa = abs(x) <= bf / 2 and (H_CM - hf) <= y <= H_CM
         na_alma = abs(x) <= BW_CM / 2 and 0 <= y <= (H_CM - hf)
         assert na_mesa or na_alma, f"barra fora do concreto: x={x:.1f} y={y:.1f}"
+
+def test_renderer_flet_desenha_sem_quebrar():
+    """O renderer Flet não pode usar PaintingStyle.FILL_AND_STROKE (não existe em 0.85)."""
+    import flet as ft
+
+    from core.detailing.presentation import FletCanvasRenderer
+
+    data, cmds = _comandos_retangular()
+    shapes: list = []
+    FletCanvasRenderer(scale=1.5, section_height_mm=data.h).render(cmds, shapes)
+
+    assert shapes, "o renderer precisa produzir shapes"
+    estilos = {s.paint.style for s in shapes if hasattr(s, "paint")}
+    assert ft.PaintingStyle.FILL in estilos
+    assert ft.PaintingStyle.STROKE in estilos
+
+
+def test_renderer_flet_desenha_poligono_da_viga_t():
+    """A viga T usa CmdPolygon; o renderer precisa cobrir preenchimento e contorno."""
+    from core.detailing.presentation import FletCanvasRenderer
+
+    data = detalhar_secao_completa(
+        h_cm=H_CM,
+        bw_cm=BW_CM,
+        cob_mm=30,
+        phi_estribo_mm=5,
+        phi_barra_inf_mm=16,
+        n_barras_inf=10,
+        phi_barra_sup_mm=16,
+        n_barras_sup=2,
+        is_t=True,
+        bf_cm=60,
+        hf_cm=12,
+    )
+    cmds = BeamSectionCommands().build(data)
+    shapes: list = []
+    FletCanvasRenderer(scale=1.2, section_height_mm=data.h).render(cmds, shapes)
+
+    poligonos = [s for s in shapes if type(s).__name__ == "Path" and len(s.elements) > 3]
+    assert poligonos, "o contorno da viga T vira um Path fechado"

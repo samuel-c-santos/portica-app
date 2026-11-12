@@ -575,9 +575,8 @@ class FletCanvasRenderer:
         import flet.canvas as cv
 
         for cmd in cmds:
-            shape = self._to_flet(cmd, cv)
-            if shape is not None:
-                shapes.append(shape)
+            gerados = self._to_flet(cmd, cv)
+            shapes.extend(gerados)
 
     def _px(self, mm: float) -> float:
         """mm → pixels (X)."""
@@ -592,112 +591,104 @@ class FletCanvasRenderer:
             return None
         return f"#{rgb[0]:02x}{rgb[1]:02x}{rgb[2]:02x}"
 
-    def _to_flet(self, cmd: DrawCmd, cv: Any) -> Any | None:
+    def _to_flet(self, cmd: DrawCmd, cv: Any) -> list:
+        """Traduz um DrawCmd em uma lista de shapes do flet.canvas.
+
+        O Flet 0.85 só tem `PaintingStyle.FILL` e `PaintingStyle.STROKE`: um
+        shape não preenche e contorna ao mesmo tempo. Quando o comando pede os
+        dois, devolvemos dois shapes sobrepostos.
+        """
         import flet as ft
 
+        def com_estilo(criar):
+            saida = []
+            if cmd.fill:
+                saida.append(
+                    criar(
+                        ft.Paint(
+                            color=self._color(cmd.fill),
+                            style=ft.PaintingStyle.FILL,
+                        )
+                    )
+                )
+            if cmd.stroke:
+                saida.append(
+                    criar(
+                        ft.Paint(
+                            color=self._color(cmd.stroke),
+                            stroke_width=max(cmd.line_width * self.scale, 0.12),
+                            style=ft.PaintingStyle.STROKE,
+                        )
+                    )
+                )
+            return saida
+
         if isinstance(cmd, CmdRect):
-            # Flet canvas usa Y↓, então y do rect = topo em pixels
-            top_px = self._py(cmd.y + cmd.h)
-            return cv.Rect(
-                x=self._px(cmd.x),
-                y=top_px,
-                width=self._px(cmd.w),
-                height=self._px(cmd.h),
-                paint=ft.Paint(
-                    color=self._color(cmd.fill) if cmd.fill else None,
-                    stroke_color=self._color(cmd.stroke) if cmd.stroke else None,
-                    stroke_width=cmd.line_width * self.scale,
-                    style=(
-                        ft.PaintingStyle.FILL_AND_STROKE
-                        if cmd.fill and cmd.stroke
-                        else ft.PaintingStyle.FILL
-                        if cmd.fill
-                        else ft.PaintingStyle.STROKE
-                    ),
-                ),
+            return com_estilo(
+                lambda paint: cv.Rect(
+                    x=self._px(cmd.x),
+                    y=self._py(cmd.y + cmd.h),
+                    width=self._px(cmd.w),
+                    height=self._px(cmd.h),
+                    paint=paint,
+                )
             )
 
         if isinstance(cmd, CmdCircle):
-            return cv.Circle(
-                x=self._px(cmd.cx),
-                y=self._py(cmd.cy),
-                radius=self._px(cmd.r),
-                paint=ft.Paint(
-                    color=self._color(cmd.fill) if cmd.fill else None,
-                    stroke_color=self._color(cmd.stroke) if cmd.stroke else None,
-                    stroke_width=cmd.line_width * self.scale,
-                    style=(
-                        ft.PaintingStyle.FILL_AND_STROKE
-                        if cmd.fill and cmd.stroke
-                        else ft.PaintingStyle.FILL
-                        if cmd.fill
-                        else ft.PaintingStyle.STROKE
-                    ),
-                ),
+            return com_estilo(
+                lambda paint: cv.Circle(
+                    x=self._px(cmd.cx),
+                    y=self._py(cmd.cy),
+                    radius=self._px(cmd.r),
+                    paint=paint,
+                )
             )
 
         if isinstance(cmd, (CmdLine, CmdPolyline)):
-            if isinstance(cmd, CmdLine):
-                pts_mm = [(cmd.x1, cmd.y1), (cmd.x2, cmd.y2)]
-                color = cmd.color
-                lw = cmd.line_width
-            else:
-                pts_mm = cmd.points
-                color = cmd.color
-                lw = cmd.line_width
-
-            if len(pts_mm) < 2:
-                return None
-
-            path_elements = [cv.Path.MoveTo(self._px(pts_mm[0][0]), self._py(pts_mm[0][1]))]
-            for px_mm, py_mm in pts_mm[1:]:
-                path_elements.append(cv.Path.LineTo(self._px(px_mm), self._py(py_mm)))
-
-            return cv.Path(
-                elements=path_elements,
-                paint=ft.Paint(
-                    color=self._color(color),
-                    stroke_width=lw * self.scale,
-                    style=ft.PaintingStyle.STROKE,
-                ),
+            pontos = (
+                [(cmd.x1, cmd.y1), (cmd.x2, cmd.y2)]
+                if isinstance(cmd, CmdLine)
+                else cmd.points
             )
+            if len(pontos) < 2:
+                return []
+            elementos = [cv.Path.MoveTo(self._px(pontos[0][0]), self._py(pontos[0][1]))]
+            elementos += [cv.Path.LineTo(self._px(x), self._py(y)) for x, y in pontos[1:]]
+            return [
+                cv.Path(
+                    elements=elementos,
+                    paint=ft.Paint(
+                        color=self._color(cmd.color),
+                        stroke_width=max(cmd.line_width * self.scale, 0.12),
+                        style=ft.PaintingStyle.STROKE,
+                    ),
+                )
+            ]
 
         if isinstance(cmd, CmdPolygon):
             if len(cmd.points) < 3:
-                return None
-            path_elements = [cv.Path.MoveTo(self._px(cmd.points[0][0]), self._py(cmd.points[0][1]))]
-            for px_mm, py_mm in cmd.points[1:]:
-                path_elements.append(cv.Path.LineTo(self._px(px_mm), self._py(py_mm)))
-            path_elements.append(cv.Path.Close())
-            return cv.Path(
-                elements=path_elements,
-                paint=ft.Paint(
-                    color=self._color(cmd.fill) if cmd.fill else None,
-                    stroke_color=self._color(cmd.stroke) if cmd.stroke else None,
-                    stroke_width=cmd.line_width * self.scale,
-                    style=(
-                        ft.PaintingStyle.FILL_AND_STROKE
-                        if cmd.fill and cmd.stroke
-                        else ft.PaintingStyle.FILL
-                        if cmd.fill
-                        else ft.PaintingStyle.STROKE
-                    ),
-                ),
-            )
+                return []
+            elementos = [
+                cv.Path.MoveTo(self._px(cmd.points[0][0]), self._py(cmd.points[0][1]))
+            ]
+            elementos += [cv.Path.LineTo(self._px(x), self._py(y)) for x, y in cmd.points[1:]]
+            elementos.append(cv.Path.Close())
+            return com_estilo(lambda paint: cv.Path(elements=elementos, paint=paint))
 
         if isinstance(cmd, CmdText):
-            return cv.Text(
-                x=self._px(cmd.x),
-                y=self._py(cmd.y),
-                text=cmd.text,
-                style=ft.TextStyle(size=cmd.font_size * self.scale * 0.65),
-                # color será aplicado via style se suportado
-            )
+            return [
+                cv.Text(
+                    x=self._px(cmd.x),
+                    y=self._py(cmd.y),
+                    value=cmd.text,
+                    style=ft.TextStyle(
+                        size=cmd.font_size * self.scale * 0.65,
+                        color=self._color(cmd.color),
+                    ),
+                )
+            ]
 
-        # CmdArcPath: approximado via CmdPolyline já no Painter, não deve chegar aqui
-        return None
-
-
+        return []
 # ══════════════════════════════════════════════════════════════════════════════
 # Renderer 2: fpdf2 (FPDF)
 # ══════════════════════════════════════════════════════════════════════════════
