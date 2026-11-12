@@ -352,3 +352,21 @@ def test_ep05_9_acessibilidade_contraste_tooltips_e_erros_por_campo():
     ctx.bw_tf.control.value = "4"
     ctx.on_calculate(None)
     assert ctx.bw_tf.control.error_text == "Mínimo 5,0 cm"
+
+
+def test_result_card_traduz_bool_para_boxshadow():
+    """`result_card(shadow=...)` deve produzir BoxShadow/None, nunca bool.
+
+    Regressao: o Flet nao deserializa `shadow=False`; o Flutter desenha o
+    ErrorWidget (retangulo cinza) no lugar do card no modal de resultados.
+    """
+    import flet as ft
+
+    from ui.theme import SHADOW_SM, result_card
+
+    com_sombra = result_card([])
+    sem_sombra = result_card([], shadow=False)
+
+    assert isinstance(com_sombra.shadow, ft.BoxShadow)
+    assert com_sombra.shadow is SHADOW_SM
+    assert sem_sombra.shadow is None

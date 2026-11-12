@@ -352,6 +352,13 @@ def surface_card(
     ink_color=None,
 ):
     """Card com fundo branco, sombra sutil e cantos arredondados."""
+    # `shadow` aceita bool por conveniencia (`result_card(shadow=False)`), mas o
+    # Flet so entende `ft.BoxShadow`/lista/None. Um booleano cru derruba a
+    # deserializacao no cliente e o Flutter desenha o ErrorWidget cinza.
+    if shadow is True:
+        shadow = SHADOW_SM
+    elif not shadow:
+        shadow = None
     container = ft.Container(
         content=content,
         bgcolor=bgcolor or Palette.SURFACE,

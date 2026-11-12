@@ -306,3 +306,35 @@ def test_abrir_projeto_pela_lista_de_recentes(montar):
     asyncio.run(ctx.page.tasks[-1]())
 
     assert "Projeto importado com sucesso" in ctx.page.messages
+
+
+def test_modal_resultados_nao_envia_shadow_invalido(montar):
+    """Nenhum controle do modal pode levar `shadow` booleano para o cliente.
+
+    Regressao: `result_card(..., shadow=False)` mandava `False` no campo
+    `Container.shadow`, o Flet nao deserializava e o modal aparecia como um
+    retangulo cinza (ErrorWidget do Flutter) em vez dos cards de resultado.
+    """
+    ctx = _importar_ftool(
+        montar,
+        "comum",
+        ("test_momento_fletor.txt", "test_esforcos_cortantes.txt", "test_deformacoes.txt"),
+    )
+    modal = ctx.page.dialogs[-1]
+    invalidos = []
+
+    def walk(control):
+        if control is None:
+            return
+        if isinstance(getattr(control, "shadow", None), bool):
+            invalidos.append(type(control).__name__)
+        for attr in ("controls", "content", "title", "actions"):
+            filho = getattr(control, attr, None)
+            if isinstance(filho, list):
+                for item in filho:
+                    walk(item)
+            elif filho is not None:
+                walk(filho)
+
+    walk(modal)
+    assert not invalidos, f"shadow booleano em: {invalidos}"
