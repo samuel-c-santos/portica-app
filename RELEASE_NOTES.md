@@ -154,8 +154,7 @@ Os valores devem coincidir com os da tabela acima e com o arquivo
 ## DOI
 
 - **Concept DOI** (todas as versões; use para citar): `10.5281/zenodo.23733497`
-- **DOI da versão v1.1.0**: emitido pelo Zenodo ao publicar esta versão;
-  consulte o registro do concept DOI para o identificador da versão.
+- **DOI da versão v1.1.0**: `10.5281/zenodo.24152183`
 
 A referência formal está em [`CITATION.cff`](CITATION.cff).
 
