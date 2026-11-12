@@ -37,6 +37,8 @@ Para informacoes gerais sobre instalacao, execucao e arquitetura, consulte o
 10. [Ajustes manuais ELS](#10-ajustes-manuais-els)
 11. [Detalhamento de estribos por regiao](#11-detalhamento-de-estribos-por-regiao)
 12. [Classes de agressividade ambiental (CAA)](#12-classes-de-agressividade-ambiental-caa)
+13. [Limitacoes conhecidas](#13-limitacoes-conhecidas)
+14. [Como verificar um resultado](#14-como-verificar-um-resultado)
 
 ---
 
@@ -394,6 +396,11 @@ Caso `b1esq` ou `b1dir` nao sejam informados, considera-se `0,0 cm`
 momento nulo; nas extremidades/apoios, a propria extremidade da viga serve
 de limite.
 
+> **Na interface**, os campos `b1 esquerdo` e `b1 direito` ja vem preenchidos
+> com `(bf - bw)/2`, para que o usuario veja o valor que sera usado. O motor,
+> porem, continua tratando **valor ausente como 0** (conservador): a regra
+> normativa `bf,ef = min(bf, bw + b1esq + b1dir)` e sempre aplicada.
+
 ### 4.2 Momento positivo (mesa comprimida)
 
 Quando `Mk > 0`, a linha neutra pode estar na mesa ou na alma.
@@ -699,6 +706,16 @@ O motor integra numericamente as curvaturas `κ(x) = M(x) / (Ecs · Ieq(x))` ao
 longo do comprimento da viga, usando o metodo dos trapezios com condicoes de
 contorno de viga bi-apoiada: `f(0) = 0` e `f(L) = 0`.
 
+> **Restricao de modelo.** Essas condicoes de contorno valem para **um vao
+> bi-apoiado**. O app **recusa** a verificacao quando ha momento fletor
+> diferente de zero nas extremidades importadas (engaste, continuidade ou
+> balanco) e explica o motivo — em vez de calcular uma flecha com um modelo
+> que nao corresponde a estrutura. Para viga continua, verifique a flecha em
+> outro programa e use o app apenas para o dimensionamento das secoes.
+
+A armadura e a altura util usadas aqui sao as do detalhamento real
+(`BeamDetailer`), as mesmas da flexao — nao ha uma `d` "de ELS" separada.
+
 ```
 flecha_imediata = max|f(x)|
 ```
@@ -722,6 +739,11 @@ limite_ativo = L / 350    (cm)
 passa_total = flecha_total ≤ limite_total
 passa_ativo = flecha_diferida ≤ limite_ativo
 ```
+
+> **`L` e o vao**, nao o comprimento total da viga. O app extrai `L` do
+> intervalo coberto pelos pontos de momento importados (`x_max - x_min`).
+> Antes do EP-01.6 o limite usava o comprimento total, o que ficava
+> conservador demais em vigas com balanco.
 
 ---
 
@@ -754,6 +776,11 @@ wk2 = (φ / (12,5 · ηb)) · (σs / 210000) · (4/ρ_ri + 45) · 10    (mm)
 ```
 
 Onde `ηb = 2,25` (CA-50 nervurado).
+
+> **Sobre o `×10` no fim das duas formulas:** o diametro `φ` entra nas
+> formulas em **cm** (convertido de mm na linha `phie = phi_barra_mm / 10`), e
+> o resultado e pedido em **mm**. O fator `10` e exatamente essa conversao
+> cm→mm — nao e fator de seguranca nem correcao empirica.
 
 ### 9.3 Limites (NBR 6118: Tabela 13.4)
 
@@ -842,6 +869,65 @@ O que o motor faz com a CAA:
 
 A tabela de CAA exibida na interface (dialogo de tabelas) tambem reproduz os
 dados da norma; ela deve ser conferida na norma vigente.
+
+---
+
+## 13. Limitacoes conhecidas
+
+> Esta seção existe para que o revisor saiba **o que o software não faz**.
+> Para uso profissional, ela é tão importante quanto as fórmulas.
+
+- **Flecha (ELS): apenas um vão bi-apoiado.** O app recusa modelos com momento
+  não nulo nas extremidades (continuidade, engaste ou balanço). Para viga
+  contínua, dimensione as seções aqui e verifique a flecha em um programa que
+  trate o modelo completo.
+- **Sem fadiga, sismo, torção ou punção.** Não há verificação de torção
+  (NBR 6118 seção 17.5), punção, fadiga (23.4) nem ações sísmicas.
+- **Somente vigas.** Não calcula lajes, pilares, sapatas, escadas, protensão
+  nem estruturas mistas.
+- **Sem ancoragem, decalagem e emendas.** O detalhamento é **esquemático**:
+  não verifica `lb`, `lb,nec`, decalagem do diagrama, emendas por traspasse
+  nem ganchos (o gancho do estribo é apenas indicativo).
+- **Armadura de pele conforme 17.3.5.2.3 apenas** (h ≥ 60 cm). Não cobre
+  exigências de pele de outros casos.
+- **FTOOL:** assume comportamento linear elástico e que os esforços importados
+  correspondem ao modelo que será verificado. O app **não** monta a combinação
+  de ações: aplica o `gamma_f` informado sobre os esforços característicos.
+- **Flecha por Branson** (inércia equivalente) — aproximação normativa; em
+  casos de fissuração severa, o resultado é uma estimativa.
+- **Bitolas longitudinais** limitadas às opções da interface (10 a 32 mm).
+- **`fck` de 20 a 90 MPa**, com as reduções de `alpha_c` e `lambda` acima de
+  50 MPa.
+- **PDF e DXF são representações para conferência**, não desenhos executivos.
+
+---
+
+## 14. Como verificar um resultado
+
+O relatório imprime tudo o que você precisa para refazer a conta à mão.
+Roteiro para a flexão de uma viga retangular:
+
+1. **Altura útil** — use a `d` impressa no relatório (vem do detalhamento real,
+   com a barra escolhida) ou confira com `d = h - c - phi_t - phi_l/2`, em cm.
+2. **Momento de cálculo** — `Md = gamma_f · Mk`; o relatório mostra `Md` em
+   kN·m (multiplique por 100 para kN·cm).
+3. **KC** — `KC = bw · d² / Md`. Compare com o "KC" do card de resultado.
+4. **Linha neutra** — resolva `0,4x² - dx + Md/(fcd·b) = 0`, tome a raiz menor
+   e calcule `bx = x/d`. Confira o domínio (`bx ≤ 0,45` para fck ≤ 50 MPa).
+5. **Armadura** — `As,req = Md / (fyd · (d - 0,4x))`;
+   `As,min = rho_min · bw · h / 100`; adote o maior. Compare com "As" e
+   "Asmin".
+6. **Barras** — `n = ceil(As,adot / A_phi)`; confira o "Adotado" e o
+   espaçamento horizontal `eh ≥ max(2 cm; phi_l; 1,2·d_max)`.
+7. **Cisalhamento** — `Vrd2 = 0,27·lambda·fcd·bw·d`;
+   `Vc = 0,6·fctd·bw·d`; `Vsw = Vsd - Vc`;
+   `s = Asw,ramo·100/(Asw/s)`, limitado por `s_max`.
+8. **ELS** — `Ecs`, `Mr`, `Ieq`, `x_ii`, `I_ii`, flecha, `L/250` e `w_k`
+   (seções 8 e 9). Use o `d` e o `As` do relatório.
+
+Se algum passo divergir, os dados de entrada mais prováveis de estarem
+diferentes são o **cobrimento** (classe CAA), a **bitola** e o **`gamma_f`** —
+confira esses três primeiro.
 
 ---
 
