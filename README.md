@@ -224,6 +224,7 @@ O histórico de versões está em [`docs/CHANGELOG.md`](docs/CHANGELOG.md).
 ## Contato e suporte
 
 - Dúvidas, correções e Issues: <https://github.com/samuel-c-santos/portica-app/issues>
+- Alternativa por email: <samuel.santos.engdev@gmail.com>
 - Perfil do autor e contato: <https://github.com/samuel-c-santos>
 - Doação (opcional, sem paywall e sem feature bloqueada): veja a seção **Doar** da [página pública](https://samuel-c-santos.github.io/portica-app/): Pix ou Ko-fi.
 

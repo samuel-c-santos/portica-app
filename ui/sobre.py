@@ -37,7 +37,7 @@ RELEASES_LATEST_URL = "https://github.com/samuel-c-santos/portica-app/releases/l
 RELEASES_API_LATEST_URL = "https://api.github.com/repos/samuel-c-santos/portica-app/releases/latest"
 DOI_URL = "https://doi.org/10.5281/zenodo.23733497"
 KOFI_URL = "https://ko-fi.com/samuelsantosportica"
-PIX_KEY = "samuelsantosambiental@gmail.com"
+PIX_KEY = "samuel.santos.geo@gmail.com"
 
 
 def _parse_semver(versao: str) -> tuple[int, int, int] | None:
