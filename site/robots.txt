@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://samuel-c-santos.github.io/portica-app/sitemap.xml
+Sitemap: https://samuelsantos.site/portica-app/sitemap.xml
