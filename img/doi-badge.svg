@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="218" height="20" role="img" aria-label="DOI: 10.5281/zenodo.23733497">
+  <title>DOI: 10.5281/zenodo.23733497</title>
+  <linearGradient id="s" x2="0" y2="100%">
+    <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
+    <stop offset="1" stop-opacity=".1"/>
+  </linearGradient>
+  <clipPath id="r">
+    <rect width="218" height="20" rx="3" fill="#fff"/>
+  </clipPath>
+  <g clip-path="url(#r)">
+    <rect width="33" height="20" fill="#555"/>
+    <rect x="33" width="185" height="20" fill="#1565c0"/>
+    <rect width="218" height="20" fill="url(#s)"/>
+  </g>
+  <g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="110">
+    <text aria-hidden="true" x="175" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="230">DOI</text>
+    <text x="175" y="140" transform="scale(.1)" fill="#fff" textLength="230">DOI</text>
+    <text aria-hidden="true" x="1245" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="1750">10.5281/zenodo.23733497</text>
+    <text x="1245" y="140" transform="scale(.1)" fill="#fff" textLength="1750">10.5281/zenodo.23733497</text>
+  </g>
+</svg>
