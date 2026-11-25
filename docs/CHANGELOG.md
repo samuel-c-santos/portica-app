@@ -9,20 +9,6 @@ versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
 Mudanças aceitas e ainda não publicadas em uma versão.
 
-### Adicionado
-
-- Cartão de compartilhamento do site (`og:image` 1200x630) gerado por
-  `tools/generate_og_image.py`, com `og:image:width`, `og:image:height` e
-  `og:image:alt` declarados em `index.html` e `calculo.html`. A variante
-  padrão segue a tela de carregamento do app (marca grande, fundo claro e
-  réguas azuis); `-v escuro` mantém a versão com screenshot do FTOOL.
-
-### Corrigido
-
-- Preview de link sem imagem no LinkedIn e em outros leitores: o `og:image`
-  apontava para uma ilustração retrato (906x996), fora do formato do card
-  grande.
-
 ## [1.1.0]: correções de cálculo, detalhamento e nova página pública
 
 ### Adicionado
@@ -36,6 +22,17 @@ Mudanças aceitas e ainda não publicadas em uma versão.
 - Deploy automático do site (`gh-pages`) a cada push em `public-main`.
 - Exportação DXF com grampos e armadura de pele.
 - Teste de regressão da abertura de projeto pela lista de recentes.
+- Cartão de compartilhamento do site (`og:image` 1200x630) gerado por
+  `tools/generate_og_image.py`, com `og:image:width`, `og:image:height` e
+  `og:image:alt` declarados em `index.html` e `calculo.html`. A variante
+  padrão segue a tela de carregamento do app (marca grande, fundo claro e
+  réguas azuis); `-v escuro` mantém a versão com screenshot do FTOOL.
+
+### Corrigido
+
+- Preview de link sem imagem no LinkedIn e em outros leitores: o `og:image`
+  apontava para uma ilustração retrato (906x996), fora do formato do card
+  grande.
 
 ### Alterado
 
